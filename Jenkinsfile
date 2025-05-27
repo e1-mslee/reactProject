@@ -8,6 +8,7 @@ pipeline {
                 deleteDir()
             }
         }
+        
 
         stage('Git Pull') {
             steps {
