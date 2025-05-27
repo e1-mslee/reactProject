@@ -24,9 +24,7 @@ pipeline {
 
                     pkill -f 'java -jar' || true
 
-                    cp ./backend/build/libs/*.jar /deploy/
-
-                    nohup java -jar /deploy/*.jar > /deploy/app.log 2>&1 &
+                    cp ./backend/employee-management/build/libs/*.jar /deploy/
 
                     echo "백엔드 배포 완료"
                 '''
