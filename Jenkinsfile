@@ -5,8 +5,15 @@ pipeline {
         stage('Git Pull') {
             steps {
                 git branch: 'main', 
-                    credentialsId: '9e76f369-b56c-438e-b11c-313c7a2ba2f4', 
+                    credentialsId: '9e76f369-b56c-438e-b11c7a2ba2f4', 
                     url: 'https://github.com/e1-mslee/reactProject.git'
+            }
+        }
+
+        stage('Build Backend') {
+            steps {
+                echo "백엔드 빌드 시작"
+                sh "cd backend && ./gradlew clean build -x test"
             }
         }
 
@@ -17,7 +24,7 @@ pipeline {
 
                     pkill -f 'java -jar' || true
 
-                    cp ./backend/target/*.jar /deploy/
+                    cp ./backend/build/libs/*.jar /deploy/
 
                     nohup java -jar /deploy/*.jar > /deploy/app.log 2>&1 &
 
@@ -26,17 +33,17 @@ pipeline {
             }
         }
 
-        stage('Deploy Frontend') {
+        stage('Build & Deploy Frontend') {
             steps {
                 sh '''
-                    echo "프론트 배포 시작"
+                    echo "프론트엔드 빌드 및 배포 시작"
 
                     cd frontend
                     npm install
                     npm run build
-                    cp -r dist/* /var/www/html/
+                    cp -r dist/* /deploy/frontend/
 
-                    echo "프론트 배포 완료"
+                    echo "프론트엔드 빌드 및 배포 완료"
                 '''
             }
         }
