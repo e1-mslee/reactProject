@@ -24,7 +24,7 @@ pipeline {
 
                     pkill -f 'java -jar' || true
 
-                    cp ./backend/employee-management/build/libs/*.jar /deploy/
+                    nohup java -jar employee-management-0.0.1-SNAPSHOT.jar > /dev/null 2>&1 &
 
                     echo "백엔드 배포 완료"
                 '''
