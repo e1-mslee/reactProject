@@ -13,7 +13,7 @@ pipeline {
         stage('Build Backend') {
             steps {
                 echo "백엔드 빌드 시작"
-                sh "cd backend && ./gradlew clean build -x test"
+                sh "cd backend/employee-management && chmod +x gradlew && ./gradlew clean build -x test"
             }
         }
 
