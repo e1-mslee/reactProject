@@ -40,7 +40,8 @@ pipeline {
                     npm install
                     npm run build
                     cp -r dist/* /deploy/frontend/
-
+                    mkdir -p /deploy/frontend/
+                    cp -r dist/assets dist/index.html dist/vite.svg /deploy/frontend/
                     echo "프론트엔드 빌드 및 배포 완료"
                 '''
             }
