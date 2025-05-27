@@ -31,18 +31,12 @@ pipeline {
             }
         }
 
-        stage('Build & Deploy Frontend') {
+        stage('Run Frontend Dev Server') {
             steps {
                 sh '''
-                    echo "프론트엔드 빌드 및 배포 시작"
-
+                    echo "프론트엔드 개발 서버 시작"
                     cd frontend
-                    npm install
-                    npm run build
-                    cp -r dist/* /deploy/frontend/
-                    mkdir -p /deploy/frontend/
-                    cp -r dist/assets dist/index.html dist/vite.svg /deploy/frontend/
-                    echo "프론트엔드 빌드 및 배포 완료"
+                    nohup npm run dev > ../frontend-dev.log 2>&1 &
                 '''
             }
         }
