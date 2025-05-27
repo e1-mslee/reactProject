@@ -4,7 +4,9 @@ pipeline {
     stages {
         stage('Git Pull') {
             steps {
-                git credentialsId: '9e76f369-b56c-438e-b11c-313c7a2ba2f4', url: 'https://github.com/e1-mslee/reactProject.git'
+                git branch: 'main', 
+                    credentialsId: '9e76f369-b56c-438e-b11c-313c7a2ba2f4', 
+                    url: 'https://github.com/e1-mslee/reactProject.git'
             }
         }
 
