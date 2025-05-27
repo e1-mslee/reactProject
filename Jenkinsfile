@@ -1,27 +1,51 @@
 pipeline {
     agent any
+
     stages {
-        stage('Prepare'){
+        stage('Git Pull') {
             steps {
-                git credentialsId : '{9e76f369-b56c-438e-b11c-313c7a2ba2f4}',
-                    branch : '{main}',
-                    url : 'https://github.com/e1-mslee/reactProject.git'
+                git credentialsId: '9e76f369-b56c-438e-b11c-313c7a2ba2f4', url: 'https://github.com/e1-mslee/reactProject.git'
             }
         }
-        stage('test') {
+
+        stage('Deploy Backend') {
             steps {
-                echo 'test stage'
+                sh '''
+                    echo "백엔드 배포 시작"
+
+                    pkill -f 'java -jar' || true
+
+                    cp ./backend/target/*.jar /deploy/
+
+                    nohup java -jar /deploy/*.jar > /deploy/app.log 2>&1 &
+
+                    echo "백엔드 배포 완료"
+                '''
             }
         }
-        stage('build') {
+
+        stage('Deploy Frontend') {
             steps {
-                echo 'build stage'
+                sh '''
+                    echo "프론트 배포 시작"
+
+                    cd frontend
+                    npm install
+                    npm run build
+                    cp -r dist/* /var/www/html/
+
+                    echo "프론트 배포 완료"
+                '''
             }
         }
-        stage('docker build') {
-            steps {
-                echo 'docker build stage'
-            }
+    }
+
+    post {
+        success {
+            echo '✅ 배포 성공'
+        }
+        failure {
+            echo '❌ 배포 실패'
         }
     }
 }
