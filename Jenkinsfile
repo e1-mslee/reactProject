@@ -7,12 +7,10 @@ pipeline {
             steps {
                 sh '''
                     echo "배포 디렉토리 정리"
-                    
+
                     deleteDir()
 
                     pkill -f 'java -jar' || true
-
-                    pkill -f "npm run dev" || true
 
                 '''
             }
