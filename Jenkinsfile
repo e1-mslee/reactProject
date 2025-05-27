@@ -7,8 +7,8 @@ pipeline {
             steps {
                 sh '''
                     echo "배포 디렉토리 정리"
-                    rm -rf /deploy/frontend/*
                     pkill -f 'java -jar' || true
+                    pkill -f "npm run dev" || true
                 '''
             }
         }
