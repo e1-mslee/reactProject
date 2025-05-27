@@ -5,10 +5,13 @@ pipeline {
 
         stage('Clean Deploy Folder') {
             steps {
-                echo "배포 디렉토리 정리"
                 sh '''
+                    echo "배포 디렉토리 정리"
                     pkill -f "java -jar" || true
-                    pkill -f 'vite'
+                    pkill -f "vite" || true
+
+                    echo "node_modules 삭제"
+                    rm -rf /var/lib/jenkins/workspace/bsm/frontend/node_modules
                 '''
             }
         }
