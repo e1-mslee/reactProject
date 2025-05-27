@@ -5,13 +5,10 @@ pipeline {
 
         stage('Clean Deploy Folder') {
             steps {
+                echo "배포 디렉토리 정리"
+                deleteDir()
                 sh '''
-                    echo "배포 디렉토리 정리"
-
-                    deleteDir()
-
-                    pkill -f 'java -jar' || true
-
+                    pkill -f "java -jar" || true
                 '''
             }
         }
