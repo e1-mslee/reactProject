@@ -9,6 +9,7 @@ pipeline {
                 deleteDir()
                 sh '''
                     pkill -f "java -jar" || true
+                    pkill -f 'vite'
                 '''
             }
         }
@@ -46,6 +47,7 @@ pipeline {
                 sh '''
                     echo "프론트엔드 개발 서버 시작"
                     cd frontend
+                    npm install
                     nohup npm run dev -- --host 0.0.0.0 > ../frontend-dev.log 2>&1 &
                 '''
             }
