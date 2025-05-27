@@ -3,12 +3,16 @@ pipeline {
 
     stages {
 
-        stage('Clean Workspace') {
+        stage('Clean Deploy Folder') {
             steps {
-                deleteDir()
+                sh '''
+                    echo "배포 디렉토리 정리"
+                    rm -rf /deploy/frontend/*
+                    pkill -f 'java -jar' || true
+                '''
             }
         }
-        
+
 
         stage('Git Pull') {
             steps {
@@ -29,8 +33,6 @@ pipeline {
             steps {
                 sh '''
                     echo "백엔드 배포 시작"
-
-                    pkill -f 'java -jar' || true
 
                     nohup java -jar employee-management-0.0.1-SNAPSHOT.jar > /dev/null 2>&1 &
 
