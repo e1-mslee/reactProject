@@ -3,21 +3,21 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import './Lms.css'
 import '@mescius/wijmo.cultures/wijmo.culture.ko';
 import 'react-datepicker/dist/react-datepicker.css';
-import axios from "axios";
+import api from './../api/api.js';
 import {FlexGrid} from '@mescius/wijmo.react.grid';
 import * as wjInput from '@mescius/wijmo.react.input';
 import { useState,useEffect } from "react";
 import { Button, Flex } from 'antd';
 
 const Lms = () =>{
-
+    console.log("dsfsdf");
     const [commCode, setCommCode] = useState([]);
     const [data, setData] = useState([]);
 
     useEffect(() => {
         Promise.all([
-            axios.get('http://localhost:8080/api/commCode'),
-            axios.get('http://localhost:8080/api/getMainTableInfo')
+            api.get('/api/commCode'),
+            api.get('/api/getMainTableInfo')
         ])
         .then(([commCodeRes, dataRes]) => {
             setCommCode(commCodeRes.data);
@@ -44,22 +44,33 @@ const Lms = () =>{
 
     const handleAddRow = () => {
         const newRow = {
-            tableName1: '',
-            tableName2: '',
-            count: '',
-            user: '',
-            date: new Date().toISOString().split('T')[0], // 오늘 날짜
+            TABLE_NAME: '',
+            TABLE_ID: '',
+            field_count: '',
+            VBG_CRE_USER: '',
+            VBG_CRE_DTM: new Date().toISOString().split('T')[0], // 오늘 날짜
             selected: false
         };
         
         setGridData(prev => [...prev, newRow]);
     };
 
+    const fetchGridData = () => {
+        api.get('/api/getMainTableInfo')
+            .then((res) => {
+            setData(res.data);
+            setGridData(res.data);
+        })
+            .catch((err) => {
+            console.error(err);
+        });
+    };
+
     return <div>
                 <span style={{fontSize :'22px',fontWeight : 'bold'}}>UDA 목록</span>
                 <div style={{ display: 'flex', justifyContent: 'flex-end', margin: '2px 0 10px 0' }}>
                     <Flex gap="small" wrap>
-                        <Button className="custom-button">조회</Button>
+                        <Button className="custom-button" onClick={fetchGridData}>조회</Button>
                         <Button className="custom-button" onClick={handleAddRow}>추가</Button>
                         <Button className="custom-button">수정</Button>
                         <Button className="custom-button">저장</Button>
