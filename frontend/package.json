@@ -3,6 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "proxy": "http://localhost:8080",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -12,6 +13,8 @@
   "dependencies": {
     "@mescius/wijmo.react.all": "^5.20251.40",
     "antd": "^5.26.4",
+    "axios": "^1.10.0",
+    "bootstrap": "^5.3.7",
     "react": "^19.1.0",
     "react-datepicker": "^8.4.0",
     "react-dom": "^19.1.0",

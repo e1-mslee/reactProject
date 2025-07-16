@@ -7,6 +7,12 @@
   z-index: 9999 !important;
 }
 
+.wj-input-group {
+  width: 180px !important;
+  text-align: right !important;;
+  margin-right: 3px !important;; 
+}
+
 .custom-button {
     border-color  : 1px solid #082665;
     color :  #666;
@@ -40,6 +46,10 @@
    color: #666;   
   border: 1px solid #EEE;
   line-height: normal;
+}
+
+.wj-flexgrid .wj-colheaders .wj-header {
+  text-align: center;
 }
 
 .wj-content {
@@ -82,4 +92,24 @@
     letter-spacing: -0.65px;
     margin-right: 10px;
     margin-left: 10px;
+}
+
+.wj-calendar {
+  max-width: 21em;
+}
+
+.wj-calendar .wj-header {
+  color: white;
+  background: #737680;
+}
+
+.wj-calendar .date-holiday:not(.wj-state-selected) {
+  font-weight: bold;
+  color: #1F8016;
+  background: #f0fff0;
+  outline: 2pt solid #1F8016;
+}
+
+.wj-calendar .date-weekend:not(.wj-state-selected) {
+  background-color: #d8ffa6;
 }

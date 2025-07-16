@@ -1,13 +1,27 @@
 import '@mescius/wijmo.styles/wijmo.css';
+import 'bootstrap/dist/css/bootstrap.min.css';
 import './Lms.css'
 import '@mescius/wijmo.cultures/wijmo.culture.ko';
 import 'react-datepicker/dist/react-datepicker.css';
+import axios from "axios";
 import {FlexGrid} from '@mescius/wijmo.react.grid';
-import DatePicker from "react-datepicker";
-import { useState } from "react";
+import * as wjInput from '@mescius/wijmo.react.input';
+import { useState,useEffect } from "react";
 import { Button, Flex } from 'antd';
 
 const Lms = () =>{
+
+    const [commCode, setCommCode] = useState('');
+
+    useEffect(() => {
+    axios.get('http://localhost:8080/api/commCode')
+    .then((res) => {
+        setCommCode(res.data);
+    })
+    .catch((err) => {
+        setCommCode(err.message);
+    });
+    }, []);
 
     const data = [
     { tableName1: 'Artist Album list', tableName2: 'uda_0122_db', count: 25, user : "이민수", date : '2025-07-10',selected: false },
@@ -51,15 +65,15 @@ const Lms = () =>{
                     <span>검색조건</span>
                     <input style={{ width : '300px', height :'28px' ,border : '1px solid #dbdbdb'}} placeholder='검색조건을 입력하세요.'/>
                     <span>수정일</span>
-                    <DatePicker selected={startDate} onChange={(date) => setStartDate(date)} className='datepicker' dateFormat="yyyy-MM-dd" />
+                    <wjInput.InputDate  valueChanged={(date) => setStartDate(date)}  className='datepicker'/>                   
                     <span style={{width : '10px'}}>~</span>
-                    <DatePicker selected={endDate} onChange={(date) => setEndDate(date)} className='datepicker'  dateFormat="yyyy-MM-dd"  />  
+                    <wjInput.InputDate  valueChanged={(date) => setEndDate(date)}  className='datepicker'/>
                 </div>
                 <div style={{ margin: '2px' }}>
                     <FlexGrid
                         itemsSource={gridData}
                         columns={[
-                        { binding: 'selected', header: ' ', width: 40, isReadOnly: false, dataType: 'Boolean' },
+                        { binding: 'selected', header: '선택', width: 40, isReadOnly: false, dataType: 'Boolean' },
                         { binding: 'tableName1', header: '논리 테이블명', width: '*' },
                         { binding: 'tableName2', header: '물리 테이블명', width: '*' },
                         { binding: 'count', header: '데이터 수', width: '0.4*' },

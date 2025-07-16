@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.e1.backend.mapper.ApiMapper">
+
+    <select id="selectAllCode" resultType="map">
+        select COM_CD_ID,
+		       COM_CD,
+		       COM_CD_NM,
+		       COM_CD_EN,
+		       SORT_SN
+	      from comm_code 
+    </select>
+
+</mapper>
