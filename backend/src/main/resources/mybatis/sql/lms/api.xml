@@ -4,12 +4,23 @@
 <mapper namespace="com.e1.backend.mapper.ApiMapper">
 
     <select id="selectAllCode" resultType="map">
-        select COM_CD_ID,
-		       COM_CD,
-		       COM_CD_NM,
-		       COM_CD_EN,
-		       SORT_SN
-	      from comm_code 
+		select COM_CD_ID,
+			   COM_CD,
+			   COM_CD_NM,
+			   COM_CD_EN,
+			   SORT_SN
+		  from comm_code 
+    </select>
+
+    <select id="selectMainTableInfoList" resultType="map">
+		select m.TABLE_ID,
+			   m.TABLE_NAME,
+			   m.TABLE_ID,
+			   m.VBG_CRE_DTM,
+			   m.VBG_CRE_USER,
+			   (select count(*) from std_field s where  m.TABLE_SEQ  = s.TABLE_SEQ) as 'field_count',
+			   false as 'selected'
+		from std_main m
     </select>
 
 </mapper>

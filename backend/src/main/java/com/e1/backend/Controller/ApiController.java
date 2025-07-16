@@ -21,4 +21,9 @@ public class ApiController {
         return apiService.getAllCode();
     }
 
+    @GetMapping("/api/getMainTableInfo")
+    public List<Map<String,Object>> getMainTableInfo() {
+        return apiService.selectMainTableInfoList();
+    }
+
 }

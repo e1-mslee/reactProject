@@ -7,4 +7,6 @@ import java.util.Map;
 
 public interface ApiService {
     List<Map<String, Object>> getAllCode();
+
+    List<Map<String,Object>> selectMainTableInfoList();
 }

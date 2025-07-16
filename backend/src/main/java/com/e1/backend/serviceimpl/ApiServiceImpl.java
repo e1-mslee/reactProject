@@ -20,4 +20,10 @@ public class ApiServiceImpl implements ApiService {
     public List<Map<String, Object>> getAllCode() {
         return apiMapper.selectAllCode();
     }
+
+    @Override
+    public List<Map<String, Object>> selectMainTableInfoList() {
+        return apiMapper.selectMainTableInfoList();
+    }
+    
 }

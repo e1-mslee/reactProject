@@ -17,7 +17,9 @@ const Sidebar = ({ selectedKey, setSelectedKey, navigate, items }) => {
         style={{ height: '100%', borderRight: 0 }}
         items={items}
         onClick={({ key }) => {
-          setSelectedKey(key);
+          if (selectedKey !== key) {
+            setSelectedKey(key);
+          }
           navigate('/' + key);
         }}
       />

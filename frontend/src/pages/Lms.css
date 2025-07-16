@@ -9,8 +9,8 @@
 
 .wj-input-group {
   width: 180px !important;
-  text-align: right !important;;
-  margin-right: 3px !important;; 
+  text-align: right !important;
+  margin-right: 3px !important;
 }
 
 .custom-button {
@@ -50,6 +50,7 @@
 
 .wj-flexgrid .wj-colheaders .wj-header {
   text-align: center;
+  vertical-align: middle;
 }
 
 .wj-content {

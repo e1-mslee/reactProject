@@ -11,26 +11,32 @@ import { Button, Flex } from 'antd';
 
 const Lms = () =>{
 
-    const [commCode, setCommCode] = useState('');
+    const [commCode, setCommCode] = useState([]);
+    const [data, setData] = useState([]);
 
     useEffect(() => {
-    axios.get('http://localhost:8080/api/commCode')
-    .then((res) => {
-        setCommCode(res.data);
-    })
-    .catch((err) => {
-        setCommCode(err.message);
-    });
+        Promise.all([
+            axios.get('http://localhost:8080/api/commCode'),
+            axios.get('http://localhost:8080/api/getMainTableInfo')
+        ])
+        .then(([commCodeRes, dataRes]) => {
+            setCommCode(commCodeRes.data);
+            setData(dataRes.data);
+            setGridData(dataRes.data);
+        })
+        .catch((err) => {
+            console.error(err);
+        });
     }, []);
 
-    const data = [
-    { tableName1: 'Artist Album list', tableName2: 'uda_0122_db', count: 25, user : "이민수", date : '2025-07-10',selected: false },
-    { tableName1: 'sw 통합결재', tableName2: 'uda_0132_db', count: 20, user : "김정욱", date : '2025-07-11',selected: false },
-    { tableName1: '회의실 현황', tableName2: 'uda_0124_db', count: 10, user : "문재선", date : '2025-07-12',selected: false },
-    { tableName1: '금속재료조회', tableName2: 'uda_0125_db', count: 5, user : "김진한", date : '2025-07-13',selected: false },
-    { tableName1: '배출가스', tableName2: 'uda_0127_db', count: 2, user : "한은영", date : '2025-07-14',selected: false },
-    { tableName1: '테스트', tableName2: 'uda_0128_db', count: 1, user : "홍민기", date : '2025-07-15',selected: false },
-    ];
+    // const data = [
+    // { tableName1: 'Artist Album list', tableName2: 'uda_0122_db', count: 25, user : "이민수", date : '2025-07-10',selected: false },
+    // { tableName1: 'sw 통합결재', tableName2: 'uda_0132_db', count: 20, user : "김정욱", date : '2025-07-11',selected: false },
+    // { tableName1: '회의실 현황', tableName2: 'uda_0124_db', count: 10, user : "문재선", date : '2025-07-12',selected: false },
+    // { tableName1: '금속재료조회', tableName2: 'uda_0125_db', count: 5, user : "김진한", date : '2025-07-13',selected: false },
+    // { tableName1: '배출가스', tableName2: 'uda_0127_db', count: 2, user : "한은영", date : '2025-07-14',selected: false },
+    // { tableName1: '테스트', tableName2: 'uda_0128_db', count: 1, user : "홍민기", date : '2025-07-15',selected: false },
+    // ];
 
     const [startDate, setStartDate] = useState(new Date());
     const [endDate, setEndDate] = useState(new Date());
@@ -50,7 +56,7 @@ const Lms = () =>{
     };
 
     return <div>
-                <h2>UDA 목록</h2>
+                <span style={{fontSize :'22px',fontWeight : 'bold'}}>UDA 목록</span>
                 <div style={{ display: 'flex', justifyContent: 'flex-end', margin: '2px 0 10px 0' }}>
                     <Flex gap="small" wrap>
                         <Button className="custom-button">조회</Button>
@@ -73,12 +79,12 @@ const Lms = () =>{
                     <FlexGrid
                         itemsSource={gridData}
                         columns={[
-                        { binding: 'selected', header: '선택', width: 40, isReadOnly: false, dataType: 'Boolean' },
-                        { binding: 'tableName1', header: '논리 테이블명', width: '*' },
-                        { binding: 'tableName2', header: '물리 테이블명', width: '*' },
-                        { binding: 'count', header: '데이터 수', width: '0.4*' },
-                        { binding: 'user', header: '생성자', width: '*' },
-                        { binding: 'date', header: '생성일', width: '0.7*', align: 'center'  },
+                        { binding: 'selected', header: '선택', width: 50, isReadOnly: false, dataType: 'Boolean' },
+                        { binding: 'TABLE_NAME', header: '논리 테이블명', width: '*' },
+                        { binding: 'TABLE_ID', header: '물리 테이블명', width: '*' },
+                        { binding: 'field_count', header: '데이터 수', width: '0.4*' },
+                        { binding: 'VBG_CRE_USER', header: '생성자', width: '*' },
+                        { binding: 'VBG_CRE_DTM', header: '생성일', width: '0.7*', align: 'center' },
                         ]}
                         isReadOnly={false}
                         style={{ height: '520px' }}  // ← 여기서 높이 지정

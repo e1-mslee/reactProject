@@ -8,4 +8,6 @@ import org.apache.ibatis.annotations.Mapper;
 @Mapper
 public interface ApiMapper {
     List<Map<String,Object>> selectAllCode();
+
+    List<Map<String,Object>> selectMainTableInfoList();
 }
