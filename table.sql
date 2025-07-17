@@ -44,3 +44,22 @@ VALUES('00001', '4', '일시', 'DATE', 4, 'LMS', '2025-07-15');
 INSERT INTO uda.comm_code
 (COM_CD_ID, COM_CD, COM_CD_NM, COM_CD_EN, SORT_SN, VBG_CRE_USER, VBG_CRE_DTM)
 VALUES('00001', '5', '체크박스', 'check', 5, 'LMS', '2025-07-15');
+
+INSERT INTO uda.std_main
+(TABLE_ID, TABLE_NAME, TABLE_ID, VBG_CRE_DTM, VBG_CRE_USER, field_count, selected)
+VALUES('uda_01_db', 'Artist Album list', 'uda_01_db', '2025-07-10', '이민수', 0, 0);
+INSERT INTO uda.std_main
+(TABLE_ID, TABLE_NAME, TABLE_ID, VBG_CRE_DTM, VBG_CRE_USER, field_count, selected)
+VALUES('uda_32_db', 'sw 통합결재', 'uda_32_db', '2025-07-11', '김정욱', 0, 0);
+INSERT INTO uda.std_main
+(TABLE_ID, TABLE_NAME, TABLE_ID, VBG_CRE_DTM, VBG_CRE_USER, field_count, selected)
+VALUES('uda_24_db', '회의실 현황', 'uda_24_db', '2025-07-12', '문재선', 0, 0);
+INSERT INTO uda.std_main
+(TABLE_ID, TABLE_NAME, TABLE_ID, VBG_CRE_DTM, VBG_CRE_USER, field_count, selected)
+VALUES('uda_25_db', '금속재료조회', 'uda_25_db', '2025-07-13', '김진한', 0, 0);
+INSERT INTO uda.std_main
+(TABLE_ID, TABLE_NAME, TABLE_ID, VBG_CRE_DTM, VBG_CRE_USER, field_count, selected)
+VALUES('uda_27_db', '배출가스', 'uda_27_db', '2025-07-14', '한은영', 0, 0);
+INSERT INTO uda.std_main
+(TABLE_ID, TABLE_NAME, TABLE_ID, VBG_CRE_DTM, VBG_CRE_USER, field_count, selected)
+VALUES('uda_28_db', '테스트', 'uda_28_db', '2025-07-15', '홍민기', 0, 0);

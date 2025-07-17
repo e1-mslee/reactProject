@@ -3,6 +3,7 @@ package com.e1.backend.serviceimpl;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.e1.backend.mapper.ApiMapper;
@@ -24,6 +25,11 @@ public class ApiServiceImpl implements ApiService {
     @Override
     public List<Map<String, Object>> selectMainTableInfoList() {
         return apiMapper.selectMainTableInfoList();
+    }
+
+    @Override
+    public void deleteMainTableInfo(List<String> data) {
+       apiMapper.deleteMainTableInfo(data);
     }
     
 }

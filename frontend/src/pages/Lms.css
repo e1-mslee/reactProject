@@ -114,3 +114,8 @@
 .wj-calendar .date-weekend:not(.wj-state-selected) {
   background-color: #d8ffa6;
 }
+
+.blue-column {
+  color: #007bff;
+  cursor: pointer;
+}

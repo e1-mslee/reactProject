@@ -4,43 +4,22 @@ import './Lms.css'
 import '@mescius/wijmo.cultures/wijmo.culture.ko';
 import 'react-datepicker/dist/react-datepicker.css';
 import api from './../api/api.js';
-import {FlexGrid} from '@mescius/wijmo.react.grid';
+import {FlexGrid,FlexGridColumn} from '@mescius/wijmo.react.grid';
 import * as wjInput from '@mescius/wijmo.react.input';
 import { useState,useEffect } from "react";
 import { Button, Flex } from 'antd';
 
 const Lms = () =>{
-    console.log("dsfsdf");
     const [commCode, setCommCode] = useState([]);
     const [data, setData] = useState([]);
 
     useEffect(() => {
-        Promise.all([
-            api.get('/api/commCode'),
-            api.get('/api/getMainTableInfo')
-        ])
-        .then(([commCodeRes, dataRes]) => {
-            setCommCode(commCodeRes.data);
-            setData(dataRes.data);
-            setGridData(dataRes.data);
-        })
-        .catch((err) => {
-            console.error(err);
-        });
+        fetchGridData();
     }, []);
-
-    // const data = [
-    // { tableName1: 'Artist Album list', tableName2: 'uda_0122_db', count: 25, user : "이민수", date : '2025-07-10',selected: false },
-    // { tableName1: 'sw 통합결재', tableName2: 'uda_0132_db', count: 20, user : "김정욱", date : '2025-07-11',selected: false },
-    // { tableName1: '회의실 현황', tableName2: 'uda_0124_db', count: 10, user : "문재선", date : '2025-07-12',selected: false },
-    // { tableName1: '금속재료조회', tableName2: 'uda_0125_db', count: 5, user : "김진한", date : '2025-07-13',selected: false },
-    // { tableName1: '배출가스', tableName2: 'uda_0127_db', count: 2, user : "한은영", date : '2025-07-14',selected: false },
-    // { tableName1: '테스트', tableName2: 'uda_0128_db', count: 1, user : "홍민기", date : '2025-07-15',selected: false },
-    // ];
 
     const [startDate, setStartDate] = useState(new Date());
     const [endDate, setEndDate] = useState(new Date());
-    const [gridData, setGridData] = useState(data);
+    const [gridData, setGridData] = useState([]);
 
     const handleAddRow = () => {
         const newRow = {
@@ -55,16 +34,38 @@ const Lms = () =>{
         setGridData(prev => [...prev, newRow]);
     };
 
-    const fetchGridData = () => {
-        api.get('/api/getMainTableInfo')
-            .then((res) => {
+    const fetchGridData = async () => {
+        try {
+            const res = await api.get('/api/getMainTableInfo');
+            console.log(res.data);
             setData(res.data);
             setGridData(res.data);
-        })
-            .catch((err) => {
-            console.error(err);
-        });
+        } catch (err) {
+            console.error('데이터 불러오기 오류:', err);
+            alert('데이터 로딩 중 문제가 발생했습니다.');
+        }
     };
+
+    const deleteData = async () => {
+        const selectedRows = gridData.filter((row) => row.selected);
+
+        if (selectedRows.length === 0) {
+            alert('삭제할 항목을 선택하세요.');
+            return;
+        }
+
+        const idsToDelete = selectedRows.map((row) => row.TABLE_SEQ);
+        console.log("idsToDelete",idsToDelete)
+        try {
+            await api.post('/api/deleteMainTableInfo', idsToDelete);
+            alert('삭제되었습니다.');
+            await fetchGridData();
+        } catch (err) {
+            console.error('삭제 오류:', err);
+            alert('삭제 중 오류가 발생했습니다.');
+        }
+    };
+
 
     return <div>
                 <span style={{fontSize :'22px',fontWeight : 'bold'}}>UDA 목록</span>
@@ -74,7 +75,7 @@ const Lms = () =>{
                         <Button className="custom-button" onClick={handleAddRow}>추가</Button>
                         <Button className="custom-button">수정</Button>
                         <Button className="custom-button">저장</Button>
-                        <Button className="custom-button">삭제</Button>
+                        <Button className="custom-button" onClick={deleteData}>삭제</Button>
                         <Button className="custom-button">엑셀</Button>
                     </Flex>
                 </div>
@@ -88,23 +89,24 @@ const Lms = () =>{
                 </div>
                 <div style={{ margin: '2px' }}>
                     <FlexGrid
-                        itemsSource={gridData}
-                        columns={[
-                        { binding: 'selected', header: '선택', width: 50, isReadOnly: false, dataType: 'Boolean' },
-                        { binding: 'TABLE_NAME', header: '논리 테이블명', width: '*' },
-                        { binding: 'TABLE_ID', header: '물리 테이블명', width: '*' },
-                        { binding: 'field_count', header: '데이터 수', width: '0.4*' },
-                        { binding: 'VBG_CRE_USER', header: '생성자', width: '*' },
-                        { binding: 'VBG_CRE_DTM', header: '생성일', width: '0.7*', align: 'center' },
-                        ]}
-                        isReadOnly={false}
-                        style={{ height: '520px' }}  // ← 여기서 높이 지정
-                        selectionMode="Row"
-                        headersVisibility="Column"
-                        allowSorting={true}
-                        autoGenerateColumns={false}
-                    />
+                    itemsSource={gridData}
+                    isReadOnly={false}
+                    autoGenerateColumns={false}
+                    style={{ height: '540px' }}
+                    selectionMode="Row"
+                    headersVisibility="Column"
+                    allowSorting={true}
+                    >
+                        <FlexGridColumn binding="selected" header="선택" width={50} dataType="Boolean" />
+                        <FlexGridColumn binding="TABLE_NAME" header="논리 테이블명" width="*" cssClass="blue-column" />
+                        <FlexGridColumn binding="TABLE_ID" header="물리 테이블명" width="*" />
+                        <FlexGridColumn binding="field_count" header="데이터 수" width="0.4*" />
+                        <FlexGridColumn binding="VBG_CRE_USER" header="생성자" width="*" />
+                        <FlexGridColumn binding="VBG_CRE_DTM" header="생성일" width="0.5*" align="center" />
+                        <FlexGridColumn binding="TABLE_SEQ" header="SEQ" visible={false} />
+                    </FlexGrid>
                 </div>
+                <span style={{fontSize : '13px', fontWeight : 'bold', marginLeft : '5px'}}> TOTAL : {data.length || 0} </span>    
             </div>;
 }
 

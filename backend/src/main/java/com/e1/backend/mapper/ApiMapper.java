@@ -10,4 +10,6 @@ public interface ApiMapper {
     List<Map<String,Object>> selectAllCode();
 
     List<Map<String,Object>> selectMainTableInfoList();
+
+    int deleteMainTableInfo(List<String> data);
 }

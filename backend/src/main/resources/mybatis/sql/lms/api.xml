@@ -13,7 +13,8 @@
     </select>
 
     <select id="selectMainTableInfoList" resultType="map">
-		select m.TABLE_ID,
+		select m.TABLE_SEQ,
+			   m.TABLE_ID,
 			   m.TABLE_NAME,
 			   m.TABLE_ID,
 			   m.VBG_CRE_DTM,
@@ -22,5 +23,12 @@
 			   false as 'selected'
 		from std_main m
     </select>
+
+    <delete id="deleteMainTableInfo" parameterType="list">
+		<foreach collection = "list" item = "item" separator=";" close = ";">
+			delete from std_main
+			 where TABLE_SEQ = #{item}
+		</foreach>
+    </delete>
 
 </mapper>
