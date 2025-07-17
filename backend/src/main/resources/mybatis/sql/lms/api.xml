@@ -25,10 +25,11 @@
     </select>
 
     <delete id="deleteMainTableInfo" parameterType="list">
-		<foreach collection = "list" item = "item" separator=";" close = ";">
-			delete from std_main
-			 where TABLE_SEQ = #{item}
-		</foreach>
+    delete from std_main
+     where TABLE_SEQ in
+    <foreach collection="list" item="item" open="(" separator="," close=")">
+        #{item}
+    </foreach>
     </delete>
 
 </mapper>

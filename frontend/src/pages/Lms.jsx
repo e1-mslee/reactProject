@@ -54,7 +54,17 @@ const Lms = () =>{
             return;
         }
 
-        const idsToDelete = selectedRows.map((row) => row.TABLE_SEQ);
+        const idsToDelete = selectedRows
+            .map((row) => row.TABLE_SEQ)
+            .filter(id => id !== undefined && id !== null);
+        
+        
+        if (idsToDelete.length === 0) {
+            setGridData(gridData.filter(row => !row.selected || (row.selected && row.REQ !== undefined)));
+            return;
+        }
+
+
         console.log("idsToDelete",idsToDelete)
         try {
             await api.post('/api/deleteMainTableInfo', idsToDelete);
