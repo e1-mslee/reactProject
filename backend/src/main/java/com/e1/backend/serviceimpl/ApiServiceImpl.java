@@ -30,5 +30,18 @@ public class ApiServiceImpl implements ApiService {
     public void deleteMainTableInfo(List<String> data) {
        apiMapper.deleteMainTableInfo(data);
     }
+
+    @Override
+    public void saveMainTableInfo(List<Map<String,Object>> data) {
+
+        for (Map<String, Object> item : data) {
+            if (item.get("TABLE_SEQ") == null || item.get("TABLE_SEQ").toString().isEmpty()) {
+               apiMapper.insertMainTableInfo(item);
+            } else {
+               apiMapper.updateMainTableInfo(item);
+            }
+        }
+
+    }
     
 }

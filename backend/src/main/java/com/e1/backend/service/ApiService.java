@@ -10,4 +10,6 @@ public interface ApiService {
     List<Map<String,Object>> selectMainTableInfoList();
 
     void deleteMainTableInfo(List<String> data);
+
+    void saveMainTableInfo(List<Map<String,Object>> data);
 }

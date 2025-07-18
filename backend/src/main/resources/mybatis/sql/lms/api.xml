@@ -32,4 +32,28 @@
     </foreach>
     </delete>
 
+
+	<insert id="insertMainTableInfo" parameterType="map">
+		INSERT INTO std_main (
+			TABLE_NAME,
+			TABLE_ID,
+			VBG_CRE_USER,
+			VBG_CRE_DTM
+		) VALUES (
+			#{TABLE_NAME},
+			#{TABLE_ID},
+			'이민수',
+			now()
+		)
+	</insert>
+
+	<update id="updateMainTableInfo" parameterType="map">
+		UPDATE std_main
+		   SET TABLE_NAME = #{TABLE_NAME},
+			   TABLE_ID = #{TABLE_ID},
+			   VBG_CRE_USER = '이민수',
+			   VBG_CRE_DTM = now()
+		 WHERE TABLE_SEQ = #{TABLE_SEQ}
+	</update>
+
 </mapper>

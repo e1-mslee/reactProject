@@ -5,24 +5,30 @@ import '@mescius/wijmo.cultures/wijmo.culture.ko';
 import 'react-datepicker/dist/react-datepicker.css';
 import api from './../api/api.js';
 import {FlexGrid,FlexGridColumn} from '@mescius/wijmo.react.grid';
+import { CollectionView } from '@mescius/wijmo';
 import * as wjInput from '@mescius/wijmo.react.input';
 import { useState,useEffect } from "react";
-import { Button, Flex } from 'antd';
+import { Button, Flex,Modal,message } from 'antd';
 
 const Lms = () =>{
-    const [commCode, setCommCode] = useState([]);
     const [data, setData] = useState([]);
+    const [cv, setCv] = useState(null);
+    const [startDate, setStartDate] = useState(new Date());
+    const [endDate, setEndDate] = useState(new Date());
 
     useEffect(() => {
         fetchGridData();
     }, []);
 
-    const [startDate, setStartDate] = useState(new Date());
-    const [endDate, setEndDate] = useState(new Date());
-    const [gridData, setGridData] = useState([]);
+    const isValidTableName = (name) => {
+        const regex = /^[A-Za-z0-9_]{1,10}$/;
+        return regex.test(name);
+    };
 
     const handleAddRow = () => {
+        if (!cv) return;
         const newRow = {
+            TABLE_SEQ : '',
             TABLE_NAME: '',
             TABLE_ID: '',
             field_count: '',
@@ -31,51 +37,115 @@ const Lms = () =>{
             selected: false
         };
         
-        setGridData(prev => [...prev, newRow]);
+        const newItem = cv.addNew();
+        Object.assign(newItem, newRow);
+        cv.commitNew();
     };
 
     const fetchGridData = async () => {
         try {
             const res = await api.get('/api/getMainTableInfo');
-            console.log(res.data);
             setData(res.data);
-            setGridData(res.data);
+            const newCv = new CollectionView(res.data, { trackChanges: true });
+            setCv(newCv);
         } catch (err) {
             console.error('데이터 불러오기 오류:', err);
-            alert('데이터 로딩 중 문제가 발생했습니다.');
         }
+    };
+
+    const modifyTableColumn = () => {
+        const selectedRows = cv.items.filter(row => row.selected);
+
+        if (selectedRows.length === 0) {
+            message.info('수정할 항목을 선택하세요.');
+            return;
+        } else if(selectedRows.length > 1 ) {
+            message.info(' 1개의 항목을 선택하세요.');
+            return; 
+        }
+
+        console.log("dfdsf");
+    };
+
+    const saveTable = async () => {
+        if (!cv) return;
+
+        const addedItems = cv.itemsAdded || [];
+        const editedItems = cv.itemsEdited || [];
+        const newItems = [...addedItems, ...editedItems];
+
+        console.log("newItems", newItems);
+
+        if (newItems.length === 0) {
+            message.error('저장할 내용이 없습니다.');
+            return;
+        }
+
+        for (const item of newItems) {
+            if (!item.TABLE_NAME || !item.TABLE_ID) {
+                message.error('물리 테이블명과 논리 테이블명은 필수 입력 항목입니다.');
+                return;
+            }
+
+            if (!isValidTableName(item.TABLE_ID)) {
+                message.error('물리 테이블명은 영문, 숫자, 언더스코어(_)만 허용하며 10자 이내로 입력이 가능합니다.');
+                return;
+            }
+            if (item.TABLE_NAME.length > 100) {
+                message.error('논리 테이블명은 30자 이내로 입력해주세요.');
+                return;
+            }
+
+        }
+
+
+        Modal.confirm({
+        title: '알림',
+        content: '저장하시겠습니까?',
+        style: { top: 200 },
+        async onOk() {
+            try {
+                await api.post('/api/saveMainTableInfo', newItems);
+                message.success('저장되었습니다.');
+                await fetchGridData(); 
+            } catch (error) {
+                console.error('저장 오류:', error);
+                message.error('저장 중 오류가 발생했습니다.');
+            }
+        }
+        });
+
     };
 
     const deleteData = async () => {
-        const selectedRows = gridData.filter((row) => row.selected);
+        if (!cv) return;
+        const selected = cv.items.filter(row => row.selected && row.TABLE_SEQ);
+        const seqList = selected.map(row => row.TABLE_SEQ).filter(Boolean);
 
-        if (selectedRows.length === 0) {
-            alert('삭제할 항목을 선택하세요.');
-            return;
-        }
-
-        const idsToDelete = selectedRows
-            .map((row) => row.TABLE_SEQ)
-            .filter(id => id !== undefined && id !== null);
-        
-        
-        if (idsToDelete.length === 0) {
-            setGridData(gridData.filter(row => !row.selected || (row.selected && row.REQ !== undefined)));
+        if (seqList.length === 0) {
+            const filtered = cv.items.filter(row => !row.selected || row.REQ);
+            setCv(new CollectionView(filtered, { trackChanges: true }));
             return;
         }
 
 
-        console.log("idsToDelete",idsToDelete)
-        try {
-            await api.post('/api/deleteMainTableInfo', idsToDelete);
-            alert('삭제되었습니다.');
-            await fetchGridData();
-        } catch (err) {
-            console.error('삭제 오류:', err);
-            alert('삭제 중 오류가 발생했습니다.');
+        Modal.confirm({
+        title: '알림',
+        content: '삭제 하시겠습니까?',
+        style: { top: 200 },
+        async onOk() {
+            try {
+                await api.post('/api/deleteMainTableInfo', seqList);
+                message.success('삭제되었습니다');
+                fetchGridData();
+            } catch (err) {
+                console.error('삭제 오류:', err);
+                message.error('삭제 중 오류 발생');
+            }
         }
+        });
+
     };
-
 
     return <div>
                 <span style={{fontSize :'22px',fontWeight : 'bold'}}>UDA 목록</span>
@@ -83,8 +153,8 @@ const Lms = () =>{
                     <Flex gap="small" wrap>
                         <Button className="custom-button" onClick={fetchGridData}>조회</Button>
                         <Button className="custom-button" onClick={handleAddRow}>추가</Button>
-                        <Button className="custom-button">수정</Button>
-                        <Button className="custom-button">저장</Button>
+                        <Button className="custom-button" onClick={modifyTableColumn}>수정</Button>
+                        <Button className="custom-button" onClick={saveTable}>저장</Button>
                         <Button className="custom-button" onClick={deleteData}>삭제</Button>
                         <Button className="custom-button">엑셀</Button>
                     </Flex>
@@ -99,7 +169,7 @@ const Lms = () =>{
                 </div>
                 <div style={{ margin: '2px' }}>
                     <FlexGrid
-                    itemsSource={gridData}
+                    itemsSource={cv}
                     isReadOnly={false}
                     autoGenerateColumns={false}
                     style={{ height: '540px' }}
@@ -108,11 +178,11 @@ const Lms = () =>{
                     allowSorting={true}
                     >
                         <FlexGridColumn binding="selected" header="선택" width={50} dataType="Boolean" />
-                        <FlexGridColumn binding="TABLE_NAME" header="논리 테이블명" width="*" cssClass="blue-column" />
-                        <FlexGridColumn binding="TABLE_ID" header="물리 테이블명" width="*" />
-                        <FlexGridColumn binding="field_count" header="데이터 수" width="0.4*" />
-                        <FlexGridColumn binding="VBG_CRE_USER" header="생성자" width="*" />
-                        <FlexGridColumn binding="VBG_CRE_DTM" header="생성일" width="0.5*" align="center" />
+                        <FlexGridColumn binding="TABLE_NAME" header="논리 테이블명" width="*" cssClass="blue-column"/>
+                        <FlexGridColumn binding="TABLE_ID" header="물리 테이블명" width="*"  />
+                        <FlexGridColumn binding="field_count" header="데이터 수" width="0.4*" isReadOnly={true} />
+                        <FlexGridColumn binding="VBG_CRE_USER" header="생성자" width="*" isReadOnly={true}  />
+                        <FlexGridColumn binding="VBG_CRE_DTM" header="생성일" width="0.5*" align="center" isReadOnly={true}  />
                         <FlexGridColumn binding="TABLE_SEQ" header="SEQ" visible={false} />
                     </FlexGrid>
                 </div>

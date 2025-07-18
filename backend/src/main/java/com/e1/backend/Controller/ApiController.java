@@ -37,4 +37,11 @@ public class ApiController {
     }
 
 
+    @PostMapping("/api/saveMainTableInfo")
+    public ResponseEntity<?>  saveMainTableInfo(@RequestBody List<Map<String,Object>> data) {
+        apiService.saveMainTableInfo(data);
+        
+        return ResponseEntity.ok().build();
+    }
+
 }

@@ -12,4 +12,8 @@ public interface ApiMapper {
     List<Map<String,Object>> selectMainTableInfoList();
 
     int deleteMainTableInfo(List<String> data);
+
+    int insertMainTableInfo(Map<String, Object> data);
+
+    int updateMainTableInfo(Map<String, Object> data);
 }
