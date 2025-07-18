@@ -7,14 +7,16 @@ import api from './../api/api.js';
 import {FlexGrid,FlexGridColumn} from '@mescius/wijmo.react.grid';
 import { CollectionView } from '@mescius/wijmo';
 import * as wjInput from '@mescius/wijmo.react.input';
-import { useState,useEffect } from "react";
-import { Button, Flex,Modal,message } from 'antd';
+import * as wjcGridXlsx from '@mescius/wijmo.grid.xlsx';
+import { useState,useEffect, useRef } from "react";
+import { Button, Flex, Modal, message } from 'antd';
 
 const Lms = () =>{
     const [data, setData] = useState([]);
     const [cv, setCv] = useState(null);
     const [startDate, setStartDate] = useState(new Date());
     const [endDate, setEndDate] = useState(new Date());
+    const gridRef = useRef(null);
 
     useEffect(() => {
         fetchGridData();
@@ -147,6 +149,14 @@ const Lms = () =>{
 
     };
 
+    const exportToExcel = () => {
+        console.log(gridRef.current);
+        wjcGridXlsx.FlexGridXlsxConverter.saveAsync(gridRef.current.control, {
+            includeStyles: false,
+        }, 'FlexGrid.xlsx');
+
+    };
+
     return <div>
                 <span style={{fontSize :'22px',fontWeight : 'bold'}}>UDA 목록</span>
                 <div style={{ display: 'flex', justifyContent: 'flex-end', margin: '2px 0 10px 0' }}>
@@ -156,7 +166,7 @@ const Lms = () =>{
                         <Button className="custom-button" onClick={modifyTableColumn}>수정</Button>
                         <Button className="custom-button" onClick={saveTable}>저장</Button>
                         <Button className="custom-button" onClick={deleteData}>삭제</Button>
-                        <Button className="custom-button">엑셀</Button>
+                        <Button className="custom-button" onClick={exportToExcel}>엑셀</Button>
                     </Flex>
                 </div>
                 <div className='formWrap'>
@@ -169,6 +179,7 @@ const Lms = () =>{
                 </div>
                 <div style={{ margin: '2px' }}>
                     <FlexGrid
+                    ref={gridRef}
                     itemsSource={cv}
                     isReadOnly={false}
                     autoGenerateColumns={false}
@@ -182,7 +193,7 @@ const Lms = () =>{
                         <FlexGridColumn binding="TABLE_ID" header="물리 테이블명" width="*"  />
                         <FlexGridColumn binding="field_count" header="데이터 수" width="0.4*" isReadOnly={true} />
                         <FlexGridColumn binding="VBG_CRE_USER" header="생성자" width="*" isReadOnly={true}  />
-                        <FlexGridColumn binding="VBG_CRE_DTM" header="생성일" width="0.5*" align="center" isReadOnly={true}  />
+                        <FlexGridColumn binding="VBG_CRE_DTM" header="수정일" width="0.5*" align="center" isReadOnly={true}  />
                         <FlexGridColumn binding="TABLE_SEQ" header="SEQ" visible={false} />
                     </FlexGrid>
                 </div>
