@@ -2,6 +2,7 @@ package com.e1.backend.serviceimpl;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
@@ -23,7 +24,28 @@ public class ApiServiceImpl implements ApiService {
 
     @Override
     public List<Map<String, Object>> selectMainTableInfoList() {
-        return apiMapper.selectMainTableInfoList();
+        
+        List<Map<String,Object>> resultMap = apiMapper.selectMainTableInfoList();
+        List<Map<String,Object>> tableMap = apiMapper.selectMainTableIdList();
+
+        List<String> tableList = tableMap.stream()
+            .map(m -> String.valueOf(m.get("TABLE_ID")))
+            .collect(Collectors.toList());
+
+        List<Map<String,Object>> countList = apiMapper.unionCountTableQuery(tableList);
+
+        Map<String, Object> tableCountMap = countList.stream()
+            .collect(Collectors.toMap(
+                row -> String.valueOf(row.get("TABLE_ID")),
+                row -> row.get("cnt")
+            ));
+
+        for (Map<String, Object> item : resultMap) {
+            String tableId = String.valueOf(item.get("TABLE_ID"));
+            item.put("field_count", tableCountMap.getOrDefault(tableId, 0));
+        }
+
+        return resultMap;
     }
 
     @Override

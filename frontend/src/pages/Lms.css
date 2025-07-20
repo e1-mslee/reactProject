@@ -1,3 +1,7 @@
+html, body, #root { 
+  background-color: white;
+}
+
 .datepicker {
     border : 1px solid #dbdbdb !important;
     height :28px;
@@ -51,6 +55,8 @@
 .wj-flexgrid .wj-colheaders .wj-header {
   text-align: center;
   vertical-align: middle;
+  font-size: 14px;
+  font-weight: bold;
 }
 
 .wj-content {

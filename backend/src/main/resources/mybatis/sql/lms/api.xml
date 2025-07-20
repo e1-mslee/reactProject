@@ -12,6 +12,21 @@
 		  from comm_code 
     </select>
 
+	<select id="unionCountTableQuery" resultType="map">
+		<foreach collection="dataList" item="table" separator=" UNION ALL ">
+			SELECT COUNT(*) AS cnt, '${table}' AS TABLE_ID FROM ${table}
+		</foreach>
+	</select>
+
+
+    <select id="selectMainTableIdList" resultType="map">
+		select m.TABLE_ID
+		  from std_main m
+		WHERE TABLE_ID IN (SELECT table_name 
+				  	  		 FROM information_schema.tables 
+				  	 		WHERE table_schema = DATABASE())
+    </select>
+
     <select id="selectMainTableInfoList" resultType="map">
 		select m.TABLE_SEQ,
 			   m.TABLE_ID,
@@ -19,7 +34,7 @@
 			   m.TABLE_ID,
 			   m.VBG_CRE_DTM,
 			   m.VBG_CRE_USER,
-			   (select count(*) from std_field s where  m.TABLE_SEQ  = s.TABLE_SEQ) as 'field_count',
+			   '0' as 'field_count',
 			   false as 'selected'
 		from std_main m
     </select>

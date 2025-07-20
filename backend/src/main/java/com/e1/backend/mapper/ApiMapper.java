@@ -16,4 +16,10 @@ public interface ApiMapper {
     int insertMainTableInfo(Map<String, Object> data);
 
     int updateMainTableInfo(Map<String, Object> data);
+
+    List<Map<String,Object>> unionCountTableQuery(List<String> dataList);
+
+    Map<String,Object> unionCountTableQueryExcute(List<String> dataList);
+    
+    List<Map<String,Object>> selectMainTableIdList();
 }

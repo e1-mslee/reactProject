@@ -13,3 +13,6 @@
 # === 공통 OS 파일 ===
 .DS_Store
 Thumbs.db
+
+# === IntelliJ ===
+.idea/

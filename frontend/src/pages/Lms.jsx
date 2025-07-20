@@ -4,7 +4,7 @@ import './Lms.css'
 import '@mescius/wijmo.cultures/wijmo.culture.ko';
 import 'react-datepicker/dist/react-datepicker.css';
 import api from './../api/api.js';
-import {FlexGrid,FlexGridColumn} from '@mescius/wijmo.react.grid';
+import {FlexGrid,FlexGridColumn,FlexGridCellTemplate } from '@mescius/wijmo.react.grid';
 import { CollectionView } from '@mescius/wijmo';
 import * as wjInput from '@mescius/wijmo.react.input';
 import * as wjcGridXlsx from '@mescius/wijmo.grid.xlsx';
@@ -124,6 +124,12 @@ const Lms = () =>{
         const selected = cv.items.filter(row => row.selected && row.TABLE_SEQ);
         const seqList = selected.map(row => row.TABLE_SEQ).filter(Boolean);
 
+
+        if (selected.length === 0) {
+            message.error('선택된 행이 없습니다.');
+            return;
+        }
+
         if (seqList.length === 0) {
             const filtered = cv.items.filter(row => !row.selected || row.REQ);
             setCv(new CollectionView(filtered, { trackChanges: true }));
@@ -150,10 +156,9 @@ const Lms = () =>{
     };
 
     const exportToExcel = () => {
-        console.log(gridRef.current);
         wjcGridXlsx.FlexGridXlsxConverter.saveAsync(gridRef.current.control, {
-            includeStyles: false,
-        }, 'FlexGrid.xlsx');
+            includeStyles: true,
+        }, 'UDA 목록.xlsx');
 
     };
 
@@ -189,7 +194,29 @@ const Lms = () =>{
                     allowSorting={true}
                     >
                         <FlexGridColumn binding="selected" header="선택" width={50} dataType="Boolean" />
-                        <FlexGridColumn binding="TABLE_NAME" header="논리 테이블명" width="*" cssClass="blue-column"/>
+                        <FlexGridColumn binding="TABLE_NAME" header="논리 테이블명" width="*" cssClass="blue-column">
+                            <FlexGridCellTemplate
+                                cellType="Cell"
+                                template={(ctx) => (
+                        
+                                    <span onClick={() => {
+                                        const tableSeq = ctx.item.TABLE_SEQ;
+                                        const popupWidth = 1000;
+                                        const popupHeight = 600;
+
+                                        const left = window.screenX + (window.outerWidth - popupWidth) / 2;
+                                        const top = window.screenY + (window.outerHeight - popupHeight) / 2;
+                                        window.open(
+                                            `/popup/lms_pop?tableSeq=${encodeURIComponent(tableSeq)}`,
+                                            '_blank',
+                                            `width=${popupWidth},height=${popupHeight},left=${left},top=${top},resizable=yes,scrollbars=yes`
+                                        );
+                                    }}>
+                                    {ctx.item.TABLE_NAME}
+                                    </span>
+                                )}
+                            />    
+                        </FlexGridColumn>
                         <FlexGridColumn binding="TABLE_ID" header="물리 테이블명" width="*"  />
                         <FlexGridColumn binding="field_count" header="데이터 수" width="0.4*" isReadOnly={true} />
                         <FlexGridColumn binding="VBG_CRE_USER" header="생성자" width="*" isReadOnly={true}  />

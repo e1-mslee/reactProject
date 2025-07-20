@@ -10,6 +10,7 @@ import Footer from './components/layout/Footer';
 import Home from './pages/Home';
 import Lms from './pages/Lms';
 import Kjo from './pages/Kjo';
+import LmsPop from './pages/LmsPop.jsx';
 
 const {Content } = Layout;
 
@@ -18,6 +19,16 @@ const App = () => {
   const navigate = useNavigate();
   const [selectedKey, setSelectedKey] = useState('home');
   const location = useLocation();
+  const isPopup = location.pathname.startsWith('/popup');
+
+  if (isPopup) {
+    return (
+      <Routes>
+        <Route path="/popup/lms_pop" element={<LmsPop />} />
+      </Routes>
+    );
+  }
+
   const pathSnippets = location.pathname.split('/').filter(i => i);
   const breadcrumbItems = [
   { title: 'Home', path: '/' },
