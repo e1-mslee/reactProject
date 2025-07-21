@@ -23,6 +23,9 @@ const Lms = () =>{
     }, []);
 
     const isValidTableName = (name) => {
+        if(name == ''){
+            return true;
+        }
         const regex = /^[A-Za-z0-9_]{1,10}$/;
         return regex.test(name);
     };
@@ -84,7 +87,7 @@ const Lms = () =>{
         }
 
         for (const item of newItems) {
-            if (!item.TABLE_NAME || !item.TABLE_ID) {
+            if (!item.TABLE_NAME) {
                 message.error('물리 테이블명과 논리 테이블명은 필수 입력 항목입니다.');
                 return;
             }
@@ -121,7 +124,7 @@ const Lms = () =>{
 
     const deleteData = async () => {
         if (!cv) return;
-        const selected = cv.items.filter(row => row.selected && row.TABLE_SEQ);
+        const selected = cv.items.filter(row => row.selected);
         const seqList = selected.map(row => row.TABLE_SEQ).filter(Boolean);
 
 

@@ -44,4 +44,27 @@ public class ApiController {
         return ResponseEntity.ok().build();
     }
 
+    @PostMapping("/api/getTableFieldList")
+    public List<Map<String,Object>> getTableFieldList(@RequestBody String tableSeq) {
+        return apiService.getTableFieldList(tableSeq);
+    }
+
+    @PostMapping("/api/saveTableFieldList")
+    public ResponseEntity<?>  saveTableFieldList(@RequestBody List<Map<String,Object>> data) {
+        apiService.saveTableFieldList(data);
+        
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/api/deleteTableField")
+    public ResponseEntity<?>  deleteTableField(@RequestBody List<Map<String,Object>> data) {
+        apiService.deleteTableField(data);
+        
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/api/getMainTableInfoData")
+    public List<Map<String, Object>> getMainTableInfoData(@RequestBody String tableSeq) {
+        return apiService.getMainTableInfoData(tableSeq);
+    }
 }

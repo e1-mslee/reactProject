@@ -12,4 +12,12 @@ public interface ApiService {
     void deleteMainTableInfo(List<String> data);
 
     void saveMainTableInfo(List<Map<String,Object>> data);
+
+    List<Map<String,Object>> getTableFieldList(String tableSeq);
+
+     void saveTableFieldList(List<Map<String,Object>> data);
+
+     void deleteTableField(List<Map<String,Object>> data);
+
+     List<Map<String, Object>> getMainTableInfoData(String tableSeq);
 }

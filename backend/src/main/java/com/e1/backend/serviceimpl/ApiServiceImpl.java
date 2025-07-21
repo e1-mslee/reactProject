@@ -65,5 +65,31 @@ public class ApiServiceImpl implements ApiService {
         }
 
     }
+
+    @Override
+    public List<Map<String, Object>> getTableFieldList(String tableSeq) {
+        return apiMapper.selectFieldList(tableSeq);
+    }
+
+    @Override
+    public void saveTableFieldList(List<Map<String, Object>> data) {
+        for (Map<String, Object> item : data) {
+            if ("INS".equals(item.get("STATUS"))) {
+               apiMapper.insertTableField(item);
+            } else if("UPD".equals(item.get("STATUS"))) {
+               apiMapper.updateTableField(item);
+            }
+        }
+    }
+
+    @Override
+    public void deleteTableField(List<Map<String, Object>> data) {
+        apiMapper.deleteTablefield(data);
+    }
+
+    @Override
+    public List<Map<String, Object>> getMainTableInfoData(String tableSeq) {
+        return apiMapper.getMainTableInfoData(tableSeq);
+    }
     
 }

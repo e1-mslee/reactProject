@@ -10,6 +10,7 @@
 			   COM_CD_EN,
 			   SORT_SN
 		  from comm_code 
+	  order by SORT_SN
     </select>
 
 	<select id="unionCountTableQuery" resultType="map">
@@ -70,5 +71,65 @@
 			   VBG_CRE_DTM = now()
 		 WHERE TABLE_SEQ = #{TABLE_SEQ}
 	</update>
+
+    <select id="selectFieldList" parameterType="String" resultType="map">
+		select  TABLE_SEQ,
+				COL_ID,
+				COL_NAME,
+				COL_TYPE,
+				COL_SIZE,
+				CASE 
+					WHEN COL_IDX = 0 THEN false
+					ELSE true
+				END AS COL_IDX,
+				CASE 
+					WHEN COL_SCH = 0 THEN false
+					ELSE true
+				END AS COL_SCH,
+			    false as 'selected'
+		  from  std_field
+		 where  TABLE_SEQ = #{tableSeq} 
+    </select>
+
+
+	<insert id="insertTableField" parameterType="map">
+		INSERT INTO std_field (
+			TABLE_SEQ,COL_ID,COL_NAME,COL_TYPE,COL_SIZE,
+			COL_IDX,COL_SCH,VBG_CRE_USER,VBG_CRE_DTM
+		) VALUES (
+			#{TABLE_SEQ},#{COL_ID},#{COL_NAME},#{COL_TYPE},#{COL_SIZE},
+			#{COL_IDX},#{COL_SCH},'이민수',now()
+		)
+	</insert>
+
+	<update id="updateTableField" parameterType="map">
+		UPDATE std_field
+		   SET COL_NAME = #{COL_NAME},
+			   COL_TYPE = #{COL_TYPE},
+			   COL_SIZE = #{COL_SIZE},
+			   COL_IDX = #{COL_IDX},
+			   COL_SCH = #{COL_SCH},
+			   VBG_CRE_USER = '이민수',
+			   VBG_CRE_DTM = now()
+		 WHERE TABLE_SEQ = #{TABLE_SEQ}
+		   AND COL_ID = #{COL_ID}
+	</update>
+
+	<delete id="deleteTablefield" parameterType="list">
+		delete from std_field
+		where 
+		<foreach collection="list" item="item" separator=" OR ">
+			(TABLE_SEQ = #{item.TABLE_SEQ} AND COL_ID = #{item.COL_ID})
+		</foreach>
+	</delete>
+
+	<select id="getMainTableInfoData" parameterType="String" resultType="map">
+	    select TABLE_SEQ,
+	 	       TABLE_NAME,
+	 	       TABLE_ID
+	      from std_main
+		 where TABLE_SEQ = #{tableSeq}
+    </select>
+
 
 </mapper>

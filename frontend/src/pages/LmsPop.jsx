@@ -5,72 +5,279 @@ import '@mescius/wijmo.cultures/wijmo.culture.ko';
 import 'react-datepicker/dist/react-datepicker.css';
 import api from './../api/api.js';
 import {FlexGrid,FlexGridColumn } from '@mescius/wijmo.react.grid';
+import { DataMap } from '@mescius/wijmo.grid';
 import { CollectionView } from '@mescius/wijmo';
-import * as wjInput from '@mescius/wijmo.react.input';
 import { useState,useEffect, useRef } from "react";
 import { Button, Flex, Modal, message } from 'antd';
 
 
-
-    const data = [
-    { tableName1: 'Artist Album list', tableName2: 'uda_0122_db', count: 25, user : "이민수", date : '2025-07-10',selected: false },
-    { tableName1: 'sw 통합결재', tableName2: 'uda_0132_db', count: 20, user : "김정욱", date : '2025-07-11',selected: false },
-    { tableName1: '회의실 현황', tableName2: 'uda_0124_db', count: 10, user : "문재선", date : '2025-07-12',selected: false },
-    { tableName1: '금속재료조회', tableName2: 'uda_0125_db', count: 5, user : "김진한", date : '2025-07-13',selected: false },
-    { tableName1: '배출가스', tableName2: 'uda_0127_db', count: 2, user : "한은영", date : '2025-07-14',selected: false },
-    { tableName1: '테스트', tableName2: 'uda_0128_db', count: 1, user : "홍민기", date : '2025-07-15',selected: false },
-    ];
-
 const LmsPop = () =>{
-  const params = new URLSearchParams(window.location.search);
-  const tableSeq = params.get('tableSeq');
-  const gridRef = useRef(null);
-  const [cv, setCv] = useState(data);
+    const params = new URLSearchParams(window.location.search);
+    const [flag, setFlag] = useState(false);
+    const tableSeq = params.get('tableSeq');
+    const gridRef = useRef(null);
+    const [gridData, setGridData] = useState([]);
+    const [commCodes, setCommCodes] = useState([]);
+    const [gridInfo, setGridInfo] = useState({
+        TABLE_NAME: '',
+        TABLE_ID: '',
+        TABLE_SEQ: ''
+    });
+    const statusMap = new DataMap(commCodes, "COM_CD", "COM_CD_NM");
 
-  console.log(tableSeq);
-  return (
-    <div style={{padding : '10px',background : 'white'}}>
-        <div style={{ display: 'flex', justifyContent: 'flex-end', margin: '2px 0 10px 0' }}>
-            <Flex gap="small" wrap>
-                <Button className="custom-button" >저장</Button>
-                <Button className="custom-button" onClick={() => window.close()}>닫기</Button>
-            </Flex>
+
+    const fetchCommCodes = async () => {
+        try {
+            const res = await api.get("/api/commCode");
+            setCommCodes(res.data);
+        } catch (err) {
+            console.error("공통코드 불러오기 오류:", err);
+    }
+    };
+
+    const fetchFieldList = async () => {
+        try {
+            const res = await api.post("/api/getTableFieldList", String(tableSeq));
+            setGridData(new CollectionView(res.data, { trackChanges: true }));
+        } catch (err) {
+            console.error("필드 목록 불러오기 오류:", err);
+        }
+    };
+
+    const fetchTableInfo = async () => {
+        try {
+            const res = await api.post("/api/getMainTableInfoData", String(tableSeq));
+            setGridInfo(res.data[0] || {}); 
+        } catch (err) {
+            console.error("필드 목록 불러오기 오류:", err);
+        }
+    };
+
+    useEffect(() => {
+        fetchCommCodes();
+        fetchTableInfo(); 
+        fetchFieldList(); 
+    }, []);
+
+    const saveTableInfo = () =>{
+        if(!gridInfo) return;
+  
+        Modal.confirm({
+            title: '알림',
+            content: '저장하시겠습니까?',
+            style: { top: 200 },
+            async onOk() {
+                try {
+                    await api.post('/api/saveMainTableInfo', [gridInfo] );
+                    message.success('저장되었습니다.');
+                    await fetchFieldList();
+                } catch (error) {
+                    console.error('저장 오류:', error);
+                    message.error('저장 중 오류가 발생했습니다.');
+                }
+            }
+        });
+    }
+
+    const handleAddRow = () => {
+        if (!gridData) return;
+
+        const maxSeq = gridData.items
+            .map(item => {
+                const match = item.COL_ID?.match(/^COL_(\d{3})$/);
+                return match ? parseInt(match[1], 10) : 0;
+            })
+            .reduce((max, curr) => Math.max(max, curr), 0);
+
+        const nextSeq = (maxSeq + 1).toString().padStart(3, '0');
+        const nextColId = `COL_${nextSeq}`;
+
+        const newRow = {
+            selected : false,
+            COL_ID: nextColId,
+            COL_NM: '',
+            COL_TYPE: '',
+            COL_SIZE: null,
+            COL_IDX: false,
+            COL_SCH: false,
+            TABLE_SEQ: tableSeq,
+        };
+    
+        const newItem = gridData.addNew();
+        Object.assign(newItem, newRow);
+        gridData.commitNew();
+    };
+
+    const saveField = async () => {
+        if (!gridData) return;
+
+        const addedItems = (gridData.itemsAdded || []).map(item => ({
+            ...item,
+            STATUS: 'INS'
+        }));
+        const editedItems = (gridData.itemsEdited || []).map(item => ({
+            ...item,
+            STATUS: 'UPD'
+        }));
+
+        const newItems = [...addedItems, ...editedItems];
+
+        console.log("newItems", newItems);
+
+        if (newItems.length === 0) {
+            message.error('저장할 내용이 없습니다.');
+            return;
+        }
+
+        for (const item of newItems) {
+            if (!item.COL_NAME) {
+                message.error('컬럼명은 필수 입력 항목입니다.');
+                return;
+            }
+
+            if (!item.COL_TYPE) {
+                message.error('컬럼 타입은 필수 입력 항목입니다.');
+                return;
+            }
+
+            if (!item.COL_SIZE && item.COL_TYPE == 2) {
+                message.error('컬럼 길이는 필수 입력 항목입니다.');
+                return;
+            }
+        }
+
+        Modal.confirm({
+            title: '알림',
+            content: '저장하시겠습니까?',
+            style: { top: 200 },
+            async onOk() {
+                try {
+                    await api.post('/api/saveTableFieldList', newItems);
+                    message.success('저장되었습니다.');
+                    await fetchFieldList(); 
+                } catch (error) {
+                    console.error('저장 오류:', error);
+                    message.error('저장 중 오류가 발생했습니다.');
+                }
+            }
+        });
+
+    };
+
+    const deleteData = async () => {
+        if (!gridData) return;
+        const selected = gridData.items.filter(row => row.selected);
+
+        if (selected.length === 0) {
+            message.error('선택된 행이 없습니다.');
+            return;
+        }
+
+         const deleteList = selected
+        .filter(row => row.COL_ID)
+        .map(row => ({
+            COL_ID: row.COL_ID,
+            TABLE_SEQ: row.TABLE_SEQ,
+        }));
+
+        if (deleteList.length === 0) {
+            const filtered = gridData.items.filter(row => !row.selected || row.COL_ID);
+            setGridData(new CollectionView(filtered, { trackChanges: true }));
+            return;
+        }
+
+        console.log("deleteRow",deleteList)
+        Modal.confirm({
+        title: '알림',
+        content: '삭제 하시겠습니까?',
+        style: { top: 200 },
+        async onOk() {
+            try {
+                await api.post('/api/deleteTableField', deleteList);
+                message.success('삭제되었습니다');
+                fetchFieldList();
+            } catch (err) {
+                console.error('삭제 오류:', err);
+                message.error('삭제 중 오류 발생');
+            }
+        }
+        });
+
+    };
+
+
+    return (
+        <div style={{padding : '10px',background : 'white'}}>
+            <div style={{   display: 'flex',justifyContent: 'space-between',alignItems: 'flex-end',marginBottom :'10px'}}>
+                <span style={{fontSize :'18px',fontWeight : 'bold'}}>필드 속성 정의</span>
+                <div style={{ display: 'flex', justifyContent: 'flex-end', margin: '2px 0 2px 0' }}>
+                    <Flex gap="small" wrap>
+                        <Button className="custom-button" onClick={saveTableInfo}>저장</Button>
+                        <Button className="custom-button" onClick={() => window.close()}>닫기</Button>
+                    </Flex>
+                </div>
+            </div>
+            <div className='formWrap'>
+                <span>논리 테이블 명</span>
+                <input 
+                value={gridInfo.TABLE_NAME || ''} 
+                style={{ width : '300px', height :'28px', border : '1px solid #dbdbdb', fontSize : '12px'}} 
+                placeholder=' 논리 테이블 명을 입력하세요.'
+                onChange={(e) => setGridInfo({ ...gridInfo, TABLE_NAME: e.target.value })}
+                />
+                <span>물리 테이블 명</span>
+                <input 
+                value={gridInfo.TABLE_ID || ''} 
+                style={{ width : '300px', height :'28px', border : '1px solid #dbdbdb', fontSize : '12px'}} 
+                placeholder=' 물리 테이블 명을 입력하세요.'
+                onChange={(e) => setGridInfo({ ...gridInfo, TABLE_ID: e.target.value })}
+                disabled={!!gridInfo.TABLE_ID} />
+            </div>
+            <div style={{   display: 'flex',justifyContent: 'space-between',alignItems: 'flex-end'}}>
+                <h4 style={{fontSize :'14px',fontWeight :'700',color :'#002c5f',letterSpacing : '-0.7px', marginRight : '8px'}}>
+                <i style={{width : '10px', height : '10px', border :'3px solid #102f5b' , display : 'inline-block', marginRight : '8px'}}></i>
+                    열 속성 목록
+                </h4> 
+                <div style={{ display: 'flex', justifyContent: 'flex-end', margin: '2px 0 4px 0' }}>
+                    <Flex gap="small" wrap>
+                        <Button className="custom-button" onClick={handleAddRow}>행추가</Button>
+                        <Button className="custom-button" onClick={deleteData}>행삭제</Button>
+                        <Button className="custom-button" onClick={saveField}>저장</Button>
+                    </Flex>
+                </div>
+            </div>
+            <div style={{ margin: '2px' }}>
+                <FlexGrid
+                ref={gridRef}
+                itemsSource={gridData}
+                isReadOnly={false}
+                autoGenerateColumns={false}
+                style={{ height: '400px' }}
+                selectionMode="Row"
+                headersVisibility="Column"
+                allowSorting={true}
+                initialized={(grid) => {
+                    grid.beginningEdit.addHandler((s, e) => {
+                        const col = s.columns[e.col];
+                        const item = s.rows[e.row].dataItem;
+                        if (col.binding === 'COL_SIZE' && item.COL_TYPE !== '2') {
+                            e.cancel = true;
+                        }
+                    });
+                }}
+                >
+                    <FlexGridColumn binding="selected" header="선택" width={60} dataType="Boolean" />
+                    <FlexGridColumn binding="COL_ID" header="컬럼 ID" width="*" isReadOnly={true}/> 
+                    <FlexGridColumn binding="COL_NAME" header="컬럼명" width="*"/> 
+                    <FlexGridColumn binding="COL_TYPE" header="유형" width={100} dataMap={statusMap}/> 
+                    <FlexGridColumn binding="COL_SIZE" header="길이" width={100} />
+                    <FlexGridColumn binding="COL_IDX" header="필수" width={60} dataType="Boolean" />
+                    <FlexGridColumn binding="COL_SCH" header="검색" width={60} dataType="Boolean" /> 
+                    <FlexGridColumn binding="TABLE_SEQ" header="SEQ" visible={false} />
+                </FlexGrid>
+            </div>
         </div>
-        <div className='formWrap'>
-            <span>물리테이블 명 </span>
-            <input style={{ width : '300px', height :'28px' ,border : '1px solid #dbdbdb', fontSize : '12px'}} placeholder=' 물리 테이블 명을 입력하세요.'/>
-            <span>논리테이블 명</span>
-            <input style={{ width : '300px', height :'28px' ,border : '1px solid #dbdbdb', fontSize : '12px'}} placeholder=' 논리 테이블 명을 입력하세요.'/>
-        </div>
-        <div style={{ display: 'flex', justifyContent: 'flex-end', margin: '2px 0 10px 0' }}>
-            <Flex gap="small" wrap>
-                <Button className="custom-button" >행추가</Button>
-                <Button className="custom-button" >행삭제</Button>
-                <Button className="custom-button" >저장</Button>
-            </Flex>
-        </div> 
-        <div style={{ margin: '2px' }}>
-            <FlexGrid
-            ref={gridRef}
-            itemsSource={cv}
-            isReadOnly={false}
-            autoGenerateColumns={false}
-            style={{ height: '400px' }}
-            selectionMode="Row"
-            headersVisibility="Column"
-            allowSorting={true}
-            >
-                <FlexGridColumn binding="selected" header="선택" width={50} dataType="Boolean" />
-                <FlexGridColumn binding="TABLE_NAME" header="논리 테이블명" width="*"/> 
-                <FlexGridColumn binding="TABLE_ID" header="물리 테이블명" width="*"  />
-                <FlexGridColumn binding="field_count" header="데이터 수" width="0.4*" isReadOnly={true} />
-                <FlexGridColumn binding="VBG_CRE_USER" header="생성자" width="*" isReadOnly={true}  />
-                <FlexGridColumn binding="VBG_CRE_DTM" header="수정일" width="0.5*" align="center" isReadOnly={true}  />
-                <FlexGridColumn binding="TABLE_SEQ" header="SEQ" visible={false} />
-            </FlexGrid>
-        </div>
-    </div>
-  );
+    );
 }
 
 export default LmsPop;

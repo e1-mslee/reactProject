@@ -50,6 +50,7 @@ html, body, #root {
    color: #666;   
   border: 1px solid #EEE;
   line-height: normal;
+  font-size: 14px;
 }
 
 .wj-flexgrid .wj-colheaders .wj-header {
@@ -74,9 +75,21 @@ html, body, #root {
   color: #666 !important;
 }
 
+.wj-flexgrid .wj-cell label input[type=checkbox] {
+    margin: 0 0 0 0;
+    border: 1px solid #D9D9D9 !important;
+}
+
 /* 행 hover 시 배경 */
 .wj-cell:hover {
   background-color: #fafafa;
+}
+
+.wj-listbox .wj-listbox-item {
+    padding: 4px 6px 3px 6px;
+    font-size: 14px;
+    font-weight: 400;
+    font-family: sans-serif;
 }
 
 .formWrap {
