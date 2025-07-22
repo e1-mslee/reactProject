@@ -12,8 +12,10 @@ import org.springframework.web.bind.annotation.RestController;
 import com.e1.backend.service.ApiService;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
+@Slf4j
 @RequiredArgsConstructor
 public class ApiController {
     
@@ -26,7 +28,7 @@ public class ApiController {
 
     @PostMapping("/api/getMainTableInfo")
     public List<Map<String,Object>> getMainTableInfo(@RequestBody Map<String, Object> data) {
-        System.out.println(data);
+        log.info("data = {} ", data);
         return apiService.selectMainTableInfoList(data);
     }
 

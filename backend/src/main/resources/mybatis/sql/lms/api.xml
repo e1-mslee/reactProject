@@ -55,7 +55,7 @@
         #{item}
     </foreach>
     </delete>
-
+ 
 
 	<insert id="insertMainTableInfo" parameterType="map">
 		INSERT INTO std_main (

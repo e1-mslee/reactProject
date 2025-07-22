@@ -1,6 +1,8 @@
 /* App.css */
 
-html, body, #root {
+html,
+body,
+#root {
   height: 100%;
   margin: 0;
   padding: 0;
@@ -11,18 +13,29 @@ html, body, #root {
 }
 
 /* 박스 사이징 통일 */
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
 /* 기본 텍스트 요소 마진 초기화 */
-h1, h2, h3, h4, h5, h6, p, ul, ol {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+ul,
+ol {
   margin: 0;
   padding: 0;
 }
 
 /* 리스트 스타일 제거 */
-ul, ol {
+ul,
+ol {
   list-style: none;
 }
 
@@ -33,12 +46,16 @@ a {
   cursor: pointer;
 }
 
-a:hover, a:focus {
+a:hover,
+a:focus {
   text-decoration: underline;
 }
 
 /* 버튼, input 등 폼 기본 스타일 */
-button, input, select, textarea {
+button,
+input,
+select,
+textarea {
   font-family: inherit;
   font-size: inherit;
 }
@@ -50,12 +67,12 @@ button, input, select, textarea {
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: rgba(0,0,0,0.15);
+  background-color: rgba(0, 0, 0, 0.15);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(0,0,0,0.3);
+  background-color: rgba(0, 0, 0, 0.3);
 }
 
 /* antd 컴포넌트 기본 배경색 보정 (필요시) */

@@ -12,8 +12,8 @@ const Footer = () => {
         paddingInline: 24,
         padding: '12px 0',
         fontSize: '12px',
-        fontWeight : 'bold',
-        borderTop : '1px solid #e4dcdd'
+        fontWeight: 'bold',
+        borderTop: '1px solid #e4dcdd',
       }}
     >
       © 2025 UDA 시스템 관리 (BS 3팀)

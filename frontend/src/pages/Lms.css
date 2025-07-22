@@ -1,10 +1,12 @@
-html, body, #root { 
+html,
+body,
+#root {
   background-color: white;
 }
 
 .datepicker {
-    border : 1px solid #dbdbdb !important;
-    height :28px;
+  border: 1px solid #dbdbdb !important;
+  height: 28px;
 }
 
 .react-datepicker-popper {
@@ -18,14 +20,14 @@ html, body, #root {
 }
 
 .custom-button {
-    border-color  : 1px solid #082665;
-    color :  #666;
-    background: #fff;
-    box-shadow: 0px 1px 1px 0px rgba(0, 1, 1, 0.08);
-    font-size: 13px;
-    height: 28px;
-    font-weight: 400;
-    line-height: 1;
+  border-color: 1px solid #082665;
+  color: #666;
+  background: #fff;
+  box-shadow: 0px 1px 1px 0px rgba(0, 1, 1, 0.08);
+  font-size: 13px;
+  height: 28px;
+  font-weight: 400;
+  line-height: 1;
 }
 
 .custom-button:hover {
@@ -35,9 +37,9 @@ html, body, #root {
 
 /* 헤더 배경 및 텍스트 색상 */
 .wj-cell.wj-header {
-  background-color: #f6f3f2;  /* 연한 회색 */
-  border: 1px solid #EEE;
-  color: #666;                /* 진한 텍스트 */
+  background-color: #f6f3f2; /* 연한 회색 */
+  border: 1px solid #eee;
+  color: #666; /* 진한 텍스트 */
   font-weight: bold;
   line-height: normal;
   white-space: pre;
@@ -47,8 +49,8 @@ html, body, #root {
 
 /* 일반 셀 텍스트 색상 */
 .wj-cell {
-   color: #666;   
-  border: 1px solid #EEE;
+  color: #666;
+  border: 1px solid #eee;
   line-height: normal;
   font-size: 14px;
 }
@@ -61,23 +63,23 @@ html, body, #root {
 }
 
 .wj-content {
-    border: 1px solid #e4dcdd;
+  border: 1px solid #e4dcdd;
 }
 
 /* 선택된 행 배경 */
 .wj-state-selected {
-  background-color: #e5f6ff !important;  /* 밝은 파랑 */
+  background-color: #e5f6ff !important; /* 밝은 파랑 */
   color: #666 !important;
 }
 
-.wj-cells .wj-cell.wj-state-multi-selected{
-  background-color: #e5f6ff !important;  /* 밝은 파랑 */
+.wj-cells .wj-cell.wj-state-multi-selected {
+  background-color: #e5f6ff !important; /* 밝은 파랑 */
   color: #666 !important;
 }
 
-.wj-flexgrid .wj-cell label input[type=checkbox] {
-    margin: 0 0 0 0;
-    border: 1px solid #D9D9D9 !important;
+.wj-flexgrid .wj-cell label input[type='checkbox'] {
+  margin: 0 0 0 0;
+  border: 1px solid #d9d9d9 !important;
 }
 
 /* 행 hover 시 배경 */
@@ -86,32 +88,32 @@ html, body, #root {
 }
 
 .wj-listbox .wj-listbox-item {
-    padding: 4px 6px 3px 6px;
-    font-size: 14px;
-    font-weight: 400;
-    font-family: sans-serif;
+  padding: 4px 6px 3px 6px;
+  font-size: 14px;
+  font-weight: 400;
+  font-family: sans-serif;
 }
 
 .formWrap {
-    height : 60px;
-    margin : 2px;
-    padding: 6px 10px;
-    align-items : center;
-    display: flex;
-    background-color : #fcfafa;
-    margin-bottom: 10px;
-    border-bottom: 1px solid #e4dcdd;
-    border-top: 1px solid #e4dcdd;
+  height: 60px;
+  margin: 2px;
+  padding: 6px 10px;
+  align-items: center;
+  display: flex;
+  background-color: #fcfafa;
+  margin-bottom: 10px;
+  border-bottom: 1px solid #e4dcdd;
+  border-top: 1px solid #e4dcdd;
 }
 
-.formWrap span{
-    font-size : 13px;
-    font-style: normal;
-    font-weight: 700;
-    line-height: 26px;
-    letter-spacing: -0.65px;
-    margin-right: 10px;
-    margin-left: 10px;
+.formWrap span {
+  font-size: 13px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 26px;
+  letter-spacing: -0.65px;
+  margin-right: 10px;
+  margin-left: 10px;
 }
 
 .wj-calendar {
@@ -125,9 +127,9 @@ html, body, #root {
 
 .wj-calendar .date-holiday:not(.wj-state-selected) {
   font-weight: bold;
-  color: #1F8016;
+  color: #1f8016;
   background: #f0fff0;
-  outline: 2pt solid #1F8016;
+  outline: 2pt solid #1f8016;
 }
 
 .wj-calendar .date-weekend:not(.wj-state-selected) {

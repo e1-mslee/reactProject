@@ -1,6 +1,6 @@
-import './App.css'
+import './App.css';
 import './index.css';
-import { Routes, Route,useNavigate,useLocation } from 'react-router-dom';
+import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { Breadcrumb, Layout, theme } from 'antd';
 import { useState } from 'react';
 import menuItems from './data/menuItems.jsx';
@@ -12,10 +12,9 @@ import Lms from './pages/Lms';
 import Kjo from './pages/Kjo';
 import LmsPop from './pages/LmsPop.jsx';
 
-const {Content } = Layout;
+const { Content } = Layout;
 
 const App = () => {
-
   const navigate = useNavigate();
   const [selectedKey, setSelectedKey] = useState('home');
   const location = useLocation();
@@ -29,34 +28,31 @@ const App = () => {
     );
   }
 
-  const pathSnippets = location.pathname.split('/').filter(i => i);
+  const pathSnippets = location.pathname.split('/').filter((i) => i);
   const breadcrumbItems = [
-  { title: 'Home', path: '/' },
+    { title: 'Home', path: '/' },
     ...pathSnippets.map((snippet, index) => {
       const url = `/${pathSnippets.slice(0, index + 1).join('/')}`;
       // 경로 조각에 따른 타이틀 설정
       const titles = {
         lms: 'LMS',
-        kjo: 'KJO'
+        kjo: 'KJO',
       };
       return {
         title: titles[snippet] || snippet.toUpperCase(),
-        path: url
+        path: url,
       };
-    })
+    }),
   ];
-  const {token: { colorBgContainer, borderRadiusLG },} = theme.useToken();
+  const {
+    token: { colorBgContainer, borderRadiusLG },
+  } = theme.useToken();
 
   return (
     <Layout style={{ height: '100vh' }}>
       <Header />
       <Layout style={{ flex: 1 }}>
-        <Sidebar
-          selectedKey={selectedKey}
-          setSelectedKey={setSelectedKey}
-          navigate={navigate}
-          items={menuItems}
-        />
+        <Sidebar selectedKey={selectedKey} setSelectedKey={setSelectedKey} navigate={navigate} items={menuItems} />
         <Layout
           style={{
             padding: '0 24px 24px',
@@ -68,7 +64,7 @@ const App = () => {
           }}
         >
           <Breadcrumb
-            items={breadcrumbItems.map(item => ({
+            items={breadcrumbItems.map((item) => ({
               title: item.title,
               href: item.path,
             }))}
@@ -84,12 +80,12 @@ const App = () => {
               padding: 2,
             }}
           >
-          <Routes>
-            <Route path='/' element={ <Home  key={location.key}/>}/>
-            <Route path='/lms' element={ <Lms key={location.key}/>}/> 
-            <Route path='/kjo' element={ <Kjo key={location.key}/>}/> 
-            <Route path='*' element={ <Home key={location.key}/>}/>  
-          </Routes>
+            <Routes>
+              <Route path="/" element={<Home key={location.key} />} />
+              <Route path="/lms" element={<Lms key={location.key} />} />
+              <Route path="/kjo" element={<Kjo key={location.key} />} />
+              <Route path="*" element={<Home key={location.key} />} />
+            </Routes>
           </Content>
         </Layout>
       </Layout>
