@@ -16,6 +16,7 @@ const LmsPop = () =>{
     const tableSeq = params.get('tableSeq');
     const gridRef = useRef(null);
     const [flag,setFlag] = useState(false);
+    const [initialGridInfo, setInitialGridInfo] = useState(null);
     const [gridData, setGridData] = useState([]);
     const [commCodes, setCommCodes] = useState([]);
     const [gridInfo, setGridInfo] = useState({
@@ -49,7 +50,7 @@ const LmsPop = () =>{
             const res = await api.post("/api/getMainTableInfoData", String(tableSeq));
             const info = res.data[0] || {} ; 
             setGridInfo(info);
-            console.log("table info:", !!info.TABLE_ID);
+            setInitialGridInfo(info);
             setFlag(!!info.TABLE_ID); 
         } catch (err) {
             console.error("테이블 정보 불러오기 오류:", err);
@@ -69,27 +70,84 @@ const LmsPop = () =>{
 
     const saveTableInfo = () =>{
         if(!gridInfo) return;
-  
-        Modal.confirm({
-            title: '알림',
-            content: '저장하시겠습니까?',
-            style: { top: 200 },
-            async onOk() {
-                try {
-                    await api.post('/api/saveMainTableInfo', [gridInfo] );
-                    message.success('저장되었습니다.');
-                    await fetchTableInfo();
-                    await fetchFieldList();
 
-                    if (window.opener && typeof window.opener.handlePopChange === 'function') {
-                        window.opener.handlePopChange();  // 부모 창의 함수 호출
+        if(!flag){
+            Modal.confirm({
+                title: '알림',
+                content: '저장하시겠습니까?',
+                style: { top: 200 },
+                async onOk() {
+                    try {
+                        await api.post('/api/saveMainTableInfo', [gridInfo] );
+                        message.success('저장되었습니다.');
+                        await fetchTableInfo();
+                        await fetchFieldList();
+
+                        if (window.opener && typeof window.opener.handlePopChange === 'function') {
+                            window.opener.handlePopChange();
+                        }
+                    } catch (error) {
+                        console.error('저장 오류:', error);
+                        message.error('저장 중 오류가 발생했습니다.');
                     }
-                } catch (error) {
-                    console.error('저장 오류:', error);
-                    message.error('저장 중 오류가 발생했습니다.');
+                }
+            });
+        }else{
+            if (!gridData) return;
+
+            const addedItems = (gridData.itemsAdded || []).map(item => ({
+                ...item,
+                STATUS: 'INS'
+            }));
+            const editedItems = (gridData.itemsEdited || []).map(item => ({
+                ...item,
+                STATUS: 'UPD'
+            }));
+
+            const newItems = [...addedItems, ...editedItems];
+
+            console.log("newItems", newItems);
+
+            if (newItems.length === 0 && (initialGridInfo.TABLE_NAME == gridInfo.TABLE_NAME)) {
+                message.error('저장할 내용이 없습니다.');
+                return;
+            }
+
+            for (const item of newItems) {
+                if (!item.COL_NAME) {
+                    message.error('컬럼명은 필수 입력 항목입니다.');
+                    return;
+                }
+
+                if (!item.COL_TYPE) {
+                    message.error('컬럼 타입은 필수 입력 항목입니다.');
+                    return;
+                }
+
+                if (!item.COL_SIZE && item.COL_TYPE == 2) {
+                    message.error('컬럼 길이는 필수 입력 항목입니다.');
+                    return;
                 }
             }
-        });
+
+            Modal.confirm({
+                title: '알림',
+                content: '저장하시겠습니까?',
+                style: { top: 200 },
+                async onOk() {
+                    try {
+                        await api.post('/api/saveTableFieldList', newItems);
+                        await api.post('/api/saveMainTableInfo', [gridInfo] );
+                        message.success('저장되었습니다.');
+                        await fetchTableInfo();
+                        await fetchFieldList(); 
+                    } catch (error) {
+                        console.error('저장 오류:', error);
+                        message.error('저장 중 오류가 발생했습니다.');
+                    }
+                }
+            });
+        }
     }
 
     const handleAddRow = () => {
@@ -124,62 +182,6 @@ const LmsPop = () =>{
         const newItem = gridData.addNew();
         Object.assign(newItem, newRow);
         gridData.commitNew();
-    };
-
-    const saveField = async () => {
-        if (!gridData) return;
-
-        const addedItems = (gridData.itemsAdded || []).map(item => ({
-            ...item,
-            STATUS: 'INS'
-        }));
-        const editedItems = (gridData.itemsEdited || []).map(item => ({
-            ...item,
-            STATUS: 'UPD'
-        }));
-
-        const newItems = [...addedItems, ...editedItems];
-
-        console.log("newItems", newItems);
-
-        if (newItems.length === 0) {
-            message.error('저장할 내용이 없습니다.');
-            return;
-        }
-
-        for (const item of newItems) {
-            if (!item.COL_NAME) {
-                message.error('컬럼명은 필수 입력 항목입니다.');
-                return;
-            }
-
-            if (!item.COL_TYPE) {
-                message.error('컬럼 타입은 필수 입력 항목입니다.');
-                return;
-            }
-
-            if (!item.COL_SIZE && item.COL_TYPE == 2) {
-                message.error('컬럼 길이는 필수 입력 항목입니다.');
-                return;
-            }
-        }
-
-        Modal.confirm({
-            title: '알림',
-            content: '저장하시겠습니까?',
-            style: { top: 200 },
-            async onOk() {
-                try {
-                    await api.post('/api/saveTableFieldList', newItems);
-                    message.success('저장되었습니다.');
-                    await fetchFieldList(); 
-                } catch (error) {
-                    console.error('저장 오류:', error);
-                    message.error('저장 중 오류가 발생했습니다.');
-                }
-            }
-        });
-
     };
 
     const deleteData = async () => {
@@ -231,7 +233,6 @@ const LmsPop = () =>{
                 <div style={{ display: 'flex', justifyContent: 'flex-end', margin: '2px 0 2px 0' }}>
                     <Flex gap="small" wrap>
                         <Button className="custom-button" onClick={saveTableInfo}>저장</Button>
-                        <Button className="custom-button" onClick={() => window.close()}>닫기</Button>
                     </Flex>
                 </div>
             </div>
@@ -260,7 +261,6 @@ const LmsPop = () =>{
                     <Flex gap="small" wrap>
                         <Button className="custom-button" onClick={handleAddRow}>행추가</Button>
                         <Button className="custom-button" onClick={deleteData}>행삭제</Button>
-                        <Button className="custom-button" onClick={saveField}>저장</Button>
                     </Flex>
                 </div>
             </div>
@@ -282,6 +282,17 @@ const LmsPop = () =>{
                             e.cancel = true;
                         }
                     });
+
+                    grid.cellEditEnded.addHandler((s, e) => {
+                        const col = s.columns[e.col];
+                        const item = s.rows[e.row].dataItem;
+
+                        if (col.binding === 'COL_TYPE') {
+                            item.COL_SIZE = null; 
+                            s.invalidate(); // 그리드 리렌더링
+                        }
+                    });
+
                 }}
                 >
                     <FlexGridColumn binding="selected" header="선택" width={60} dataType="Boolean" />

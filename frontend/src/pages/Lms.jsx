@@ -14,7 +14,11 @@ import { Button, Flex, Modal, message } from 'antd';
 const Lms = () =>{
     const [data, setData] = useState([]);
     const [cv, setCv] = useState(null);
-    const [startDate, setStartDate] = useState(new Date());
+    const [startDate, setStartDate] = useState(() => {
+        const date = new Date();
+        date.setMonth(date.getMonth() - 1);
+        return date;
+    });
     const [endDate, setEndDate] = useState(new Date());
     const gridRef = useRef(null);
 
@@ -186,9 +190,9 @@ const Lms = () =>{
                     <span>검색조건</span>
                     <input style={{ width : '300px', height :'28px' ,border : '1px solid #dbdbdb'}} placeholder='검색조건을 입력하세요.'/>
                     <span>수정일</span>
-                    <wjInput.InputDate  valueChanged={(date) => setStartDate(date)}  className='datepicker'/>                   
+                    <wjInput.InputDate value={startDate} valueChanged={(date) => setStartDate(date)}  className='datepicker'/>                   
                     <span style={{width : '10px'}}>~</span>
-                    <wjInput.InputDate  valueChanged={(date) => setEndDate(date)}  className='datepicker'/>
+                    <wjInput.InputDate value={endDate}  valueChanged={(date) => setEndDate(date)}  className='datepicker'/>
                 </div>
                 <div style={{ margin: '2px' }}>
                     <FlexGrid
