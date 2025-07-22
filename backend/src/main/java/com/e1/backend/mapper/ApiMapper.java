@@ -9,7 +9,7 @@ import org.apache.ibatis.annotations.Mapper;
 public interface ApiMapper {
     List<Map<String,Object>> selectAllCode();
 
-    List<Map<String,Object>> selectMainTableInfoList();
+    List<Map<String,Object>> selectMainTableInfoList(Map<String, Object> data);
 
     int deleteMainTableInfo(List<String> data);
 
@@ -21,7 +21,7 @@ public interface ApiMapper {
 
     Map<String,Object> unionCountTableQueryExcute(List<String> dataList);
 
-    List<Map<String,Object>> selectMainTableIdList();
+    List<Map<String,Object>> selectMainTableIdList(Map<String, Object> data);
 
     List<Map<String,Object>> selectFieldList(String tableSeq);
 

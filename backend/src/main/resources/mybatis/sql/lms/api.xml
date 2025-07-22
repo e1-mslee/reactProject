@@ -23,9 +23,14 @@
     <select id="selectMainTableIdList" resultType="map">
 		select m.TABLE_ID
 		  from std_main m
-		WHERE TABLE_ID IN (SELECT table_name 
-				  	  		 FROM information_schema.tables 
-				  	 		WHERE table_schema = DATABASE())
+		<where>
+			m.TABLE_ID IN (
+				SELECT table_name 
+				FROM information_schema.tables 
+				WHERE table_schema = DATABASE()
+			)
+			AND m.VBG_CRE_DTM BETWEEN #{startDate} AND #{endDate}
+		</where>
     </select>
 
     <select id="selectMainTableInfoList" resultType="map">
@@ -38,6 +43,9 @@
 			   '0' as 'field_count',
 			   false as 'selected'
 		from std_main m
+		<where>
+			VBG_CRE_DTM BETWEEN #{startDate} AND #{endDate}
+		</where>
     </select>
 
     <delete id="deleteMainTableInfo" parameterType="list">

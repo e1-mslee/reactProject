@@ -24,9 +24,10 @@ public class ApiController {
         return apiService.getAllCode();
     }
 
-    @GetMapping("/api/getMainTableInfo")
-    public List<Map<String,Object>> getMainTableInfo() {
-        return apiService.selectMainTableInfoList();
+    @PostMapping("/api/getMainTableInfo")
+    public List<Map<String,Object>> getMainTableInfo(@RequestBody Map<String, Object> data) {
+        System.out.println(data);
+        return apiService.selectMainTableInfoList(data);
     }
 
     @PostMapping("/api/deleteMainTableInfo")

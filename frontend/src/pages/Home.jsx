@@ -3,7 +3,7 @@ import { Flex, Progress } from 'antd';
 
 const Home = () =>{
     return (
-        <div style={{ maxWidth: '100%', overflowX: 'hidden' }}>
+        <div style={{ maxWidth: '100%', overflowX: 'hidden' , overflowY: 'hidden' }}>
             <div style={{marginBottom : '10px'}}>
                 <h1 style={{ margin: 0, padding: 0 }}>안녕하세요. BS3팀 입니다.</h1>
             </div>
@@ -23,7 +23,7 @@ const Home = () =>{
                 </Card>
                 </Col>
             </Row>
-            <Row gutter={16} style={{ height: '530px', marginTop : '20px' }}>
+            <Row gutter={16} style={{ height: '520px', marginTop : '20px' }}>
                 <Col span={12} style={{ height: '100%' }}>
                 <Card title="하단 카드 1" style={{ height: '100%' }}>
                     <div style={{ height: '100%', background: '#f9f9f9' }}>

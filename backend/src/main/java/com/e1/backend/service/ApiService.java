@@ -7,7 +7,7 @@ import java.util.Map;
 public interface ApiService {
     List<Map<String, Object>> getAllCode();
 
-    List<Map<String,Object>> selectMainTableInfoList();
+    List<Map<String,Object>> selectMainTableInfoList(Map<String, Object> data);
 
     void deleteMainTableInfo(List<String> data);
 

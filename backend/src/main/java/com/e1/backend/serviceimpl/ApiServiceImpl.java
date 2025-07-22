@@ -23,10 +23,10 @@ public class ApiServiceImpl implements ApiService {
     }
 
     @Override
-    public List<Map<String, Object>> selectMainTableInfoList() {
+    public List<Map<String, Object>> selectMainTableInfoList(Map<String, Object> data) {
         
-        List<Map<String,Object>> resultMap = apiMapper.selectMainTableInfoList();
-        List<Map<String,Object>> tableMap = apiMapper.selectMainTableIdList();
+        List<Map<String,Object>> resultMap = apiMapper.selectMainTableInfoList(data);
+        List<Map<String,Object>> tableMap = apiMapper.selectMainTableIdList(data);
 
         List<String> tableList = tableMap.stream()
             .map(m -> String.valueOf(m.get("TABLE_ID")))

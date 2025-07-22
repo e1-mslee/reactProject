@@ -2,11 +2,11 @@ import '@mescius/wijmo.styles/wijmo.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './Lms.css'
 import '@mescius/wijmo.cultures/wijmo.culture.ko';
+import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import api from './../api/api.js';
 import {FlexGrid,FlexGridColumn,FlexGridCellTemplate } from '@mescius/wijmo.react.grid';
 import { CollectionView } from '@mescius/wijmo';
-import * as wjInput from '@mescius/wijmo.react.input';
 import * as wjcGridXlsx from '@mescius/wijmo.grid.xlsx';
 import { useState,useEffect, useRef } from "react";
 import { Button, Flex, Modal, message } from 'antd';
@@ -30,6 +30,25 @@ const Lms = () =>{
 
         fetchGridData();
     }, []);
+
+    const openPopup = (tableSeq) => {
+    const popupWidth = 1000;
+    const popupHeight = 600;
+    const left = window.screenX + (window.outerWidth - popupWidth) / 2;
+    const top = window.screenY + (window.outerHeight - popupHeight) / 2;
+
+    const pop = window.open(
+        `/popup/lms_pop?tableSeq=${encodeURIComponent(tableSeq)}`,
+        '_blank',
+        `width=${popupWidth},height=${popupHeight},left=${left},top=${top},resizable=yes,scrollbars=yes`
+    );
+
+    window.handlePopChange = () => {
+        console.log("팝업에서 변경 발생 → 재조회합니다.");
+        fetchGridData();
+    };
+    };
+
 
     const isValidTableName = (name) => {
         if(name == ''){
@@ -58,7 +77,13 @@ const Lms = () =>{
 
     const fetchGridData = async () => {
         try {
-            const res = await api.get('/api/getMainTableInfo');
+
+            const cond = {
+                startDate: startDate.toISOString().split('T')[0],
+                endDate: endDate.toISOString().split('T')[0],
+            };
+
+            const res = await api.post('/api/getMainTableInfo',cond);
             setData(res.data);
             const newCv = new CollectionView(res.data, { trackChanges: true });
             setCv(newCv);
@@ -78,7 +103,8 @@ const Lms = () =>{
             return; 
         }
 
-        console.log("dfdsf");
+        const tableSeq = selectedRows[0].TABLE_SEQ;
+        openPopup(tableSeq);
     };
 
     const saveTable = async () => {
@@ -97,7 +123,7 @@ const Lms = () =>{
 
         for (const item of newItems) {
             if (!item.TABLE_NAME) {
-                message.error('물리 테이블명과 논리 테이블명은 필수 입력 항목입니다.');
+                message.error('논리 테이블명은 필수 입력 항목입니다.');
                 return;
             }
 
@@ -190,9 +216,21 @@ const Lms = () =>{
                     <span>검색조건</span>
                     <input style={{ width : '300px', height :'28px' ,border : '1px solid #dbdbdb'}} placeholder='검색조건을 입력하세요.'/>
                     <span>수정일</span>
-                    <wjInput.InputDate value={startDate} valueChanged={(date) => setStartDate(date)}  className='datepicker'/>                   
-                    <span style={{width : '10px'}}>~</span>
-                    <wjInput.InputDate value={endDate}  valueChanged={(date) => setEndDate(date)}  className='datepicker'/>
+                        <DatePicker
+                            dateFormat='yyyy-MM-dd'
+                            className='datepicker'
+                            shouldCloseOnSelect 
+                            selected={startDate}
+                            onChange={(date) => setStartDate(date)}
+                        />
+                    <span style={{width : '10px'}}>~</span>    
+                        <DatePicker
+                            dateFormat='yyyy-MM-dd'
+                            className='datepicker'
+                            shouldCloseOnSelect 
+                            selected={endDate}
+                            onChange={(date) => setEndDate(date)}
+                        />
                 </div>
                 <div style={{ margin: '2px' }}>
                     <FlexGrid
@@ -213,22 +251,8 @@ const Lms = () =>{
                         
                                     <span onClick={() => {
                                         const tableSeq = ctx.item.TABLE_SEQ;
-                                        const popupWidth = 1000;
-                                        const popupHeight = 600;
-
-                                        const left = window.screenX + (window.outerWidth - popupWidth) / 2;
-                                        const top = window.screenY + (window.outerHeight - popupHeight) / 2;
-                                        const pop = window.open(
-                                            `/popup/lms_pop?tableSeq=${encodeURIComponent(tableSeq)}`,
-                                            '_blank',
-                                            `width=${popupWidth},height=${popupHeight},left=${left},top=${top},resizable=yes,scrollbars=yes`
-                                        );
-
-                                     
-                                        window.handlePopChange = () => {
-                                            console.log("팝업에서 변경 발생 → 재조회합니다.");
-                                            fetchGridData();
-                                        };
+                                        if (!tableSeq) return;
+                                        openPopup(tableSeq);
                                     }}>
                                     {ctx.item.TABLE_NAME}
                                     </span>
