@@ -19,6 +19,11 @@ const Lms = () =>{
     const gridRef = useRef(null);
 
     useEffect(() => {
+        const link = document.querySelector('a[href="https://www.mescius.co.kr/wijmo#price"]');
+        if (link) {
+            link.remove();
+        }
+
         fetchGridData();
     }, []);
 
@@ -209,11 +214,17 @@ const Lms = () =>{
 
                                         const left = window.screenX + (window.outerWidth - popupWidth) / 2;
                                         const top = window.screenY + (window.outerHeight - popupHeight) / 2;
-                                        window.open(
+                                        const pop = window.open(
                                             `/popup/lms_pop?tableSeq=${encodeURIComponent(tableSeq)}`,
                                             '_blank',
                                             `width=${popupWidth},height=${popupHeight},left=${left},top=${top},resizable=yes,scrollbars=yes`
                                         );
+
+                                     
+                                        window.handlePopChange = () => {
+                                            console.log("팝업에서 변경 발생 → 재조회합니다.");
+                                            fetchGridData();
+                                        };
                                     }}>
                                     {ctx.item.TABLE_NAME}
                                     </span>

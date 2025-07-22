@@ -7,15 +7,15 @@ import api from './../api/api.js';
 import {FlexGrid,FlexGridColumn } from '@mescius/wijmo.react.grid';
 import { DataMap } from '@mescius/wijmo.grid';
 import { CollectionView } from '@mescius/wijmo';
-import { useState,useEffect, useRef } from "react";
+import { useState,useEffect, useRef,useCallback } from "react";
 import { Button, Flex, Modal, message } from 'antd';
 
 
 const LmsPop = () =>{
     const params = new URLSearchParams(window.location.search);
-    const [flag, setFlag] = useState(false);
     const tableSeq = params.get('tableSeq');
     const gridRef = useRef(null);
+    const [flag,setFlag] = useState(false);
     const [gridData, setGridData] = useState([]);
     const [commCodes, setCommCodes] = useState([]);
     const [gridInfo, setGridInfo] = useState({
@@ -35,29 +35,37 @@ const LmsPop = () =>{
     }
     };
 
-    const fetchFieldList = async () => {
+    const fetchFieldList = useCallback(async () => {
         try {
             const res = await api.post("/api/getTableFieldList", String(tableSeq));
             setGridData(new CollectionView(res.data, { trackChanges: true }));
         } catch (err) {
             console.error("필드 목록 불러오기 오류:", err);
         }
-    };
+    }, [tableSeq]);
 
-    const fetchTableInfo = async () => {
+    const fetchTableInfo = useCallback(async () => {
         try {
             const res = await api.post("/api/getMainTableInfoData", String(tableSeq));
-            setGridInfo(res.data[0] || {}); 
+            const info = res.data[0] || {} ; 
+            setGridInfo(info);
+            console.log("table info:", !!info.TABLE_ID);
+            setFlag(!!info.TABLE_ID); 
         } catch (err) {
-            console.error("필드 목록 불러오기 오류:", err);
+            console.error("테이블 정보 불러오기 오류:", err);
         }
-    };
+    }, [tableSeq]);
 
     useEffect(() => {
+        const link = document.querySelector('a[href="https://www.mescius.co.kr/wijmo#price"]');
+        if (link) {
+            link.remove();
+        }
+
         fetchCommCodes();
         fetchTableInfo(); 
         fetchFieldList(); 
-    }, []);
+    }, [fetchTableInfo, fetchFieldList]);
 
     const saveTableInfo = () =>{
         if(!gridInfo) return;
@@ -70,7 +78,12 @@ const LmsPop = () =>{
                 try {
                     await api.post('/api/saveMainTableInfo', [gridInfo] );
                     message.success('저장되었습니다.');
+                    await fetchTableInfo();
                     await fetchFieldList();
+
+                    if (window.opener && typeof window.opener.handlePopChange === 'function') {
+                        window.opener.handlePopChange();  // 부모 창의 함수 호출
+                    }
                 } catch (error) {
                     console.error('저장 오류:', error);
                     message.error('저장 중 오류가 발생했습니다.');
@@ -81,6 +94,11 @@ const LmsPop = () =>{
 
     const handleAddRow = () => {
         if (!gridData) return;
+        console.log(flag);
+        if(!flag){
+            message.error('물리 테이블명 저장 후 추가 가능합니다.');
+            return;
+        }
 
         const maxSeq = gridData.items
             .map(item => {
@@ -231,7 +249,7 @@ const LmsPop = () =>{
                 style={{ width : '300px', height :'28px', border : '1px solid #dbdbdb', fontSize : '12px'}} 
                 placeholder=' 물리 테이블 명을 입력하세요.'
                 onChange={(e) => setGridInfo({ ...gridInfo, TABLE_ID: e.target.value })}
-                disabled={!!gridInfo.TABLE_ID} />
+                disabled={flag} />
             </div>
             <div style={{   display: 'flex',justifyContent: 'space-between',alignItems: 'flex-end'}}>
                 <h4 style={{fontSize :'14px',fontWeight :'700',color :'#002c5f',letterSpacing : '-0.7px', marginRight : '8px'}}>
