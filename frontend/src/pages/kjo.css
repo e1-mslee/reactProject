@@ -1,0 +1,66 @@
+.header_line {
+    display: flex;
+    justify-content: space-between;
+}
+
+.content_title {
+    color: black;
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 20px;
+}
+
+.information_box {
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+    padding: 13px 10px 12px 10px;
+    border-bottom: 1px solid black;
+}
+
+.information {
+    margin-right: 30px;
+    display: inline-flex;
+}
+
+.information_span {
+    color: #222;
+    font-size: 12px;
+    font-weight: 500;
+    padding-right: 20px;
+    margin: auto;
+}
+
+.text_box, .date_box {
+    height: 26px;
+    padding: 0 5px;
+    border-radius: 2px;
+    border: 1px solid #D4D4D4;
+    font-size: 12px;
+    font-weight: 400;
+    color: black;
+}
+
+.date_box {
+    width: 120px;
+}
+
+.hyphen {
+    margin: 0 5px;
+}
+.button_box {
+    height: 26px;
+    font-size: 12px;
+    font-weight: 500;
+    display: flex;
+    gap: 5px;
+}
+
+.kjo_btn {
+    padding: 3px 20px;
+    border-radius: 3px;
+}
+
+.click_col {
+    color: #1890ff;
+    cursor: pointer;
+}

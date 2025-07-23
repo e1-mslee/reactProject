@@ -11,6 +11,7 @@ import Home from '@pages/Home';
 import Lms from '@pages/Lms';
 import Kjo from '@pages/Kjo';
 import LmsPop from '@pages/LmsPop.jsx';
+import KjoPop from './pages/KjoPop.jsx';
 
 const { Content } = Layout;
 
@@ -24,6 +25,7 @@ const App = () => {
     return (
       <Routes>
         <Route path="/popup/lms_pop" element={<LmsPop />} />
+          <Route path="/popup/kjo_pop" element={<KjoPop />} />
       </Routes>
     );
   }

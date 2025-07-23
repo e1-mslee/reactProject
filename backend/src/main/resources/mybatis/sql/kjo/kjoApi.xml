@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.e1.backend.mapper.KjoApiMapper">
+    <select id="selectMainTable" parameterType="map" resultType="map">
+        select TABLE_SEQ    as tableSeq,
+               TABLE_ID     as tableId,
+               TABLE_NAME   as tableName,
+               VBG_CRE_USER as vbgCreUser,
+               VBG_CRE_DTM  as vbgCreDtm,
+               0            as dataCount,
+               false        as selected
+          from std_main
+         <where>
+            <if test="search != null and search != ''">
+                and (
+                    TABLE_NAME like concat('%', #{search}, '%')
+                    or TABLE_ID like concat('%', #{search}, '%')
+                )
+            </if>
+            <if test="start != null and start != ''">
+                and VBG_CRE_DTM &gt;= #{start}
+            </if>
+            <if test="end != null and end != ''">
+                and VBG_CRE_DTM &lt;= #{end}
+            </if>
+         </where>
+    </select>
+
+    <insert id="insertMainTable" parameterType="list">
+        insert into std_main
+            (TABLE_ID, TABLE_NAME, VBG_CRE_USER, VBG_CRE_DTM)
+        values
+        <foreach collection="list" item="item" separator=",">
+            (#{item.tableId}, #{item.tableName}, '김정욱', now())
+        </foreach>
+    </insert>
+
+    <update id="updateMainTable" parameterType="list">
+        update std_main
+           set TABLE_ID     = #{tableId},
+               TABLE_NAME   = #{tableNm},
+               VBG_CRE_DTM  = now()
+         where TABLE_SEQ    = #{tableSeq}
+    </update>
+
+    <delete id="deleteMainTable" parameterType="list">
+        delete from std_main
+         where TABLE_SEQ in
+         <foreach collection="list" item="item" separator="," open="(" close=")">
+             #{item}
+         </foreach>
+    </delete>
+
+    <select id="selectTableName" parameterType="map">
+        select TABLE_NAME   as tableName,
+               TABLE_ID     as tableId
+          from std_main
+         where TABLE_SEQ = #{tableSeq}
+    </select>
+    <select id="selectFieldTable" parameterType="map">
+        select TABLE_SEQ    as tableSeq,
+               COL_ID       as colId,
+               COL_NAME     as colName,
+               COL_TYPE     as colType,
+               COL_SIZE     as colSize,
+               case when COL_IDX = 1 then true
+                    else false
+                   end      as colIdx,
+               case when COL_SCH = 1 then true
+                    else false
+                   end      as colSch,
+               false        as selected
+        from std_field
+        where TABLE_SEQ = #{tableSeq}
+    </select>
+
+    <insert id="insertFieldTable" parameterType="map">
+        insert into std_field
+            (TABLE_SEQ, COL_ID, COL_NAME, COL_TYPE, COL_SIZE, COL_IDX, COL_SCH, VBG_CRE_USER, VBG_CRE_DTM)
+        values
+            <foreach collection="list" item="item" separator=",">
+                (#{item.tableSeq}, #{item.colId}, #{item.colName}, #{item.colType}, #{item.colSize}, #{item.colIdx}, #{item.colSch}, '김정욱', now())
+            </foreach>
+    </insert>
+
+    <update id="updateFieldTable" parameterType="map">
+        update std_field
+           set COL_NAME = #{colName},
+               COL_TYPE = #{colType},
+               COL_SIZE = #{colSize},
+               COL_IDX = #{colIdx},
+               COL_SCH = #{colSch},
+               VBG_CRE_DTM = now()
+         where TABLE_SEQ = #{tableSeq}
+           and COL_ID = #{colId}
+    </update>
+
+    <delete id="deleteFieldTable" parameterType="map">
+        delete from std_field
+         where TABLE_SEQ = #{tableSeq}
+           and COL_ID = #{colId}
+    </delete>
+</mapper>
