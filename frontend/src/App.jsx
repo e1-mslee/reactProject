@@ -3,14 +3,14 @@ import './index.css';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { Breadcrumb, Layout, theme } from 'antd';
 import { useState } from 'react';
-import menuItems from './data/menuItems.jsx';
-import Header from './components/layout/Header';
-import Sidebar from './components/layout/Sidebar';
-import Footer from './components/layout/Footer';
-import Home from './pages/Home';
-import Lms from './pages/Lms';
-import Kjo from './pages/Kjo';
-import LmsPop from './pages/LmsPop.jsx';
+import menuItems from '@data/menuItems.jsx';
+import Header from '@component/layout/Header';
+import Sidebar from '@component/layout/Sidebar';
+import Footer from '@component/layout/Footer';
+import Home from '@pages/Home';
+import Lms from '@pages/Lms';
+import Kjo from '@pages/Kjo';
+import LmsPop from '@pages/LmsPop.jsx';
 
 const { Content } = Layout;
 
