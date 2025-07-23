@@ -11,23 +11,26 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mescius/wijmo": "^5.20251.40",
+    "@mescius/wijmo.grid": "^5.20251.40",
     "@mescius/wijmo.grid.xlsx": "^5.20251.40",
     "@mescius/wijmo.react.all": "^5.20251.40",
+    "@mescius/wijmo.react.grid": "^5.20251.40",
+    "@mui/material": "^7.2.0",
     "antd": "^5.26.4",
     "axios": "^1.10.0",
     "bootstrap": "^5.3.7",
     "jszip": "^3.10.1",
+    "moment": "^2.30.1",
     "react": "^18.2.0",
+    "react-calendar": "^6.0.0",
     "react-datepicker": "^8.4.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^7.6.3",
     "react-use-event-hook": "^0.9.6",
-    "@emotion/react": "^11.14.0",
-    "@emotion/styled": "^11.14.1",
-    "@mui/material": "^7.2.0",
-    "moment": "^2.30.1",
-    "zustand": "^5.0.6",
-    "react-calendar": "^6.0.0"
+    "zustand": "^5.0.6"
   },
   "devDependencies": {
     "@eslint/js": "^9.30.1",

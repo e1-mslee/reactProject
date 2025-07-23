@@ -57,6 +57,7 @@
           from std_main
          where TABLE_SEQ = #{tableSeq}
     </select>
+
     <select id="selectFieldTable" parameterType="map">
         select TABLE_SEQ    as tableSeq,
                COL_ID       as colId,
