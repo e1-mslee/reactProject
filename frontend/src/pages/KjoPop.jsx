@@ -1,5 +1,5 @@
 import "./kjoPop.css";
-import {useState, useEffect, useRef} from "react";
+import {useEffect, useRef} from "react";
 
 import BaseButton from '../components/BaseButton.jsx';
 import '@mescius/wijmo.styles/wijmo.css';
@@ -14,10 +14,6 @@ import useEvent from "react-use-event-hook";
 
 const params = new URLSearchParams(window.location.search);
 const tableSeq = params.get('tableSeq');
-
-const temp = () => {
-    console.log("temp");
-}
 
 const Header = () => {
     const { saveColData } = useColData();

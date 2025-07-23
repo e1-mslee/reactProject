@@ -15,7 +15,6 @@ import 'moment/locale/ko';
 import useCommonData from "../store/commonStore.js";
 import useGridData from "../store/kjoStroe.js";
 import useEvent from "react-use-event-hook";
-import useColData from "../store/kjoPopupStore.js";
 
 const nowTime = moment().format('YYYY-MM-DD');
 
@@ -151,7 +150,7 @@ const GridArea = () => {
 
 const Kjo = () =>{
     //Init();
-    const {commCode, fetchAllData} = useCommonData();
+    const { fetchAllData } = useCommonData();
 
     useEffect(() => {
         const link = document.querySelector('a[href="https://www.mescius.co.kr/wijmo#price"]');

@@ -100,7 +100,7 @@ const useColData = create((set) => ({
                 tableNm: tableNm,
                 tableId: tableId
             }
-            api.put('/kjoApi/mainTable', cond).then((res) => {
+            api.put('/kjoApi/mainTable', cond).then(() => {
                 alert("저장되었습니다.");
             });
         } else {
@@ -114,7 +114,7 @@ const useColData = create((set) => ({
                 removed: Array.from(removed).map(row => ({ ...row }))
             }
 
-            api.post('/kjoApi/fieldTable', cond).then((res) => {
+            api.post('/kjoApi/fieldTable', cond).then(() => {
                 alert("저장되었습니다.");
                 useColData.getState().fetchGridData(seq);
             });
