@@ -139,5 +139,44 @@
 		 where TABLE_SEQ = #{tableSeq}
     </select>
 
+	<select id="getHeaderList" parameterType="String" resultType="map">
+		select HEADER_ID,
+			   TABLE_SEQ,
+			   HEADER_NAME,
+			   SUPI_HEADER,
+			   HEADER_WIDTH,
+			   CONN_FIELD,
+			   SORT_SN,
+			   false as 'selected'
+		  from std_header
+		 where TABLE_SEQ = #{tableSeq}
+    </select>
+
+	<insert id="insertHeaderList" parameterType="map">
+		INSERT INTO std_header (
+			HEADER_ID,TABLE_SEQ,HEADER_NAME,SUPI_HEADER,HEADER_WIDTH,
+			CONN_FIELD,SORT_SN
+		) VALUES (
+			#{HEADER_ID},#{TABLE_SEQ},#{HEADER_NAME},#{SUPI_HEADER},#{HEADER_WIDTH},
+			#{CONN_FIELD},#{SORT_SN}
+		)
+	</insert>
+
+	<update id="updateHeaderList" parameterType="map">
+		UPDATE std_header
+		   SET HEADER_NAME = #{HEADER_NAME},
+			   SUPI_HEADER = #{SUPI_HEADER},
+			   HEADER_WIDTH = #{HEADER_WIDTH},
+			   CONN_FIELD = #{CONN_FIELD},
+			   SORT_SN = #{SORT_SN}
+		 WHERE HEADER_ID = #{HEADER_ID}
+		   AND TABLE_SEQ = #{TABLE_SEQ}
+	</update>
+
+	<delete id="deleteHeaderList" parameterType="map">
+		delete from std_header
+		where HEADER_ID = #{HEADER_ID} 
+		  AND TABLE_SEQ = #{TABLE_SEQ}
+	</delete>
 
 </mapper>

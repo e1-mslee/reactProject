@@ -70,4 +70,17 @@ public class ApiController {
     public List<Map<String, Object>> getMainTableInfoData(@RequestBody String tableSeq) {
         return apiService.getMainTableInfoData(tableSeq);
     }
+
+
+    @PostMapping("/api/getHeaderList")
+    public List<Map<String,Object>> getHeaderList(@RequestBody String tableSeq) {
+        return apiService.getHeaderList(tableSeq);
+    }
+
+    @PostMapping("/api/saveHeaderList")
+    public ResponseEntity<?> saveHeaderList(@RequestBody List<Map<String,Object>> data) {
+        apiService.saveHeaderList(data);
+
+        return ResponseEntity.ok().build();
+    }
 }

@@ -91,5 +91,23 @@ public class ApiServiceImpl implements ApiService {
     public List<Map<String, Object>> getMainTableInfoData(String tableSeq) {
         return apiMapper.getMainTableInfoData(tableSeq);
     }
+
+    @Override
+    public List<Map<String, Object>> getHeaderList(String tableSeq) {
+        return apiMapper.getHeaderList(tableSeq);
+    }
+
+    @Override
+    public void saveHeaderList(List<Map<String, Object>> data) {
+        for (Map<String, Object> item : data) {
+            if ("ADD".equals(item.get("STATUS"))) {
+                apiMapper.insertHeaderList(item);
+            } else if("UPD".equals(item.get("STATUS"))){
+                apiMapper.updateHeaderList(item);
+            } else if ("DEL".equals(item.get("STATUS"))){
+                apiMapper.deleteHeaderList(item);
+            }
+        }
+    }
     
 }

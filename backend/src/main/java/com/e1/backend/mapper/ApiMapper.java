@@ -32,4 +32,12 @@ public interface ApiMapper {
     int deleteTablefield(List<Map<String,Object>> data);
 
     List<Map<String, Object>> getMainTableInfoData(String tableSeq);
+
+    List<Map<String, Object>> getHeaderList(String tableSeq);
+    
+    void insertHeaderList(Map<String, Object> data);
+
+    void updateHeaderList(Map<String, Object> data);
+
+    void deleteHeaderList(Map<String, Object> data);
 }

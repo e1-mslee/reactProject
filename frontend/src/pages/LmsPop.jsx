@@ -9,6 +9,7 @@ import { DataMap } from '@mescius/wijmo.grid';
 import { CollectionView } from '@mescius/wijmo';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Button, Flex, Modal, message } from 'antd';
+import openPop from '@utils/openPop.js';
 
 const LmsPop = () => {
   const params = new URLSearchParams(window.location.search);
@@ -32,6 +33,12 @@ const LmsPop = () => {
     } catch (err) {
       console.error('공통코드 불러오기 오류:', err);
     }
+  };
+
+  const openHeaderManage = () => {
+    const tableName = gridInfo.TABLE_NAME;
+    const url = `/popup/lms_Header?tableSeq=${encodeURIComponent(tableSeq)}&tableNm=${encodeURIComponent(tableName)}`;
+    openPop(url);
   };
 
   const fetchFieldList = useCallback(async () => {
@@ -139,6 +146,10 @@ const LmsPop = () => {
             message.success('저장되었습니다.');
             await fetchTableInfo();
             await fetchFieldList();
+
+            if (window.opener && typeof window.opener.handlePopChange === 'function') {
+              window.opener.handlePopChange();
+            }
           } catch (error) {
             console.error('저장 오류:', error);
             message.error('저장 중 오류가 발생했습니다.');
@@ -228,6 +239,9 @@ const LmsPop = () => {
         <span style={{ fontSize: '18px', fontWeight: 'bold' }}>필드 속성 정의</span>
         <div style={{ display: 'flex', justifyContent: 'flex-end', margin: '2px 0 2px 0' }}>
           <Flex gap="small" wrap>
+            <Button className="custom-button" onClick={openHeaderManage}>
+              헤더관리
+            </Button>
             <Button className="custom-button" onClick={saveTableInfo}>
               저장
             </Button>
@@ -291,7 +305,8 @@ const LmsPop = () => {
             grid.beginningEdit.addHandler((s, e) => {
               const col = s.columns[e.col];
               const item = s.rows[e.row].dataItem;
-              if (col.binding === 'COL_SIZE' && item.COL_TYPE !== '2') {
+              console.log('item.COL_TYPE', item.COL_TYPE);
+              if (col.binding === 'COL_SIZE' && item.COL_TYPE !== '2' && item.COL_TYPE !== '1') {
                 e.cancel = true;
               }
             });

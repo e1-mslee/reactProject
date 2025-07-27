@@ -87,6 +87,15 @@ body,
   background-color: #fafafa;
 }
 
+.wj-cell.wj-group {
+  background: white;
+  color: #000;
+}
+
+.wj-cell.wj-alt {
+  background: white;
+}
+
 .wj-listbox .wj-listbox-item {
   padding: 4px 6px 3px 6px;
   font-size: 14px;
@@ -139,4 +148,23 @@ body,
 .blue-column {
   color: #007bff;
   cursor: pointer;
+}
+
+.wj-flexgrid .wj-header label {
+  display: none;
+}
+.wj-flexgrid .checkBox {
+  text-align: center;
+}
+
+.wj-flexgrid .checkBox .wj-elem-collapse {
+  display: none;
+}
+
+.wj-flexgrid .checkBox input.wj-column-selector.wj-column-selector-group {
+  margin: 0;
+}
+
+.wj-flexgrid .checkBox input.wj-column-selector.wj-column-selector-group {
+  transform: none !important;
 }
