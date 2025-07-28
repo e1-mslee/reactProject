@@ -11,6 +11,8 @@ import { MultiRow } from '@mescius/wijmo.react.grid.multirow';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import useEvent from 'react-use-event-hook';
 import { Button, Flex, Modal, message } from 'antd';
+import * as wjcGrid from '@mescius/wijmo.react.grid';
+import * as wjGrid from '@mescius/wijmo.grid';
 
 const LmsHeader = () => {
   const params = new URLSearchParams(window.location.search);
@@ -22,74 +24,6 @@ const LmsHeader = () => {
   const [reviewFlag, setReviewFlag] = useState(true); // true: 펼침 상태
   const [tableField, setTableField] = useState([]);
   const [supiHeaderMap, setSupiHeaderMap] = useState(null);
-  const [layoutData, setLayoutData] = useState();
-  const [latoutHeaderData, setLayoutHeaderData] = useState();
-
-  const getLayoutDefinition = (data) => {
-    console.log('getLayoutDefinition', data);
-    const createCells = (item) => {
-      return [{ binding: item.HEADER_NAME, header: item.HEADER_NAME, width: '*' }];
-    };
-
-    const processDeps = (item) => {
-      let cells = createCells(item);
-
-      if (Array.isArray(item.deps) && item.deps.length > 0) {
-        item.deps.forEach((dep) => {
-          cells = cells.concat(processDeps(dep));
-        });
-      }
-
-      return cells;
-    };
-
-    let layout = [];
-
-    // data가 배열인지 확인 후, 각 항목에 대해 레이아웃을 구성합니다.
-    if (Array.isArray(data)) {
-      data.forEach((item) => {
-        layout.push({
-          cells: processDeps(item),
-        });
-      });
-    }
-
-    console.log('layout', layout);
-    return layout;
-  };
-
-  const getHeaderLayoutDefinition = (data) => {
-    console.log('getHeaderLayoutDefinition', data);
-    const createHeaderCells = (item) => {
-      return [{ header: item.HEADER_NAME, binding: item.HEADER_NAME, width: '*' }];
-    };
-
-    const processHeaderDeps = (item) => {
-      let cells = createHeaderCells(item);
-
-      // 'deps' 배열이 존재하고 비어 있지 않으면 재귀적으로 처리합니다.
-      if (Array.isArray(item.deps) && item.deps.length > 0) {
-        item.deps.forEach((dep) => {
-          cells = cells.concat(processHeaderDeps(dep));
-        });
-      }
-
-      return cells;
-    };
-
-    let headerLayout = [];
-
-    // data가 배열인지 확인 후, 각 항목에 대해 헤더 레이아웃을 구성합니다.
-    if (Array.isArray(data)) {
-      data.forEach((item) => {
-        headerLayout.push({
-          cells: processHeaderDeps(item),
-        });
-      });
-    }
-    console.log('headerLayout', headerLayout);
-    return headerLayout;
-  };
 
   const extractHeaderOptions = (items) =>
     items.map((item) => ({
@@ -102,11 +36,6 @@ const LmsHeader = () => {
       const res = await api.post('/api/getHeaderList', String(tableSeq));
       const treeData = buildTree(res.data); // ← 여기서 트리로 변환
       console.log('treeData', treeData);
-      const layoutDef = getLayoutDefinition(treeData);
-      const headerLayoutDef = getHeaderLayoutDefinition(treeData);
-
-      setLayoutData(layoutDef);
-      setLayoutHeaderData(headerLayoutDef);
       setGridData(new CollectionView(treeData, { trackChanges: true }));
       const headerOptions = extractHeaderOptions(res.data);
       const withEmptyOption = [{ value: '', name: '\u00A0' }, ...headerOptions];
@@ -410,6 +339,38 @@ const LmsHeader = () => {
     return `HEAD_${String(nextNum).padStart(3, '0')}`;
   };
 
+  const onInitialized = useEvent((grid) => {
+    // create extra header row
+    var extraRow = new wjGrid.Row();
+    extraRow.allowMerging = true;
+    //
+    // add extra header row to the grid
+    var panel = grid.columnHeaders;
+    panel.rows.splice(0, 0, extraRow);
+    //
+    // populate the extra header row
+    for (let colIndex = 1; colIndex <= 2; colIndex++) {
+      panel.setCellData(0, colIndex, 'Amounts');
+    }
+    //
+    // merge "Country" and "Active" headers vertically
+    ['country', 'active'].forEach(function (binding) {
+      let col = grid.getColumn(binding);
+      col.allowMerging = true;
+      panel.setCellData(0, col.index, col.header);
+    });
+    //
+    // center-align merged header cells
+    grid.formatItem.addHandler(function (s, e) {
+      if (e.panel == s.columnHeaders && e.range.rowSpan > 1) {
+        var html = e.cell.innerHTML;
+        e.cell.innerHTML = '<div class="v-center">' + html + '</div>';
+      }
+    });
+    grid.autoGenerateColumns = false;
+    // grid.itemsSource = getData();
+  });
+
   return (
     <div style={{ padding: '10px', background: 'white' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '10px' }}>
@@ -519,12 +480,12 @@ const LmsHeader = () => {
           미리보기
         </h4>
         <div style={{ margin: '2px' }}>
-          <MultiRow
-            itemsSource={[]}
-            layoutDefinition={layoutData} // 레이아웃 정의
-            autoGenerateColumns={false}
-            headerLayoutDefinition={latoutHeaderData}
-          />
+          <FlexGrid allowMerging="ColumnHeaders" alternatingRowStep={0} initialized={onInitialized}>
+            <FlexGridColumn binding="country" header="Country" width="*" allowMerging={true} />
+            <FlexGridColumn binding="sales" header="Sales" width="*" format="n2" />
+            <FlexGridColumn binding="expenses" header="Expenses" width="*" format="n2" />
+            <FlexGridColumn binding="active" header="Active" width="*" allowMerging={true} />
+          </FlexGrid>
         </div>
       </div>
     </div>
