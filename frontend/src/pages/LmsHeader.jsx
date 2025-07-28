@@ -7,6 +7,7 @@ import api from './../api/api.js';
 import { FlexGrid, FlexGridColumn } from '@mescius/wijmo.react.grid';
 import { DataMap, CellType } from '@mescius/wijmo.grid';
 import { CollectionView } from '@mescius/wijmo';
+import { MultiRow } from '@mescius/wijmo.react.grid.multirow';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import useEvent from 'react-use-event-hook';
 import { Button, Flex, Modal, message } from 'antd';
@@ -21,6 +22,74 @@ const LmsHeader = () => {
   const [reviewFlag, setReviewFlag] = useState(true); // true: 펼침 상태
   const [tableField, setTableField] = useState([]);
   const [supiHeaderMap, setSupiHeaderMap] = useState(null);
+  const [layoutData, setLayoutData] = useState();
+  const [latoutHeaderData, setLayoutHeaderData] = useState();
+
+  const getLayoutDefinition = (data) => {
+    console.log('getLayoutDefinition', data);
+    const createCells = (item) => {
+      return [{ binding: item.HEADER_NAME, header: item.HEADER_NAME, width: '*' }];
+    };
+
+    const processDeps = (item) => {
+      let cells = createCells(item);
+
+      if (Array.isArray(item.deps) && item.deps.length > 0) {
+        item.deps.forEach((dep) => {
+          cells = cells.concat(processDeps(dep));
+        });
+      }
+
+      return cells;
+    };
+
+    let layout = [];
+
+    // data가 배열인지 확인 후, 각 항목에 대해 레이아웃을 구성합니다.
+    if (Array.isArray(data)) {
+      data.forEach((item) => {
+        layout.push({
+          cells: processDeps(item),
+        });
+      });
+    }
+
+    console.log('layout', layout);
+    return layout;
+  };
+
+  const getHeaderLayoutDefinition = (data) => {
+    console.log('getHeaderLayoutDefinition', data);
+    const createHeaderCells = (item) => {
+      return [{ header: item.HEADER_NAME, binding: item.HEADER_NAME, width: '*' }];
+    };
+
+    const processHeaderDeps = (item) => {
+      let cells = createHeaderCells(item);
+
+      // 'deps' 배열이 존재하고 비어 있지 않으면 재귀적으로 처리합니다.
+      if (Array.isArray(item.deps) && item.deps.length > 0) {
+        item.deps.forEach((dep) => {
+          cells = cells.concat(processHeaderDeps(dep));
+        });
+      }
+
+      return cells;
+    };
+
+    let headerLayout = [];
+
+    // data가 배열인지 확인 후, 각 항목에 대해 헤더 레이아웃을 구성합니다.
+    if (Array.isArray(data)) {
+      data.forEach((item) => {
+        headerLayout.push({
+          cells: processHeaderDeps(item),
+        });
+      });
+    }
+    console.log('headerLayout', headerLayout);
+    return headerLayout;
+  };
 
   const extractHeaderOptions = (items) =>
     items.map((item) => ({
@@ -33,6 +102,11 @@ const LmsHeader = () => {
       const res = await api.post('/api/getHeaderList', String(tableSeq));
       const treeData = buildTree(res.data); // ← 여기서 트리로 변환
       console.log('treeData', treeData);
+      const layoutDef = getLayoutDefinition(treeData);
+      const headerLayoutDef = getHeaderLayoutDefinition(treeData);
+
+      setLayoutData(layoutDef);
+      setLayoutHeaderData(headerLayoutDef);
       setGridData(new CollectionView(treeData, { trackChanges: true }));
       const headerOptions = extractHeaderOptions(res.data);
       const withEmptyOption = [{ value: '', name: '\u00A0' }, ...headerOptions];
@@ -444,7 +518,14 @@ const LmsHeader = () => {
           ></i>
           미리보기
         </h4>
-        <div></div>
+        <div style={{ margin: '2px' }}>
+          <MultiRow
+            itemsSource={[]}
+            layoutDefinition={layoutData} // 레이아웃 정의
+            autoGenerateColumns={false}
+            headerLayoutDefinition={latoutHeaderData}
+          />
+        </div>
       </div>
     </div>
   );
