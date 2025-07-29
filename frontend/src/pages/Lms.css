@@ -168,3 +168,10 @@ body,
 .wj-flexgrid .checkBox input.wj-column-selector.wj-column-selector-group {
   transform: none !important;
 }
+
+.wj-cell .v-center {
+  position: relative;
+  top: 50%;
+  transform: translateY(-50%);
+  white-space: pre-wrap;
+}

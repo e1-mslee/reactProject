@@ -7,11 +7,9 @@ import api from './../api/api.js';
 import { FlexGrid, FlexGridColumn } from '@mescius/wijmo.react.grid';
 import { DataMap, CellType } from '@mescius/wijmo.grid';
 import { CollectionView } from '@mescius/wijmo';
-import { MultiRow } from '@mescius/wijmo.react.grid.multirow';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import useEvent from 'react-use-event-hook';
 import { Button, Flex, Modal, message } from 'antd';
-import * as wjcGrid from '@mescius/wijmo.react.grid';
 import * as wjGrid from '@mescius/wijmo.grid';
 
 const LmsHeader = () => {
@@ -24,6 +22,9 @@ const LmsHeader = () => {
   const [reviewFlag, setReviewFlag] = useState(true); // true: 펼침 상태
   const [tableField, setTableField] = useState([]);
   const [supiHeaderMap, setSupiHeaderMap] = useState(null);
+  const [headerConfig, setHeaderConfig] = useState([]);
+  const [headerData, setHeaderData] = useState([]);
+  const previewGridRef = useRef(null); // 미리보기 그리드에 접근하기 위한 ref
 
   const extractHeaderOptions = (items) =>
     items.map((item) => ({
@@ -36,7 +37,9 @@ const LmsHeader = () => {
       const res = await api.post('/api/getHeaderList', String(tableSeq));
       const treeData = buildTree(res.data); // ← 여기서 트리로 변환
       console.log('treeData', treeData);
+      console.log('res', res.data);
       setGridData(new CollectionView(treeData, { trackChanges: true }));
+      setHeaderConfig(res.data);
       const headerOptions = extractHeaderOptions(res.data);
       const withEmptyOption = [{ value: '', name: '\u00A0' }, ...headerOptions];
       setSupiHeaderMap(new DataMap(withEmptyOption, 'value', 'name'));
@@ -47,17 +50,16 @@ const LmsHeader = () => {
 
   const statusMap = new DataMap(tableField, 'COL_ID', 'COL_NAME');
 
-  const fetchGridfield = async () => {
+  const fetchGridfield = useCallback(async () => {
     try {
       const res = await api.post('/api/getTableFieldList', String(tableSeq));
-
       const withEmptyOption = [{ COL_ID: ' ', COL_NAME: '\u00A0' }, ...res.data];
       setTableField(withEmptyOption);
       console.log(withEmptyOption);
     } catch (err) {
       console.error('필드 불러오기 오류:', err);
     }
-  };
+  }, [tableSeq]);
 
   const buildTree = (flatList) => {
     const map = {};
@@ -239,10 +241,9 @@ const LmsHeader = () => {
 
     fetchGridData();
     fetchGridfield();
-  }, [fetchGridData]);
+  }, [fetchGridData, fetchGridfield]);
 
   const onLoadedRows = (s, e) => {
-    // 모든 rows를 순회하며 수정 가능하게 설정
     for (let i = 0; i < s.rows.length; i++) {
       s.rows[i].isReadOnly = false;
     }
@@ -339,37 +340,199 @@ const LmsHeader = () => {
     return `HEAD_${String(nextNum).padStart(3, '0')}`;
   };
 
-  const onInitialized = useEvent((grid) => {
-    // create extra header row
-    var extraRow = new wjGrid.Row();
-    extraRow.allowMerging = true;
-    //
-    // add extra header row to the grid
-    var panel = grid.columnHeaders;
-    panel.rows.splice(0, 0, extraRow);
-    //
-    // populate the extra header row
-    for (let colIndex = 1; colIndex <= 2; colIndex++) {
-      panel.setCellData(0, colIndex, 'Amounts');
-    }
-    //
-    // merge "Country" and "Active" headers vertically
-    ['country', 'active'].forEach(function (binding) {
-      let col = grid.getColumn(binding);
-      col.allowMerging = true;
-      panel.setCellData(0, col.index, col.header);
-    });
-    //
-    // center-align merged header cells
+  const onPreviewGridInitialized = useEvent((grid) => {
     grid.formatItem.addHandler(function (s, e) {
-      if (e.panel == s.columnHeaders && e.range.rowSpan > 1) {
+      if (e.panel === s.columnHeaders && e.range.rowSpan > 1) {
         var html = e.cell.innerHTML;
         e.cell.innerHTML = '<div class="v-center">' + html + '</div>';
       }
     });
-    grid.autoGenerateColumns = false;
-    // grid.itemsSource = getData();
   });
+
+  const buildTree2 = (flatList) => {
+    const map = {};
+    const roots = [];
+
+    flatList.forEach((item) => {
+      item.selected = Boolean(item.selected);
+      map[item.HEADER_ID] = { ...item, children: [] };
+    });
+
+    flatList.forEach((item) => {
+      const currentItem = map[item.HEADER_ID];
+      if (item.SUPI_HEADER && map[item.SUPI_HEADER]) {
+        map[item.SUPI_HEADER].children.push(currentItem);
+      } else {
+        roots.push(currentItem);
+      }
+    });
+    return roots;
+  };
+
+  useEffect(() => {
+    const grid = previewGridRef.current?.control;
+    if (!grid || !headerConfig || headerConfig.length === 0) {
+      // headerConfig가 없거나 비어있으면 그리드를 그릴 필요 없음
+      return;
+    }
+
+    const treeHeaders = buildTree2(headerConfig); // 헤더 구성을 트리 구조로 변환
+
+    // 1. CONN_FIELD 유무와 상관없이 모든 리프 노드 (자식이 없는 노드)를 수집
+    const allLeafNodes = [];
+    const collectAllLeafNodes = (nodes) => {
+      nodes.forEach((node) => {
+        if (node.children.length === 0) {
+          allLeafNodes.push(node);
+        } else {
+          collectAllLeafNodes(node.children);
+        }
+      });
+    };
+    collectAllLeafNodes(treeHeaders);
+
+    // SORT_SN을 기준으로 리프 노드를 정렬하여 컬럼 순서 일치
+    allLeafNodes.sort((a, b) => (a.SORT_SN || 0) - (b.SORT_SN || 0));
+
+    // 2. 기존 컬럼 및 헤더 행 제거
+    grid.columns.clear();
+    const panel = grid.columnHeaders;
+    while (panel.rows.length > 0) {
+      panel.rows.removeAt(0);
+    }
+
+    // 3. 필요한 헤더 행 수 계산 (트리의 최대 깊이)
+    let maxDepth = 0;
+    const calculateDepth = (nodes, currentDepth) => {
+      if (nodes.length === 0) {
+        if (currentDepth > maxDepth) {
+          maxDepth = currentDepth;
+        }
+        return;
+      }
+      nodes.forEach((node) => {
+        calculateDepth(node.children, currentDepth + 1);
+      });
+    };
+    calculateDepth(treeHeaders, 0);
+
+    // maxDepth가 0이지만 리프 노드가 있다면 최소 1줄은 보장 (예: 단일 레벨 헤더)
+    if (maxDepth === 0 && allLeafNodes.length > 0) {
+      maxDepth = 1;
+    } else if (maxDepth === 0 && allLeafNodes.length === 0) {
+      grid.invalidate(); // 헤더 설정할 것이 없으면 그리드 갱신만
+      return;
+    }
+
+    // 4. 헤더 행 생성 (maxDepth만큼)
+    for (let i = 0; i < maxDepth; i++) {
+      const extraRow = new wjGrid.Row();
+      extraRow.allowMerging = true; // 각 헤더 행에 병합 허용 설정
+      panel.rows.push(extraRow);
+    }
+
+    // 5. 실제 컬럼 추가 (모든 리프 노드를 컬럼으로 추가)
+    if (allLeafNodes.length === 0) {
+      grid.invalidate();
+      return;
+    }
+
+    // 모든 리프 노드에 대해 고유한 바인딩을 매핑하는 Map 생성
+    const leafNodeBindingMap = new Map();
+    allLeafNodes.forEach((node, index) => {
+      // CONN_FIELD가 없으면 더미 바인딩 사용
+      const binding =
+        node.CONN_FIELD && node.CONN_FIELD.trim() !== '' ? node.CONN_FIELD : `__dummy_col_${node.HEADER_ID}_${index}`; // 고유한 더미 바인딩 생성
+      leafNodeBindingMap.set(node.HEADER_ID, binding); // Map에 저장
+
+      const col = new wjGrid.Column({
+        binding: binding,
+        header: node.HEADER_NAME, // 리프 노드의 HEADER_NAME을 컬럼 헤더로 사용
+        width: node.HEADER_WIDTH > 0 ? node.HEADER_WIDTH : '*', // 기본 너비 * 또는 지정된 너비
+        isReadOnly: true,
+        allowMerging: true, // 💡 각 컬럼에도 병합 허용 설정 (중요!)
+      });
+      grid.columns.push(col);
+    });
+
+    // 6. 다중 레벨 헤더 셀 데이터 설정 및 병합 로직
+    const getColumnSpan = (node) => {
+      let coveredLeafBindings = [];
+      const getCoveredLeaves = (n) => {
+        if (n.children && n.children.length > 0) {
+          n.children.forEach((child) => getCoveredLeaves(child));
+        } else {
+          // 자식이 없는 노드(리프 노드)의 바인딩을 Map에서 가져와 추가
+          const binding = leafNodeBindingMap.get(n.HEADER_ID);
+          if (binding) {
+            coveredLeafBindings.push(binding);
+          }
+        }
+      };
+      getCoveredLeaves(node);
+
+      // null 또는 undefined 값 제거
+      const validBindings = coveredLeafBindings.filter((b) => b);
+
+      if (validBindings.length === 0) {
+        return { start: -1, end: -1 };
+      }
+
+      // 유효한 바인딩에 해당하는 컬럼 인덱스 찾기
+      const indices = validBindings
+        .map((binding) => grid.columns.findIndex((col) => col.binding === binding))
+        .filter((idx) => idx !== -1)
+        .sort((a, b) => a - b);
+
+      if (indices.length === 0) return { start: -1, end: -1 };
+
+      return { start: indices[0], end: indices[indices.length - 1] };
+    };
+
+    const setHeaderCells = (nodes, currentHeaderRowIndex) => {
+      nodes.forEach((node) => {
+        const { start, end } = getColumnSpan(node);
+
+        if (start !== -1 && end !== -1) {
+          // 현재 노드의 HEADER_NAME을 해당 범위의 셀에 설정 (가로 병합)
+          for (let colIdx = start; colIdx <= end; colIdx++) {
+            panel.setCellData(currentHeaderRowIndex, colIdx, node.HEADER_NAME);
+          }
+
+          // 자식 노드가 있으면 다음 행에서 재귀 호출
+          if (node.children && node.children.length > 0) {
+            setHeaderCells(node.children, currentHeaderRowIndex + 1);
+          } else {
+            // 자식이 없는 리프 노드의 경우,
+            // 현재 노드의 헤더를 해당 컬럼의 최하위 행까지 수직으로 병합합니다.
+            for (let rowIdx = currentHeaderRowIndex + 1; rowIdx < maxDepth; rowIdx++) {
+              for (let k = start; k <= end; k++) {
+                // 중요: 수직 병합을 위해 병합될 범위의 모든 셀에 동일한 HEADER_NAME을 설정
+                // Wijmo는 인접 셀의 내용이 같아야 병합을 시도합니다.
+                panel.setCellData(rowIdx, k, node.HEADER_NAME);
+              }
+            }
+          }
+        } else {
+          console.warn(
+            `[setHeaderCells] Node "${node.HEADER_NAME}" (ID: ${node.HEADER_ID}) has no valid column span. It will not be rendered as a column or part of merged header.`
+          );
+        }
+      });
+    };
+
+    // 모든 헤더 셀을 초기화 (null)하여 이전 렌더링 흔적을 지우고 깨끗한 상태에서 시작
+    for (let r = 0; r < maxDepth; r++) {
+      for (let c = 0; c < grid.columns.length; c++) {
+        panel.setCellData(r, c, null);
+      }
+    }
+
+    // 헤더 셀 데이터 설정 함수 호출
+    setHeaderCells(treeHeaders, 0);
+
+    grid.invalidate(); // 그리드 갱신
+  }, [headerConfig]);
 
   return (
     <div style={{ padding: '10px', background: 'white' }}>
@@ -440,16 +603,12 @@ const LmsHeader = () => {
           beginningEdit={onBeginningEdit}
           initialized={(grid) => {
             grid.cellEditEnded.addHandler((s, e) => {
-              const col = s.columns[e.col];
-              const item = s.rows[e.row].dataItem;
               let oldValue = e.data;
               let newValue = s.getCellData(e.row, e.col);
 
               if (oldValue !== newValue) {
                 markAsEdited(s, e.getRow().dataItem);
               }
-              console.log('col', col);
-              console.log('item', item);
             });
           }}
         >
@@ -460,7 +619,7 @@ const LmsHeader = () => {
           <FlexGridColumn binding="SUPI_HEADER" header="상위헤더" width="*" dataMap={supiHeaderMap} />
           <FlexGridColumn binding="HEADER_WIDTH" header="넓이" width="0.3*" dataType="Number" />
           <FlexGridColumn binding="CONN_FIELD" header="연결필드" width="*" dataMap={statusMap} />
-          <FlexGridColumn binding="SORT_SN" header="정렬순서" width={80} dataType="Number" />
+          <FlexGridColumn binding="SORT_SN" header="정렬순서" width={80} />
           <FlexGridColumn binding="TABLE_SEQ" header="SEQ" visible={false} />
         </FlexGrid>
       </div>
@@ -480,12 +639,15 @@ const LmsHeader = () => {
           미리보기
         </h4>
         <div style={{ margin: '2px' }}>
-          <FlexGrid allowMerging="ColumnHeaders" alternatingRowStep={0} initialized={onInitialized}>
-            <FlexGridColumn binding="country" header="Country" width="*" allowMerging={true} />
-            <FlexGridColumn binding="sales" header="Sales" width="*" format="n2" />
-            <FlexGridColumn binding="expenses" header="Expenses" width="*" format="n2" />
-            <FlexGridColumn binding="active" header="Active" width="*" allowMerging={true} />
-          </FlexGrid>
+          <FlexGrid
+            allowMerging="ColumnHeaders"
+            alternatingRowStep={0}
+            initialized={onPreviewGridInitialized}
+            itemsSource={[]}
+            ref={previewGridRef}
+            autoGenerateColumns={false}
+            allowSorting={false}
+          ></FlexGrid>
         </div>
       </div>
     </div>
