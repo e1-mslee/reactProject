@@ -6,7 +6,7 @@ import 'react-datepicker/dist/react-datepicker.css';
 import api from './../api/api.js';
 import { FlexGrid, FlexGridColumn } from '@mescius/wijmo.react.grid';
 import { DataMap, CellType } from '@mescius/wijmo.grid';
-import { CollectionView } from '@mescius/wijmo';
+import { CollectionView, isEmpty } from '@mescius/wijmo';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import useEvent from 'react-use-event-hook';
 import { Button, Flex, Modal, message } from 'antd';
@@ -25,6 +25,7 @@ const LmsHeader = () => {
   const [headerConfig, setHeaderConfig] = useState([]);
   const [headerData, setHeaderData] = useState([]);
   const previewGridRef = useRef(null); // 미리보기 그리드에 접근하기 위한 ref
+  const [showExportButton, setShowExportButton] = useState(false); // 초기값은 숨김
 
   const extractHeaderOptions = (items) =>
     items.map((item) => ({
@@ -43,6 +44,12 @@ const LmsHeader = () => {
       const headerOptions = extractHeaderOptions(res.data);
       const withEmptyOption = [{ value: '', name: '\u00A0' }, ...headerOptions];
       setSupiHeaderMap(new DataMap(withEmptyOption, 'value', 'name'));
+
+      if (res.data && res.data.length > 0) {
+        setShowExportButton(false); // 데이터가 있으면 버튼 숨김
+      } else {
+        setShowExportButton(true); // 데이터가 없으면 버튼 보임
+      }
     } catch (err) {
       console.error('필드 목록 불러오기 오류:', err);
     }
@@ -55,7 +62,6 @@ const LmsHeader = () => {
       const res = await api.post('/api/getTableFieldList', String(tableSeq));
       const withEmptyOption = [{ COL_ID: ' ', COL_NAME: '\u00A0' }, ...res.data];
       setTableField(withEmptyOption);
-      console.log(withEmptyOption);
     } catch (err) {
       console.error('필드 불러오기 오류:', err);
     }
@@ -104,12 +110,25 @@ const LmsHeader = () => {
       return;
     }
 
+    for (const item of sendItems) {
+      if (!item.HEADER_NAME) {
+        message.error('헤더명은 필수 입력 항목입니다.');
+        return;
+      }
+
+      if (!item.SORT_SN) {
+        message.error('정렬순서는 필수 입력 항목입니다.');
+        return;
+      }
+    }
+
     Modal.confirm({
       title: '알림',
       content: '저장하시겠습니까?',
       style: { top: 200 },
       async onOk() {
         try {
+          console.log('sendItems', sendItems);
           await api.post('/api/saveHeaderList', sendItems);
           message.success('저장되었습니다.');
           await fetchGridData();
@@ -216,6 +235,9 @@ const LmsHeader = () => {
 
         grid.collectionView.refresh();
         message.success('선택한 행들이 삭제되었습니다.');
+        if (gridData.sourceCollection.length == 0) {
+          setShowExportButton(true);
+        }
       },
     });
   };
@@ -534,13 +556,51 @@ const LmsHeader = () => {
     grid.invalidate(); // 그리드 갱신
   }, [headerConfig]);
 
+  const exportFieldList = () => {
+    if (!gridData) return;
+
+    if (gridData.sourceCollection.length > 0) {
+      message.warning('이미 헤더 목록이 존재하여 필드를 가져올 수 없습니다.');
+      return;
+    }
+
+    tableField.forEach((item) => {
+      if (item.COL_ID && item.COL_ID.trim() !== '') {
+        const newRow = {
+          selected: false,
+          HEADER_ID: getNextHeaderId(),
+          HEADER_NAME: item.COL_NAME || '',
+          SUPI_HEADER: '',
+          HEADER_WIDTH: 100,
+          CONN_FIELD: item.COL_ID,
+          SORT_SN: 1,
+          TABLE_SEQ: tableSeq,
+          deps: [],
+        };
+
+        const newItem = gridData.addNew();
+        Object.assign(newItem, newRow);
+
+        gridData.commitNew();
+      }
+    });
+
+    setShowExportButton(false);
+  };
+
   return (
     <div style={{ padding: '10px', background: 'white' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '10px' }}>
         <span style={{ fontSize: '18px', fontWeight: 'bold' }}>헤더 관리</span>
         <div style={{ display: 'flex', justifyContent: 'flex-end', margin: '2px 0 2px 0' }}>
           <Flex gap="small" wrap>
-            <Button className="custom-button">필드 가져오기</Button>
+            <Button
+              className="custom-button"
+              onClick={exportFieldList}
+              style={{ display: showExportButton ? 'block' : 'none' }}
+            >
+              필드 가져오기
+            </Button>
             <Button className="custom-button" onClick={() => setReviewFlag((prev) => !prev)}>
               미리보기
             </Button>
@@ -606,6 +666,16 @@ const LmsHeader = () => {
               let oldValue = e.data;
               let newValue = s.getCellData(e.row, e.col);
 
+              let row = e.row;
+              let col = e.col;
+
+              if (col == 6) {
+                console.log(s);
+              }
+
+              console.log('row', row);
+              console.log('col', col);
+
               if (oldValue !== newValue) {
                 markAsEdited(s, e.getRow().dataItem);
               }
@@ -619,7 +689,7 @@ const LmsHeader = () => {
           <FlexGridColumn binding="SUPI_HEADER" header="상위헤더" width="*" dataMap={supiHeaderMap} />
           <FlexGridColumn binding="HEADER_WIDTH" header="넓이" width="0.3*" dataType="Number" />
           <FlexGridColumn binding="CONN_FIELD" header="연결필드" width="*" dataMap={statusMap} />
-          <FlexGridColumn binding="SORT_SN" header="정렬순서" width={80} />
+          <FlexGridColumn binding="SORT_SN" header="정렬순서" width={80} dataType="Number" />
           <FlexGridColumn binding="TABLE_SEQ" header="SEQ" visible={false} />
         </FlexGrid>
       </div>
@@ -647,6 +717,7 @@ const LmsHeader = () => {
             ref={previewGridRef}
             autoGenerateColumns={false}
             allowSorting={false}
+            allowDragging="None"
           ></FlexGrid>
         </div>
       </div>
