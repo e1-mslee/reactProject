@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import api from "../api/api.js";
+import api from "@api/api.js";
 import { CollectionView } from "@mescius/wijmo";
 
 const useColData = create((set) => ({
@@ -61,7 +61,6 @@ const useColData = create((set) => ({
         if(row === -1) {
             newItem.colId = "COL_001";
         } else {
-            console.log(data[row]);
             let num = data[row].colId.split("_")[1];
             let n = Number(num)+1;
 
@@ -74,6 +73,20 @@ const useColData = create((set) => ({
         newItem.colSch = false;
 
         view.commitNew();
+    },
+    deleteGridData: () => {
+        let gridRef = useColData.getState().gridRef.current.control;
+        let data = useColData.getState().gridData.items;
+        let selectedRows = data.filter((d) => { return d.selected });
+
+        if(selectedRows.length === 0) {
+            alert("삭제할 행을 선택해주세요.");
+            return;
+        }
+
+        for(let selectedRow of selectedRows) {
+            gridRef.collectionView.remove(selectedRow);
+        }
     },
     saveColData: (seq) => {
         let initData = useColData.getState().initData;
@@ -94,19 +107,15 @@ const useColData = create((set) => ({
             return;
         }
 
-        if(initData == null || initData[0].tableId == null || initData[0].tableId === "") {
-            let cond = {
-                tableSeq: seq,
-                tableNm: tableNm,
-                tableId: tableId
-            }
-            api.put('/kjoApi/mainTable', cond).then(() => {
-                alert("저장되었습니다.");
-            });
-        } else {
+        if(initData != null && initData[0].tableId != null && initData[0].tableId !== "") {
             let added = view.itemsAdded || [];
             let edited = view.itemsEdited || [];
             let removed = view.itemsRemoved || [];
+
+            if(added.length === 0 && edited.length === 0 && removed.length === 0) {
+                alert("변경사항이 없습니다.");
+                return;
+            }
 
             let cond = {
                 added: Array.from(added).map(row => ({ ...row })),
@@ -115,24 +124,33 @@ const useColData = create((set) => ({
             }
 
             api.post('/kjoApi/fieldTable', cond).then(() => {
-                alert("저장되었습니다.");
                 useColData.getState().fetchGridData(seq);
             });
         }
+
+        let cond = {
+            tableSeq: seq,
+            tableNm: tableNm,
+            tableId: tableId
+        }
+        api.put('/kjoApi/mainTable', cond).then(() => {
+            alert("저장되었습니다.");
+            useColData.getState().fetchInitData(seq);
+        });
     },
-    deleteGridData: () => {
-        let gridRef = useColData.getState().gridRef.current.control;
-        let data = useColData.getState().gridData.items;
-        let selectedRows = data.filter((d) => { return d.selected });
+    headerPopup : (seq) => {
+        let tableSeq = seq;
 
-        if(selectedRows.length === 0) {
-            alert("삭제할 행을 선택해주세요.");
-            return;
-        }
+        const popupWidth = 1000;
+        const popupHeight = 800;
 
-        for(let selectedRow of selectedRows) {
-            gridRef.collectionView.remove(selectedRow);
-        }
+        const left = window.screenX + (window.outerWidth - popupWidth) / 2;
+        const top = window.screenY + (window.outerHeight - popupHeight) / 2;
+        window.open(
+            `/popup/kjo_header_pop?tableSeq=${encodeURIComponent(tableSeq)}`,
+            '_blank',
+            `width=${popupWidth},height=${popupHeight},left=${left},top=${top},resizable=yes,scrollbars=yes`
+        );
     }
 }));
 

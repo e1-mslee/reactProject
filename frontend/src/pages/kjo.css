@@ -64,3 +64,94 @@
     color: #1890ff;
     cursor: pointer;
 }
+
+.header_line {
+    display: flex;
+    justify-content: space-between;
+    margin: 20px 20px 10px 20px;
+}
+
+.grid_header {
+    display: flex;
+    justify-content: space-between;
+    margin: 20px 20px 10px 20px;
+}
+.content_title {
+    color: black;
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 0;
+}
+
+.sub_content_title {
+    color: black;
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 0;
+}
+
+.table_info_area {
+    flex-wrap: wrap;
+    padding: 13px 10px 12px 10px;
+    margin: 0 20px 10px 20px;
+    background-color: #F1ECEA;
+}
+
+.table_info {
+    margin: 5px 0;
+    display: block;
+}
+
+.table_info_cell {
+    display: inline-block;
+    width: 70px;
+}
+
+input:disabled {
+    background-color: #F3F3F3;
+}
+
+.table_info_span {
+    width: 70px;
+    color: #222;
+    font-size: 12px;
+    font-weight: 500;
+    padding-right: 20px;
+    margin: auto;
+}
+
+.grid_area {
+    margin: 0 20px;
+}
+
+.wj-cell.wj-group, .wj-cells .wj-cell.wj-state-multi-selected {
+    background-color: white !important;
+    color: black !important;
+}
+
+.wj-cell .v-center {
+    position: relative;
+    top: 50%;
+    transform: translateY(-50%);
+    white-space: pre-wrap;
+}
+
+/*.wj-flexgrid .wj-header label {
+    display: none;
+}
+.wj-flexgrid .checkBox {
+    text-align: center;
+    padding-left: 0 !important;
+}
+
+.wj-flexgrid .checkBox .wj-elem-collapse {
+    display: none;
+}
+
+.wj-flexgrid .checkBox input.wj-column-selector.wj-column-selector-group {
+    margin: 0;
+}
+
+.wj-flexgrid .checkBox input.wj-column-selector.wj-column-selector-group {
+    transform: none !important;
+}*/

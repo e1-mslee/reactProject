@@ -25,4 +25,16 @@ public interface KjoApiMapper {
     void updateFieldTable(Map<String, Object> data);
 
     void deleteFieldTable(Map<String, Object> data);
+
+    List<Map<String, Object>> selectHeaderTable(Map<String, Object> data);
+
+    void insertHeaderTable(List<Map<String, Object>> data);
+
+    void updateHeaderTable(Map<String, Object> data);
+
+    void deleteHeaderTable(Map<String, Object> data);
+
+    List<Map<String, Object>> selectHeaderId(Map<String, Object> data);
+
+    List<Map<String, Object>> selectGridHeaderTable(Map<String, Object> data);
 }

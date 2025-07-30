@@ -18,6 +18,7 @@ export default defineConfig({
       { find: "@data", replacement: resolve(__dirname, "src/data") },
       { find: "@assets", replacement: resolve(__dirname, "src/assets") },
       { find: "@utils", replacement: resolve(__dirname, "src/utils") },
+      { find: "@store", replacement: resolve(__dirname, "src/store") },
     ],
   },
 });

@@ -1,27 +1,28 @@
-import "./kjoPop.css";
-import {useEffect, useRef} from "react";
+import "./kjo.css";
+import {useEffect, useRef, useState} from "react";
 
-import BaseButton from '../components/BaseButton.jsx';
+import BaseButton from '@component/BaseButton.jsx';
 import '@mescius/wijmo.styles/wijmo.css';
 import '@mescius/wijmo.cultures/wijmo.culture.ko' ;
 
 import { DataMap } from '@mescius/wijmo.grid';
 import { FlexGrid, FlexGridColumn } from '@mescius/wijmo.react.grid';
 
-import useCommonData from "../store/commonStore.js";
-import useColData from "../store/kjoPopupStore.js";
+import useCommonData from "@store/commonStore.js";
+import useColData from "@store/kjoPopupStore.js";
 import useEvent from "react-use-event-hook";
 
 const params = new URLSearchParams(window.location.search);
 const tableSeq = params.get('tableSeq');
 
 const Header = () => {
-    const { saveColData } = useColData();
+    const { saveColData, headerPopup } = useColData();
 
     return (
         <div className={"header_line"}>
             <div className={"content_title"}>테이블 정의</div>
             <div className={"button_box"}>
+                <BaseButton txt={"헤더관리"} onClick={() => headerPopup(tableSeq)}/>
                 <BaseButton txt={"저장"} onClick={() => saveColData(tableSeq)}/>
             </div>
         </div>
@@ -62,7 +63,7 @@ const TableInfoArea = () => {
 const ColGridHeader = () => {
     const { addGridData, deleteGridData } = useColData();
     return (
-        <div className={"col_grid_header"}>
+        <div className={"grid_header"}>
             <div className={"sub_content_title"}>필드 속성 정의</div>
             <div className={"button_box"}>
                 <BaseButton txt={"행추가"} onClick={() => addGridData(tableSeq)}/>
@@ -71,9 +72,11 @@ const ColGridHeader = () => {
         </div>
     )
 }
+
 const ColGridArea = ({commCode}) => {
     const { setGridRef, gridData } = useColData();
     const gridRef = useRef(null);
+    const [ totalCnt, setTotalCnt ] = useState(0);
 
     let code = null;
     if(commCode != null) {
@@ -83,7 +86,24 @@ const ColGridArea = ({commCode}) => {
     useEffect(() => {
         if (gridRef)
             setGridRef(gridRef); // FlexGrid 컨트롤 등록
+
     }, []);
+
+    useEffect(() => {
+        if (!gridData) return;
+
+        setTotalCnt(gridData.items?.length || 0);
+
+        function onCollectionChanged(e) {
+            setTotalCnt(e?.items?.length);
+        }
+
+        gridData.collectionChanged.addHandler(onCollectionChanged);
+
+        return () => {
+            gridData.collectionChanged.removeHandler(onCollectionChanged);
+        };
+    }, [gridData]);
 
     const flexInitialized = useEvent((grid) => {
         grid.beginningEdit.addHandler((s, e) => {
@@ -117,7 +137,7 @@ const ColGridArea = ({commCode}) => {
     })
 
     return (
-        <div className={"col_grid_area"}>
+        <div className={"grid_area"}>
             <FlexGrid
                 ref = {gridRef}
                 itemsSource={gridData}
@@ -138,6 +158,7 @@ const ColGridArea = ({commCode}) => {
                 <FlexGridColumn header="검색" binding="colSch" width={50} dataType="Boolean"/>
                 <FlexGridColumn header="SEQ" binding="tableSeq" visible={false} />
             </FlexGrid>
+            <span> Total: {totalCnt}</span>
         </div>
     )
 }
@@ -151,6 +172,13 @@ const KjoPop = () =>{
 
         if (link) {
             link.remove();
+        }
+
+        const link2 = document.querySelector('body>div:last-child');
+
+        if(link2) {
+            console.log(link2);
+            link2.remove();
         }
 
         fetchAllData();

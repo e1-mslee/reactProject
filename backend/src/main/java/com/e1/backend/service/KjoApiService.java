@@ -20,4 +20,12 @@ public interface KjoApiService {
     List<Map<String, Object>> selectFieldTable(Map<String, Object> data);
 
     ResponseEntity<?> saveFieldTable(Map<String, List<Map<String, Object>>> data);
+
+    List<Map<String, Object>> selectHeaderTable(Map<String, Object> data);
+
+    ResponseEntity<?> saveHeaderTable(Map<String, List<Map<String, Object>>> data);
+
+    List<Map<String, Object>> selectHeaderId(Map<String, Object> data);
+
+    List<Map<String, Object>> selectGridHeaderTable(Map<String, Object> data);
 }

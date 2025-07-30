@@ -13,6 +13,7 @@ import Kjo from '@pages/Kjo';
 import LmsPop from '@pages/LmsPop.jsx';
 import LmsHeader from '@pages/LmsHeader.jsx';
 import KjoPop from './pages/KjoPop.jsx';
+import KjoHeaderPopup from "@pages/kjoHeaderPopup.jsx";
 
 const { Content } = Layout;
 
@@ -28,6 +29,7 @@ const App = () => {
         <Route path="/popup/lms_pop" element={<LmsPop />} />
         <Route path="/popup/lms_Header" element={<LmsHeader />} />
         <Route path="/popup/kjo_pop" element={<KjoPop />} />
+        <Route path="/popup/kjo_header_pop" element={<KjoHeaderPopup />} />
       </Routes>
     );
   }

@@ -101,4 +101,90 @@
          where TABLE_SEQ = #{tableSeq}
            and COL_ID = #{colId}
     </delete>
+
+    <select id="selectHeaderTable" parameterType="map">
+        select false        as selected,
+               TABLE_SEQ    as tableSeq,
+               HEADER_ID    as headerId,
+               HEADER_NAME  as headerName,
+               SUPI_HEADER  as supiHeader,
+               HEADER_WIDTH as headerWidth,
+               CONN_FIELD   as connField,
+               SORT_SN      as sortSn
+          from std_header
+         where TABLE_SEQ = #{tableSeq}
+         order by SORT_SN
+    </select>
+
+    <insert id="insertHeaderTable" parameterType="map">
+        insert into std_header
+            (TABLE_SEQ, HEADER_ID, HEADER_NAME, SUPI_HEADER, HEADER_WIDTH, CONN_FIELD, SORT_SN)
+        values
+        <foreach collection="list" item="item" separator=",">
+            (#{item.tableSeq}, #{item.headerId}, #{item.headerName}, #{item.supiHeader}, #{item.headerWidth}, #{item.connField}, #{item.sortSn})
+        </foreach>
+    </insert>
+
+    <update id="updateHeaderTable" parameterType="map">
+        update std_header
+           set HEADER_NAME = #{headerName},
+               SUPI_HEADER = #{supiHeader},
+               HEADER_WIDTH = #{headerWidth},
+               CONN_FIELD = #{connField},
+               SORT_SN = #{sortSn}
+         where TABLE_SEQ = #{tableSeq}
+           and HEADER_ID = #{headerId}
+    </update>
+
+    <delete id="deleteHeaderTable" parameterType="map">
+        delete from std_header
+         where TABLE_SEQ = #{tableSeq}
+           and HEADER_ID = #{headerId}
+    </delete>
+
+    <select id="selectHeaderId" parameterType="map">
+        select HEADER_ID    as headerId,
+               HEADER_NAME  as headerName
+          from std_header
+         where TABLE_SEQ = #{tableSeq}
+         order by HEADER_ID
+    </select>
+
+    <select id="selectGridHeaderTable" parameterType="map">
+        with recursive cte(TABLE_SEQ, HEADER_ID, HEADER_NAME, SUPI_HEADER, HEADER_WIDTH, CONN_FIELD, SORT_SN, dept) as (
+            select TABLE_SEQ,
+                   HEADER_ID,
+                   HEADER_NAME,
+                   SUPI_HEADER,
+                   HEADER_WIDTH,
+                   CONN_FIELD,
+                   cast(SORT_SN as char(100)) as sort_sn,
+                   0 as dept
+             from std_header
+            where TABLE_SEQ = #{tableSeq} and SUPI_HEADER = ''
+            union all
+            select a.TABLE_SEQ,
+                   a.HEADER_ID,
+                   a.HEADER_NAME,
+                   a.SUPI_HEADER,
+                   a.HEADER_WIDTH,
+                   a.CONN_FIELD,
+                   cast(concat(h.SORT_SN,'-',a.SORT_SN) as char(100)) as sort_sn,
+                   h.dept + 1 as dept
+              from std_header a
+              join cte h
+                on a.TABLE_SEQ = h.TABLE_SEQ and a.SUPI_HEADER = h.HEADER_ID
+        )
+        select TABLE_SEQ    as tableSeq,
+               HEADER_ID    as headerId,
+               HEADER_NAME  as headerName,
+               SUPI_HEADER  as supiHeader,
+               HEADER_WIDTH as headerWidth,
+               CONN_FIELD   as connField,
+               SORT_SN      as sortSn,
+               dept,
+               (select count(*) from std_header h where h.SUPI_HEADER = c.HEADER_ID and TABLE_SEQ = #{tableSeq}) as child
+          from cte c
+         order by sort_sn
+    </select>
 </mapper>

@@ -49,4 +49,24 @@ public class KjoApiController {
         return kjoApiService.saveFieldTable(data);
     }
 
+    @GetMapping("/headerTable")
+    public List<Map<String, Object>> selectHeaderTable(@RequestParam Map<String, Object> data) {
+        return kjoApiService.selectHeaderTable(data);
+    }
+
+    @PostMapping("headerTable")
+    public ResponseEntity<?> saveHeaderTable(@RequestBody Map<String, List<Map<String, Object>>> data) {
+        return kjoApiService.saveHeaderTable(data);
+    }
+
+    @GetMapping("/headerId")
+    public List<Map<String, Object>> selectHeaderId(@RequestParam Map<String, Object> data) {
+        return kjoApiService.selectHeaderId(data);
+    }
+
+    @GetMapping("/gridHeaderTable")
+    public List<Map<String, Object>> selectGridHeaderTable(@RequestParam Map<String, Object> data) {
+        return kjoApiService.selectGridHeaderTable(data);
+    }
+
 }

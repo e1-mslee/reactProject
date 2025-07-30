@@ -1,7 +1,7 @@
 import "./kjo.css";
 import {useState, useEffect, useRef} from "react";
+import useEvent from "react-use-event-hook";
 
-import Button from '@mui/material/Button';
 import '@mescius/wijmo.styles/wijmo.css';
 import '@mescius/wijmo.cultures/wijmo.culture.ko' ;
 
@@ -10,19 +10,14 @@ import { FlexGrid, FlexGridColumn } from '@mescius/wijmo.react.grid';
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
+import BaseButton from "@component/BaseButton.jsx";
+
 import moment from 'moment';
 import 'moment/locale/ko';
-import useCommonData from "../store/commonStore.js";
-import useGridData from "../store/kjoStroe.js";
-import useEvent from "react-use-event-hook";
+import useCommonData from "@store/commonStore.js";
+import useGridData from "@store/kjoStroe.js";
 
 const nowTime = moment().format('YYYY-MM-DD');
-
-const BaseButton = ({txt, onClick}) => {
-    return (
-        <Button variant="outlined" size="small" onClick={onClick}>{txt}</Button>
-    );
-}
 
 const HeaderLine = () => {
     const { fetchGridData, addGridData, saveGridData, deleteGridData, exportExcel, openPopup } = useGridData();
@@ -100,12 +95,29 @@ const SearchArea = () => {
 const GridArea = () => {
     const {setGridRef, gridData, fetchGridData, openPopup} = useGridData();
     const gridRef = useRef(null);
+    const [ totalCnt, setTotalCnt ] = useState(0);
 
     useEffect(()=> {
         if (gridRef)
             setGridRef(gridRef); // FlexGrid 컨트롤 등록
         fetchGridData();
     }, []);
+
+    useEffect(() => {
+        if (!gridData) return;
+
+        setTotalCnt(gridData.items?.length || 0);
+
+        function onCollectionChanged(e) {
+            setTotalCnt(e?.items?.length);
+        }
+
+        gridData.collectionChanged.addHandler(onCollectionChanged);
+
+        return () => {
+            gridData.collectionChanged.removeHandler(onCollectionChanged);
+        };
+    }, [gridData]);
 
     const flexInitialized = useEvent((grid) => {
         grid.addEventListener(grid.hostElement, 'click', (ev) => {
@@ -130,7 +142,7 @@ const GridArea = () => {
               itemsSource={gridData}
               initialized={flexInitialized}
               isReadOnly={false}
-              style={{ height: '600px' }}
+              style={{ height: '500px' }}
               selectionMode="Row"
               headersVisibility="Column"
               allowSorting={true}
@@ -144,6 +156,7 @@ const GridArea = () => {
               <FlexGridColumn header="수정일" binding="vbgCreDtm" width="0.6*" isReadOnly={true} />
               <FlexGridColumn header="SEQ" binding="tableSeq" visible={false} />
           </FlexGrid>
+          <span> Total: {totalCnt}</span>
       </div>
     );
 }
@@ -157,6 +170,13 @@ const Kjo = () =>{
 
         if (link) {
             link.remove();
+        }
+
+        const link2 = document.querySelector('body>div:last-child');
+
+        if(link2) {
+            console.log(link2);
+            link2.remove();
         }
 
         fetchAllData();

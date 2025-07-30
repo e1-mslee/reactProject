@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration debug="true">
+
+    <!-- Appenders -->
+    <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <charset>UTF-8</charset>
+            <Pattern>%d %5p [%c] %m%n</Pattern>
+        </encoder>
+    </appender>
+
+    <appender name="console-infolog" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <charset>UTF-8</charset>
+            <Pattern>%d %5p %m%n</Pattern>
+        </encoder>
+    </appender>
+
+    <!-- Logger -->
+    <logger name="jdbc.sqlonly" level="INFO" appender-ref="console-infolog" />
+    <!-- 결과 테이블 로그-->
+    <logger name="jdbc.resultsettable" level="OFF" appender-ref="console-infolog" />
+    <logger name="jdbc.audit" level="OFF" appender-ref="console-infolog" />
+    <logger name="jdbc.resultset" level="OFF" appender-ref="console-infolog" />
+    <logger name="jdbc.connection" level="OFF" appender-ref="console-infolog" />
+
+    <!-- Root Logger -->
+    <root level="INFO">
+        <appender-ref ref="console" />
+    </root>
+</configuration>

@@ -101,7 +101,7 @@ const useGridData = create((set) => ({
             }
         } else {
             let unSelectedRows = data.filter((data) => {return !data.selected});
-            set({ gridData: unSelectedRows });
+            set({ gridData: new CollectionView(unSelectedRows, {trackChanges: true }) });
         }
     },
     openPopup: (seq) => {
@@ -113,17 +113,17 @@ const useGridData = create((set) => ({
             tableSeq = selectedRows[0].tableSeq;
         }
 
-        if(tableSeq == null || tableSeq === '' || tableSeq === undefined) {
-            alert("신규 추가된 행 입니다. 저장 후 수정해주세요");
-            return;
-        }
-
         if(seq == null && selectedRows.length === 0){
             alert("수정할 행을 선택해주세요.");
             return;
         }
         if(seq == null && selectedRows.length > 1){
             alert("1개의 행을 선택해주세요.");
+            return;
+        }
+
+        if(tableSeq == null || tableSeq === '' || tableSeq === undefined) {
+            alert("신규 추가된 행 입니다. 저장 후 수정해주세요");
             return;
         }
 

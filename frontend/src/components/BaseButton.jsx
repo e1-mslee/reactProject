@@ -1,8 +1,8 @@
 import Button from "@mui/material/Button";
 
-const BaseButton = ({txt, onClick}) => {
+const BaseButton = ({id="", txt, onClick}) => {
     return (
-        <Button variant="outlined" size="small" onClick={onClick}>{txt}</Button>
+        <Button id={id} variant="outlined" size="small" onClick={onClick}>{txt}</Button>
     );
 }
 
