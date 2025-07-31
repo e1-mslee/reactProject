@@ -1,0 +1,11 @@
+services:
+  react-prj-server:
+    build: ./frontend
+    ports:
+      - 5173:5173
+  spring-prj-server:
+    build: ./backend
+    ports:
+      - 8080:8080
+# docker compose up -d --build
+# docker compose down
