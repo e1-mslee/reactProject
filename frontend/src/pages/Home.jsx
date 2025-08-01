@@ -5,7 +5,7 @@ const Home = () => {
   return (
     <div style={{ maxWidth: '100%', overflowX: 'hidden', overflowY: 'hidden' }}>
       <div style={{ marginBottom: '10px' }}>
-        <h1 style={{ margin: 0, padding: 0 }}>안녕하세요. BS3팀 입니다.</h1>
+        <h1 style={{ margin: 0, padding: 0 }}>HELLO. BS3팀 입니다.</h1>
       </div>
       <div style={{ overflowX: 'hidden', width: '100%' }}>
         <Row gutter={[16, 16]} wrap>
