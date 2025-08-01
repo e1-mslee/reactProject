@@ -3,17 +3,20 @@
 ## 🖥️ 프로젝트 소개
 E1정보기술 BS 3팀 UDA 시스템 관리 프로젝트 입니다. 
 <br>
-Springboot 와 react를 통해 개발하였으며 ubuntu server에 jenkins 서버를 설치하여 docker compose를 통해 무중단 배포를 하였습니다
+Springboot 와 react를 통해 개발하였으며 server에 jenkins 서버를 설치하여 docker compose를 통해 무중단 배포를 하였습니다
 <br>
 
 ## 🕰️ 개발 기간
-* 25.08.01일 - 
+* 25.08.01 ~ 
 
 ## ⚙️ 개발 환경
 - `node v22.17.1`
 - `react v18.2.1`
-- - `java v17`
-- `spring boot v3.4.7` 
+- `spring boot v3.4.7`
+- - `openjdk 17`
+- `jenkins v2.516.1`
+- `docker v27.5.1`
+- - `docker compose v2.35.1`
 - **IDE** : Visual Studio Code
 - **Database** : mysql 8.0
 
