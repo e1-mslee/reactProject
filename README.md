@@ -1,4 +1,4 @@
-# SpringBoot & react Project
+# SpringBoot & React Project
 
 ## 🖥️ 프로젝트 소개
 E1정보기술 BS 3팀 UDA 시스템 관리 프로젝트 입니다. 
@@ -12,6 +12,7 @@ Springboot 와 react를 통해 개발하였으며 ubuntu server에 jenkins 서�
 ## ⚙️ 개발 환경
 - `node v22.17.1`
 - `react v18.2.1`
+- - `java v17`
 - `spring boot v3.4.7` 
 - **IDE** : Visual Studio Code
 - **Database** : mysql 8.0
