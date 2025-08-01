@@ -1,4 +1,4 @@
-# SpringBoot & reactProject
+# SpringBoot & react Project
 
 ## 🖥️ 프로젝트 소개
 E1정보기술 BS 3팀 UDA 시스템 관리 프로젝트 입니다. 
