@@ -4,177 +4,128 @@ import './Lms.css';
 import '@mescius/wijmo.cultures/wijmo.culture.ko';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import api from './../api/api.js';
 import { FlexGrid, FlexGridColumn, FlexGridCellTemplate } from '@mescius/wijmo.react.grid';
-import { CollectionView } from '@mescius/wijmo';
 import * as wjcGridXlsx from '@mescius/wijmo.grid.xlsx';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Button, Flex, Modal, message } from 'antd';
 import openPop from '@utils/openPop';
+import { useLmsStore } from '@store/lmsStore';
+import { useRemoveWijmoLink } from '@hooks/useRemoveWijmoLink';
+
+// 상수 정의
+const CONSTANTS = {
+  MESSAGES: {
+    SELECT_ONE_ITEM: '1개의 항목을 선택하세요.',
+    SELECT_ITEM: '수정할 항목을 선택하세요.',
+    CONFIRM_SAVE: '저장하시겠습니까?',
+    CONFIRM_DELETE: '삭제 하시겠습니까?',
+  },
+  GRID_STYLES: {
+    height: '540px',
+  },
+  COLUMN_WIDTHS: {
+    SELECT: 50,
+    TABLE_NAME: '*',
+    TABLE_ID: '*',
+    FIELD_COUNT: '0.4*',
+    CREATOR: '*',
+    CREATED_DATE: '0.5*',
+  },
+  MODAL_STYLE: { top: 200 },
+};
 
 const Lms = () => {
-  const [data, setData] = useState([]);
-  const [cv, setCv] = useState(null);
+  // Wijmo 링크 제거
+  useRemoveWijmoLink();
+
+  // 날짜 상태 관리
   const [startDate, setStartDate] = useState(() => {
     const date = new Date();
     date.setMonth(date.getMonth() - 1);
     return date;
   });
   const [endDate, setEndDate] = useState(new Date());
+
+  // Zustand 스토어 사용
+  const { data, cv, loading, fetchGridData, handleAddRow, saveTable, deleteData } = useLmsStore();
+
   const gridRef = useRef(null);
 
+  // 초기 로드
   useEffect(() => {
-    const link = document.querySelector('a[href="https://www.mescius.co.kr/wijmo#price"]');
-    if (link) {
-      link.remove();
-    }
+    fetchGridData(startDate, endDate);
+  }, [fetchGridData, startDate, endDate]);
 
-    fetchGridData();
-  }, []);
+  // 팝업 열기 함수 메모이제이션
+  const openPopupWithRefresh = useCallback(
+    tableSeq => {
+      if (!tableSeq) return;
+      const url = `/popup/lms_pop?tableSeq=${encodeURIComponent(tableSeq)}`;
+      openPop(url, () => fetchGridData(startDate, endDate));
+    },
+    [fetchGridData, startDate, endDate]
+  );
 
-  const isValidTableName = name => {
-    if (name == '') {
-      return true;
-    }
-    const regex = /^[A-Za-z0-9_]{1,10}$/;
-    return regex.test(name);
-  };
-
-  const handleAddRow = () => {
+  // 테이블 수정
+  const modifyTableColumn = useCallback(() => {
     if (!cv) return;
-    const newRow = {
-      TABLE_SEQ: '',
-      TABLE_NAME: '',
-      TABLE_ID: '',
-      field_count: '',
-      VBG_CRE_USER: '',
-      VBG_CRE_DTM: new Date().toISOString().split('T')[0], // 오늘 날짜
-      selected: false,
-    };
 
-    const newItem = cv.addNew();
-    Object.assign(newItem, newRow);
-    cv.commitNew();
-  };
-
-  const formatDate = date => {
-    const tzOffset = date.getTimezoneOffset() * 60000;
-    return new Date(date - tzOffset).toISOString().slice(0, 10);
-  };
-
-  const fetchGridData = async () => {
-    try {
-      const cond = {
-        startDate: formatDate(startDate),
-        endDate: formatDate(endDate),
-      };
-
-      const res = await api.post('/api/getMainTableInfo', cond);
-      setData(res.data);
-      const newCv = new CollectionView(res.data, { trackChanges: true });
-      setCv(newCv);
-    } catch (err) {
-      console.error('데이터 불러오기 오류:', err);
-    }
-  };
-
-  const modifyTableColumn = () => {
     const selectedRows = cv.items.filter(row => row.selected);
 
     if (selectedRows.length === 0) {
-      message.info('수정할 항목을 선택하세요.');
+      message.info(CONSTANTS.MESSAGES.SELECT_ITEM);
       return;
     } else if (selectedRows.length > 1) {
-      message.info(' 1개의 항목을 선택하세요.');
+      message.info(CONSTANTS.MESSAGES.SELECT_ONE_ITEM);
       return;
     }
 
-    const tableSeq = selectedRows[0].TABLE_SEQ;
-    const url = `/popup/lms_pop?tableSeq=${encodeURIComponent(tableSeq)}`;
-    openPop(url, fetchGridData);
-  };
+    openPopupWithRefresh(selectedRows[0].TABLE_SEQ);
+  }, [cv, openPopupWithRefresh]);
 
-  const saveTable = async () => {
-    if (!cv) return;
+  // 테이블명 클릭 핸들러
+  const handleTableNameClick = useCallback(
+    tableSeq => {
+      openPopupWithRefresh(tableSeq);
+    },
+    [openPopupWithRefresh]
+  );
 
-    const addedItems = cv.itemsAdded || [];
-    const editedItems = cv.itemsEdited || [];
-    const newItems = [...addedItems, ...editedItems];
-
-    console.log('newItems', newItems);
-
-    if (newItems.length === 0) {
-      message.error('저장할 내용이 없습니다.');
-      return;
-    }
-
-    for (const item of newItems) {
-      if (!item.TABLE_NAME) {
-        message.error('논리 테이블명은 필수 입력 항목입니다.');
-        return;
-      }
-
-      if (!isValidTableName(item.TABLE_ID)) {
-        message.error('물리 테이블명은 영문, 숫자, 언더스코어(_)만 허용하며 10자 이내로 입력이 가능합니다.');
-        return;
-      }
-      if (item.TABLE_NAME.length > 100) {
-        message.error('논리 테이블명은 30자 이내로 입력해주세요.');
-        return;
-      }
-    }
-
-    Modal.confirm({
+  // 모달 확인 함수 메모이제이션
+  const createConfirmModal = useCallback((content, onOk) => {
+    return Modal.confirm({
       title: '알림',
-      content: '저장하시겠습니까?',
-      style: { top: 200 },
-      async onOk() {
-        try {
-          await api.post('/api/saveMainTableInfo', newItems);
-          message.success('저장되었습니다.');
-          await fetchGridData();
-        } catch (error) {
-          console.error('저장 오류:', error);
-          message.error('저장 중 오류가 발생했습니다.');
-        }
+      content,
+      style: CONSTANTS.MODAL_STYLE,
+      onOk: async () => {
+        await onOk();
       },
     });
-  };
+  }, []);
 
-  const deleteData = async () => {
-    if (!cv) return;
-    const selected = cv.items.filter(row => row.selected);
-    const seqList = selected.map(row => row.TABLE_SEQ).filter(Boolean);
-
-    if (selected.length === 0) {
-      message.error('선택된 행이 없습니다.');
-      return;
-    }
-
-    if (seqList.length === 0) {
-      const filtered = cv.items.filter(row => !row.selected || row.REQ);
-      setCv(new CollectionView(filtered, { trackChanges: true }));
-      return;
-    }
-
-    Modal.confirm({
-      title: '알림',
-      content: '삭제 하시겠습니까?',
-      style: { top: 200 },
-      async onOk() {
-        try {
-          await api.post('/api/deleteMainTableInfo', seqList);
-          message.success('삭제되었습니다');
-          fetchGridData();
-        } catch (err) {
-          console.error('삭제 오류:', err);
-          message.error('삭제 중 오류 발생');
-        }
-      },
+  // 저장 핸들러
+  const handleSave = useCallback(() => {
+    createConfirmModal(CONSTANTS.MESSAGES.CONFIRM_SAVE, async () => {
+      await saveTable(startDate, endDate);
     });
-  };
+  }, [createConfirmModal, saveTable, startDate, endDate]);
 
-  const exportToExcel = () => {
+  // 삭제 핸들러
+  const handleDelete = useCallback(() => {
+    createConfirmModal(CONSTANTS.MESSAGES.CONFIRM_DELETE, async () => {
+      await deleteData(startDate, endDate);
+    });
+  }, [createConfirmModal, deleteData, startDate, endDate]);
+
+  // 조회 핸들러
+  const handleSearch = useCallback(() => {
+    fetchGridData(startDate, endDate);
+  }, [fetchGridData, startDate, endDate]);
+
+  // 엑셀 내보내기
+  const exportToExcel = useCallback(() => {
+    if (!gridRef.current) return;
+
     wjcGridXlsx.FlexGridXlsxConverter.saveAsync(
       gridRef.current.control,
       {
@@ -182,33 +133,63 @@ const Lms = () => {
       },
       'UDA 목록.xlsx'
     );
-  };
+  }, []);
+
+  // 버튼 핸들러들 메모이제이션
+  const buttonHandlers = useMemo(
+    () => ({
+      onSearch: handleSearch,
+      onAdd: handleAddRow,
+      onModify: modifyTableColumn,
+      onSave: handleSave,
+      onDelete: handleDelete,
+      onExport: exportToExcel,
+    }),
+    [handleSearch, handleAddRow, modifyTableColumn, handleSave, handleDelete, exportToExcel]
+  );
+
+  // 그리드 템플릿 메모이제이션
+  const tableNameTemplate = useCallback(
+    ctx => (
+      <span
+        onClick={() => handleTableNameClick(ctx.item.TABLE_SEQ)}
+        style={{ cursor: ctx.item.TABLE_SEQ ? 'pointer' : 'default' }}
+      >
+        {ctx.item.TABLE_NAME}
+      </span>
+    ),
+    [handleTableNameClick]
+  );
 
   return (
     <div>
       <span style={{ fontSize: '22px', fontWeight: 'bold' }}>UDA 목록</span>
+
+      {/* 액션 버튼 */}
       <div style={{ display: 'flex', justifyContent: 'flex-end', margin: '2px 0 10px 0' }}>
         <Flex gap='small' wrap>
-          <Button className='custom-button' onClick={fetchGridData}>
+          <Button className='custom-button' onClick={buttonHandlers.onSearch}>
             조회
           </Button>
-          <Button className='custom-button' onClick={handleAddRow}>
+          <Button className='custom-button' onClick={buttonHandlers.onAdd}>
             추가
           </Button>
-          <Button className='custom-button' onClick={modifyTableColumn}>
+          <Button className='custom-button' onClick={buttonHandlers.onModify}>
             수정
           </Button>
-          <Button className='custom-button' onClick={saveTable}>
+          <Button className='custom-button' onClick={buttonHandlers.onSave}>
             저장
           </Button>
-          <Button className='custom-button' onClick={deleteData}>
+          <Button className='custom-button' onClick={buttonHandlers.onDelete}>
             삭제
           </Button>
-          <Button className='custom-button' onClick={exportToExcel}>
+          <Button className='custom-button' onClick={buttonHandlers.onExport}>
             엑셀
           </Button>
         </Flex>
       </div>
+
+      {/* 검색 조건 */}
       <div className='formWrap'>
         <span>검색조건</span>
         <input
@@ -221,7 +202,7 @@ const Lms = () => {
           className='datepicker'
           shouldCloseOnSelect
           selected={startDate}
-          onChange={date => setStartDate(date)}
+          onChange={setStartDate}
         />
         <span style={{ width: '10px' }}>~</span>
         <DatePicker
@@ -229,46 +210,57 @@ const Lms = () => {
           className='datepicker'
           shouldCloseOnSelect
           selected={endDate}
-          onChange={date => setEndDate(date)}
+          onChange={setEndDate}
         />
       </div>
+
+      {/* 그리드 */}
       <div style={{ margin: '2px' }}>
         <FlexGrid
           ref={gridRef}
           itemsSource={cv}
           isReadOnly={false}
           autoGenerateColumns={false}
-          style={{ height: '540px' }}
+          style={CONSTANTS.GRID_STYLES}
           selectionMode='Row'
           headersVisibility='Column'
           allowSorting={true}
         >
-          <FlexGridColumn binding='selected' header='선택' width={50} dataType='Boolean' />
-          <FlexGridColumn binding='TABLE_NAME' header='논리 테이블명' width='*' cssClass='blue-column'>
-            <FlexGridCellTemplate
-              cellType='Cell'
-              template={ctx => (
-                <span
-                  onClick={() => {
-                    const tableSeq = ctx.item.TABLE_SEQ;
-                    if (!tableSeq) return;
-                    const url = `/popup/lms_pop?tableSeq=${encodeURIComponent(tableSeq)}`;
-                    openPop(url, fetchGridData);
-                  }}
-                >
-                  {ctx.item.TABLE_NAME}
-                </span>
-              )}
-            />
+          <FlexGridColumn binding='selected' header='선택' width={CONSTANTS.COLUMN_WIDTHS.SELECT} dataType='Boolean' />
+          <FlexGridColumn
+            binding='TABLE_NAME'
+            header='논리 테이블명'
+            width={CONSTANTS.COLUMN_WIDTHS.TABLE_NAME}
+            cssClass='blue-column'
+          >
+            <FlexGridCellTemplate cellType='Cell' template={tableNameTemplate} />
           </FlexGridColumn>
-          <FlexGridColumn binding='TABLE_ID' header='물리 테이블명' width='*' />
-          <FlexGridColumn binding='field_count' header='데이터 수' width='0.4*' isReadOnly={true} />
-          <FlexGridColumn binding='VBG_CRE_USER' header='생성자' width='*' isReadOnly={true} />
-          <FlexGridColumn binding='VBG_CRE_DTM' header='수정일' width='0.5*' align='center' isReadOnly={true} />
+          <FlexGridColumn binding='TABLE_ID' header='물리 테이블명' width={CONSTANTS.COLUMN_WIDTHS.TABLE_ID} />
+          <FlexGridColumn
+            binding='field_count'
+            header='데이터 수'
+            width={CONSTANTS.COLUMN_WIDTHS.FIELD_COUNT}
+            isReadOnly={true}
+          />
+          <FlexGridColumn
+            binding='VBG_CRE_USER'
+            header='생성자'
+            width={CONSTANTS.COLUMN_WIDTHS.CREATOR}
+            isReadOnly={true}
+          />
+          <FlexGridColumn
+            binding='VBG_CRE_DTM'
+            header='수정일'
+            width={CONSTANTS.COLUMN_WIDTHS.CREATED_DATE}
+            align='center'
+            isReadOnly={true}
+          />
           <FlexGridColumn binding='TABLE_SEQ' header='SEQ' visible={false} />
         </FlexGrid>
       </div>
-      <span style={{ fontSize: '13px', fontWeight: 'bold', marginLeft: '5px' }}> TOTAL : {data.length || 0} </span>
+
+      {/* 총 개수 표시 */}
+      <span style={{ fontSize: '13px', fontWeight: 'bold', marginLeft: '5px' }}>TOTAL : {data.length || 0}</span>
     </div>
   );
 };

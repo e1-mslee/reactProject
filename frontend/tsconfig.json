@@ -30,7 +30,8 @@
       "@data/*": ["src/data/*"],
       "@assets/*": ["src/assets/*"],
       "@utils/*": ["src/utils/*"],
-      "@store/*": ["src/store/*"]
+      "@store/*": ["src/store/*"],
+      "@hooks/*": ["src/hooks/*"]
     }
   },
   "include": ["src", "vite-env.d.ts"]
