@@ -25,15 +25,31 @@ Springboot 와 react를 통해 개발하였으며 server에 jenkins 서버를 �
 | 구분       | 패키지/기술명                | 버전        |
 | ---------- | --------------------------- | ----------- |
 | 상태관리   | Zustand                     | 5.0.4       |
-| 번들러     | Vite                        | 6.3.5       |
-| 타입       | TypeScript                  | 5.0.0       |
-| 라우팅     | react-router-dom            | 6.2.2       |
-| 폼         | react-hook-form             | 7.43.2      |
-| UI         | Material-UI                 | 7.1.1       |
-| 기타       | axios, dayjs, lodash        | 최신        |
+| 번들러     | Vite                        | 7.0.4      |
+| 타입       | TypeScript                  | 5.9.2       |
+| 라우팅     | react-router-dom            | 7.6.3       |
+| UI         | Material-UI,antd            | 7.2.0, 5.26.4     |
+| 그리드      | wijmo                      | 5.20251.40    |
+| 기타       | axios                        | 1.10.0       |
 | 품질       | ESLint, Prettier            | 9.x, 3.x    |
 
----
+## 🔧 주요 설정
+### 경로 별칭 (Path Aliases)
+
+```typescript
+// tsconfig.json & vite.config.js
+{
+  "@/*": ["src/*"],
+  "@pages/*": ["src/pages/*"],
+  "@component/*": ["src/components/*"],
+  "@api/*": ["src/api/*"],
+  "@data/*": ["src/data/*"],
+  "@assets/*": ["src/assets/*"],
+  "@utils/*": ["src/utils/*"],
+  "@store/*": ["src/store/*"],
+  "@hooks/*": ["src/hooks/*"]
+}
+```
 
 ## 📌 시작하기
 
@@ -42,13 +58,122 @@ Springboot 와 react를 통해 개발하였으며 server에 jenkins 서버를 �
 $ git clone https://github.com/e1-mslee/reactProject.git
 ```
 
-#### 폴더구조
+## 📁 프로젝트 구조
 ```sh
-├─reactProject
-│  ├─ backend
-│  ├─ frontend
-│  │  README.md
-│  │  ...
+bs3_study
+├─ backend
+│  ├─ .mvn
+│  │  └─ wrapper
+│  │     └─ maven-wrapper.properties
+│  ├─ Dockerfile
+│  ├─ HELP.md
+│  ├─ mvnw
+│  ├─ mvnw.cmd
+│  ├─ pom.xml
+│  └─ src
+│     ├─ main
+│     │  ├─ java
+│     │  │  └─ com
+│     │  │     └─ e1
+│     │  │        └─ backend
+│     │  │           ├─ BackendApplication.java
+│     │  │           ├─ config
+│     │  │           │  ├─ SecurityConfig.java
+│     │  │           │  └─ WebConfig.java
+│     │  │           ├─ Controller
+│     │  │           │  ├─ ApiController.java
+│     │  │           │  └─ KjoApiController.java
+│     │  │           ├─ mapper
+│     │  │           │  ├─ ApiMapper.java
+│     │  │           │  └─ KjoApiMapper.java
+│     │  │           ├─ service
+│     │  │           │  ├─ ApiService.java
+│     │  │           │  └─ KjoApiService.java
+│     │  │           └─ serviceimpl
+│     │  │              ├─ ApiServiceImpl.java
+│     │  │              └─ KjoApiServiceImpl.java
+│     │  └─ resources
+│     │     ├─ application.properties
+│     │     ├─ logback-spring.xml
+│     │     ├─ mybatis
+│     │     │  └─ sql
+│     │     │     ├─ kjo
+│     │     │     │  └─ kjoApi.xml
+│     │     │     └─ lms
+│     │     │        └─ api.xml
+│     │     ├─ static
+│     │     └─ templates
+│     └─ test
+│        └─ java
+│           └─ com
+│              └─ e1
+│                 └─ backend
+│                    └─ BackendApplicationTests.java
+├─ docker-compose.yml
+├─ frontend
+│  ├─ .dockerignore
+│  ├─ .env
+│  ├─ .env.production
+│  ├─ Dockerfile
+│  ├─ eslint.config.js
+│  ├─ index.html
+│  ├─ package-lock.json
+│  ├─ package.json
+│  ├─ public
+│  │  └─ favicon.ico
+│  ├─ README.md
+│  ├─ src
+│  │  ├─ .prettierignore
+│  │  ├─ .prettierrc.yml
+│  │  ├─ api
+│  │  │  ├─ api.ts
+│  │  │  ├─ lmsApi.ts
+│  │  │  └─ types.ts
+│  │  ├─ App.css
+│  │  ├─ App.tsx
+│  │  ├─ assets
+│  │  │  └─ Logo.png
+│  │  ├─ components
+│  │  │  ├─ BaseButton.jsx
+│  │  │  └─ layout
+│  │  │     ├─ Footer.tsx
+│  │  │     ├─ Header.tsx
+│  │  │     └─ Sidebar.tsx
+│  │  ├─ data
+│  │  │  ├─ data.ts
+│  │  │  └─ menuItems.tsx
+│  │  ├─ hooks
+│  │  │  └─ useRemoveWijmoLink.js
+│  │  ├─ index.css
+│  │  ├─ main.tsx
+│  │  ├─ pages
+│  │  │  ├─ Home.tsx
+│  │  │  ├─ kjo.css
+│  │  │  ├─ Kjo.jsx
+│  │  │  ├─ kjoHeaderPopup.jsx
+│  │  │  ├─ KjoPop.jsx
+│  │  │  ├─ Lms.css
+│  │  │  ├─ Lms.jsx
+│  │  │  ├─ LmsHeader.jsx
+│  │  │  ├─ LmsPop.jsx
+│  │  │  └─ Notfound.tsx
+│  │  ├─ store
+│  │  │  ├─ commonStore.js
+│  │  │  ├─ kjoHeaderStore.js
+│  │  │  ├─ kjoPopupStore.js
+│  │  │  ├─ kjoStroe.js
+│  │  │  └─ lmsStore.js
+│  │  └─ utils
+│  │     └─ openPop.ts
+│  ├─ tsconfig.json
+│  ├─ vite-env.d.ts
+│  └─ vite.config.js
+├─ Jenkinsfile
+├─ README.md
+├─ table.sql
+└─ UDA 시스템관리.pptx
+
+```
 
 ```
 
@@ -69,27 +194,8 @@ $ npm run dev
 #### Jenkins 파이프라인 통한 자동화 배포
 #### 환경별 빌드 및 배포 스크립트
 
-## 🔧 주요 설정
-### 경로 별칭 (Path Aliases)
-
-```typescript
-// tsconfig.paths.json & vite.config.ts
-{
-  "@/*": ["src/*"],
-  "@api/*": ["src/api/*"],
-  "@components/*": ["src/components/*"],
-  "@models/*": ["src/models/*"],
-  "@pages/*": ["src/pages/*"],
-  "@utils/*": ["src/utils/*"]
-}
-```
 
 ### 인증 시스템
-
-- JWT 토큰 기반 인증
-- 로컬 스토리지에 토큰 저장
-- 사용자 정보 및 권한 관리
-- 페이지별 접근 권한 제어
 
 ---
 
