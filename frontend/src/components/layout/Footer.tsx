@@ -2,7 +2,7 @@ import { Layout } from 'antd';
 
 const { Footer: AntFooter } = Layout;
 
-const Footer = () => {
+const Footer: React.FC = () => {
   return (
     <AntFooter
       style={{

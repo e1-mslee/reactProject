@@ -1,7 +1,14 @@
 ---
 trailingComma: 'es5'
-tabWidth: 4
+tabWidth: 2
 semi: true
 singleQuote: true
 printWidth: 120
 endOfLine: lf
+
+arrowParens: 'avoid' # (x) => x  대신  x => x
+bracketSpacing: true # { foo: bar }  (기본값이지만 명시)
+bracketSameLine: false # JSX 닫는 괄호 다음 줄에
+quoteProps: 'as-needed' # 필요할 때만 객체 속성에 따옴표
+jsxSingleQuote: true # JSX에서도 단일 따옴표 사용
+embeddedLanguageFormatting: 'auto' # CSS, GraphQL 등 포매팅

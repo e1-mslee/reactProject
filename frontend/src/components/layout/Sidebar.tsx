@@ -1,8 +1,15 @@
-import { Layout, Menu, theme } from 'antd';
-
+import { Layout, Menu, theme, type MenuProps } from 'antd';
+import { type NavigateFunction } from 'react-router-dom';
 const { Sider } = Layout;
 
-const Sidebar = ({ selectedKey, setSelectedKey, navigate, items }) => {
+interface SidebarProps {
+  selectedKey: string;
+  setSelectedKey: (key: string) => void;
+  navigate: NavigateFunction;
+  items: MenuProps['items'];
+}
+
+const Sidebar: React.FC<SidebarProps> = ({ selectedKey, setSelectedKey, navigate, items }) => {
   const {
     token: { colorBgContainer },
   } = theme.useToken();
@@ -18,17 +25,17 @@ const Sidebar = ({ selectedKey, setSelectedKey, navigate, items }) => {
       }}
     >
       <Menu
-        mode="inline"
+        mode='inline'
         selectedKeys={[selectedKey]}
         defaultSelectedKeys={['home']}
         defaultOpenKeys={['uda', 'admin', 'templet']}
         style={{ height: '100%', borderRight: 0 }}
-        items={items}
+        items={items || []}
         onClick={({ key }) => {
           if (selectedKey !== key) {
             setSelectedKey(key);
           }
-          navigate('/' + key);
+          void navigate('/' + key);
         }}
       />
     </Sider>

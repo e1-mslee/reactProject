@@ -4,7 +4,7 @@ import { Button } from 'antd';
 
 const { Header: AntHeader } = Layout;
 
-const Header = () => {
+const Header: React.FC = () => {
   return (
     <>
       <AntHeader
@@ -21,10 +21,10 @@ const Header = () => {
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', fontWeight: 'bold' }}>
-          <img src={logo} alt="Logo" style={{ height: 32, marginRight: 12 }} />
+          <img src={logo} alt='Logo' style={{ height: 32, marginRight: 12 }} />
           UDA 시스템 관리(BS 3팀)
         </div>
-        <Button type="primary">로그인</Button>
+        <Button type='primary'>로그인</Button>
       </AntHeader>
     </>
   );
