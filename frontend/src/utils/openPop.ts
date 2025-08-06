@@ -1,10 +1,15 @@
-const openPop = (url, func) => {
+declare global {
+  interface Window {
+    handlePopChange?: () => void;
+  }
+}
+
+const openPop = (url: string, func: () => void) => {
   const popupWidth = 1000;
   const popupHeight = 600;
   const left = window.screenX + (window.outerWidth - popupWidth) / 2;
   const top = window.screenY + (window.outerHeight - popupHeight) / 2;
-
-  const pop = window.open(
+  window.open(
     url,
     '_blank',
     `width=${popupWidth},height=${popupHeight},left=${left},top=${top},resizable=yes,scrollbars=yes`

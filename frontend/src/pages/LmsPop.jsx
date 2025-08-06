@@ -9,7 +9,7 @@ import { DataMap } from '@mescius/wijmo.grid';
 import { CollectionView } from '@mescius/wijmo';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Button, Flex, Modal, message } from 'antd';
-import openPop from '@utils/openPop.js';
+import openPop from '@utils/openPop';
 
 const LmsPop = () => {
   const params = new URLSearchParams(window.location.search);
@@ -100,11 +100,11 @@ const LmsPop = () => {
     } else {
       if (!gridData) return;
 
-      const addedItems = (gridData.itemsAdded || []).map((item) => ({
+      const addedItems = (gridData.itemsAdded || []).map(item => ({
         ...item,
         STATUS: 'INS',
       }));
-      const editedItems = (gridData.itemsEdited || []).map((item) => ({
+      const editedItems = (gridData.itemsEdited || []).map(item => ({
         ...item,
         STATUS: 'UPD',
       }));
@@ -168,7 +168,7 @@ const LmsPop = () => {
     }
 
     const maxSeq = gridData.items
-      .map((item) => {
+      .map(item => {
         const match = item.COL_ID?.match(/^COL_(\d{3})$/);
         return match ? parseInt(match[1], 10) : 0;
       })
@@ -195,7 +195,7 @@ const LmsPop = () => {
 
   const deleteData = async () => {
     if (!gridData) return;
-    const selected = gridData.items.filter((row) => row.selected);
+    const selected = gridData.items.filter(row => row.selected);
 
     if (selected.length === 0) {
       message.error('선택된 행이 없습니다.');
@@ -203,14 +203,14 @@ const LmsPop = () => {
     }
 
     const deleteList = selected
-      .filter((row) => row.COL_ID)
-      .map((row) => ({
+      .filter(row => row.COL_ID)
+      .map(row => ({
         COL_ID: row.COL_ID,
         TABLE_SEQ: row.TABLE_SEQ,
       }));
 
     if (deleteList.length === 0) {
-      const filtered = gridData.items.filter((row) => !row.selected || row.COL_ID);
+      const filtered = gridData.items.filter(row => !row.selected || row.COL_ID);
       setGridData(new CollectionView(filtered, { trackChanges: true }));
       return;
     }
@@ -238,30 +238,30 @@ const LmsPop = () => {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '10px' }}>
         <span style={{ fontSize: '18px', fontWeight: 'bold' }}>필드 속성 정의</span>
         <div style={{ display: 'flex', justifyContent: 'flex-end', margin: '2px 0 2px 0' }}>
-          <Flex gap="small" wrap>
-            <Button className="custom-button" onClick={openHeaderManage}>
+          <Flex gap='small' wrap>
+            <Button className='custom-button' onClick={openHeaderManage}>
               헤더관리
             </Button>
-            <Button className="custom-button" onClick={saveTableInfo}>
+            <Button className='custom-button' onClick={saveTableInfo}>
               저장
             </Button>
           </Flex>
         </div>
       </div>
-      <div className="formWrap">
+      <div className='formWrap'>
         <span>논리 테이블 명</span>
         <input
           value={gridInfo.TABLE_NAME || ''}
           style={{ width: '300px', height: '28px', border: '1px solid #dbdbdb', fontSize: '12px' }}
-          placeholder=" 논리 테이블 명을 입력하세요."
-          onChange={(e) => setGridInfo({ ...gridInfo, TABLE_NAME: e.target.value })}
+          placeholder=' 논리 테이블 명을 입력하세요.'
+          onChange={e => setGridInfo({ ...gridInfo, TABLE_NAME: e.target.value })}
         />
         <span>물리 테이블 명</span>
         <input
           value={gridInfo.TABLE_ID || ''}
           style={{ width: '300px', height: '28px', border: '1px solid #dbdbdb', fontSize: '12px' }}
-          placeholder=" 물리 테이블 명을 입력하세요."
-          onChange={(e) => setGridInfo({ ...gridInfo, TABLE_ID: e.target.value })}
+          placeholder=' 물리 테이블 명을 입력하세요.'
+          onChange={e => setGridInfo({ ...gridInfo, TABLE_ID: e.target.value })}
           disabled={flag}
         />
       </div>
@@ -281,11 +281,11 @@ const LmsPop = () => {
           열 속성 목록
         </h4>
         <div style={{ display: 'flex', justifyContent: 'flex-end', margin: '2px 0 4px 0' }}>
-          <Flex gap="small" wrap>
-            <Button className="custom-button" onClick={handleAddRow}>
+          <Flex gap='small' wrap>
+            <Button className='custom-button' onClick={handleAddRow}>
               행추가
             </Button>
-            <Button className="custom-button" onClick={deleteData}>
+            <Button className='custom-button' onClick={deleteData}>
               행삭제
             </Button>
           </Flex>
@@ -298,10 +298,10 @@ const LmsPop = () => {
           isReadOnly={false}
           autoGenerateColumns={false}
           style={{ height: '400px' }}
-          selectionMode="Row"
-          headersVisibility="Column"
+          selectionMode='Row'
+          headersVisibility='Column'
           allowSorting={true}
-          initialized={(grid) => {
+          initialized={grid => {
             grid.beginningEdit.addHandler((s, e) => {
               const col = s.columns[e.col];
               const item = s.rows[e.row].dataItem;
@@ -322,14 +322,14 @@ const LmsPop = () => {
             });
           }}
         >
-          <FlexGridColumn binding="selected" header="선택" width={60} dataType="Boolean" />
-          <FlexGridColumn binding="COL_ID" header="컬럼 ID" width="*" isReadOnly={true} />
-          <FlexGridColumn binding="COL_NAME" header="컬럼명" width="*" />
-          <FlexGridColumn binding="COL_TYPE" header="유형" width={100} dataMap={statusMap} />
-          <FlexGridColumn binding="COL_SIZE" header="길이" width={100} />
-          <FlexGridColumn binding="COL_IDX" header="필수" width={60} dataType="Boolean" />
-          <FlexGridColumn binding="COL_SCH" header="검색" width={60} dataType="Boolean" />
-          <FlexGridColumn binding="TABLE_SEQ" header="SEQ" visible={false} />
+          <FlexGridColumn binding='selected' header='선택' width={60} dataType='Boolean' />
+          <FlexGridColumn binding='COL_ID' header='컬럼 ID' width='*' isReadOnly={true} />
+          <FlexGridColumn binding='COL_NAME' header='컬럼명' width='*' />
+          <FlexGridColumn binding='COL_TYPE' header='유형' width={100} dataMap={statusMap} />
+          <FlexGridColumn binding='COL_SIZE' header='길이' width={100} />
+          <FlexGridColumn binding='COL_IDX' header='필수' width={60} dataType='Boolean' />
+          <FlexGridColumn binding='COL_SCH' header='검색' width={60} dataType='Boolean' />
+          <FlexGridColumn binding='TABLE_SEQ' header='SEQ' visible={false} />
         </FlexGrid>
       </div>
     </div>
