@@ -1,7 +1,7 @@
 import React from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import Home from '@pages/Home';
-import Lms from '@pages/Lms';
+import Lms from '@pages/lms/Lms';
 import Kjo from '@pages/Kjo';
 
 const MainRoutes: React.FC = () => {

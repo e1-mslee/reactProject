@@ -1,7 +1,7 @@
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
-import LmsPop from '@pages/LmsPop';
-import LmsHeader from '@pages/LmsHeader';
+import LmsPop from '@pages/lms/LmsPop';
+import LmsHeader from '@pages/lms/LmsHeader';
 import KjoPop from '@pages/KjoPop';
 import KjoHeaderPopup from '@pages/kjoHeaderPopup';
 

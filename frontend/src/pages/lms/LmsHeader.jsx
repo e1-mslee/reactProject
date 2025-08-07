@@ -3,7 +3,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import './Lms.css';
 import '@mescius/wijmo.cultures/wijmo.culture.ko';
 import 'react-datepicker/dist/react-datepicker.css';
-import api from './../api/api.js';
+import api from '../../api/api.js';
 import { FlexGrid, FlexGridColumn } from '@mescius/wijmo.react.grid';
 import { DataMap, CellType } from '@mescius/wijmo.grid';
 import { CollectionView, isEmpty } from '@mescius/wijmo';
@@ -593,24 +593,24 @@ const LmsHeader = () => {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '10px' }}>
         <span style={{ fontSize: '18px', fontWeight: 'bold' }}>헤더 관리</span>
         <div style={{ display: 'flex', justifyContent: 'flex-end', margin: '2px 0 2px 0' }}>
-          <Flex gap="small" wrap>
+          <Flex gap='small' wrap>
             <Button
-              className="custom-button"
+              className='custom-button'
               onClick={exportFieldList}
               style={{ display: showExportButton ? 'block' : 'none' }}
             >
               필드 가져오기
             </Button>
-            <Button className="custom-button" onClick={() => setReviewFlag((prev) => !prev)}>
+            <Button className='custom-button' onClick={() => setReviewFlag((prev) => !prev)}>
               미리보기
             </Button>
-            <Button className="custom-button" onClick={onTableHeaderSave}>
+            <Button className='custom-button' onClick={onTableHeaderSave}>
               저장
             </Button>
           </Flex>
         </div>
       </div>
-      <div className="formWrap">
+      <div className='formWrap'>
         <span>논리 테이블명</span>
         <input
           style={{ width: '300px', height: '28px', border: '1px solid #dbdbdb', fontSize: '12px' }}
@@ -635,14 +635,14 @@ const LmsHeader = () => {
           헤더 목록
         </h4>
         <div style={{ display: 'flex', justifyContent: 'flex-end', margin: '2px 0 4px 0' }}>
-          <Flex gap="small" wrap>
-            <Button className="custom-button" onClick={toggleTreeCollapse}>
+          <Flex gap='small' wrap>
+            <Button className='custom-button' onClick={toggleTreeCollapse}>
               펼치기/접기
             </Button>
-            <Button className="custom-button" onClick={addRow}>
+            <Button className='custom-button' onClick={addRow}>
               행추가
             </Button>
-            <Button className="custom-button" onClick={deleteRows}>
+            <Button className='custom-button' onClick={deleteRows}>
               행삭제
             </Button>
           </Flex>
@@ -652,10 +652,10 @@ const LmsHeader = () => {
         <FlexGrid
           itemsSource={gridData}
           ref={gridRef}
-          headersVisibility="Column"
-          selectionMode="Row"
+          headersVisibility='Column'
+          selectionMode='Row'
           autoGenerateColumns={false}
-          childItemsPath="deps"
+          childItemsPath='deps'
           allowSorting={false}
           isReadOnly={false}
           loadedRows={onLoadedRows}
@@ -682,15 +682,15 @@ const LmsHeader = () => {
             });
           }}
         >
-          <FlexGridColumn binding="temp" header="" width={0} />
-          <FlexGridColumn binding="selected" header="선택" width={50} dataType="Boolean" />
-          <FlexGridColumn binding="HEADER_ID" header="헤더 ID" />
-          <FlexGridColumn binding="HEADER_NAME" header="헤더명" width="*" />
-          <FlexGridColumn binding="SUPI_HEADER" header="상위헤더" width="*" dataMap={supiHeaderMap} />
-          <FlexGridColumn binding="HEADER_WIDTH" header="넓이" width="0.3*" dataType="Number" />
-          <FlexGridColumn binding="CONN_FIELD" header="연결필드" width="*" dataMap={statusMap} />
-          <FlexGridColumn binding="SORT_SN" header="정렬순서" width={80} dataType="Number" />
-          <FlexGridColumn binding="TABLE_SEQ" header="SEQ" visible={false} />
+          <FlexGridColumn binding='temp' header='' width={0} />
+          <FlexGridColumn binding='selected' header='선택' width={50} dataType='Boolean' />
+          <FlexGridColumn binding='HEADER_ID' header='헤더 ID' />
+          <FlexGridColumn binding='HEADER_NAME' header='헤더명' width='*' />
+          <FlexGridColumn binding='SUPI_HEADER' header='상위헤더' width='*' dataMap={supiHeaderMap} />
+          <FlexGridColumn binding='HEADER_WIDTH' header='넓이' width='0.3*' dataType='Number' />
+          <FlexGridColumn binding='CONN_FIELD' header='연결필드' width='*' dataMap={statusMap} />
+          <FlexGridColumn binding='SORT_SN' header='정렬순서' width={80} dataType='Number' />
+          <FlexGridColumn binding='TABLE_SEQ' header='SEQ' visible={false} />
         </FlexGrid>
       </div>
       <div style={{ marginTop: '10px', display: reviewFlag ? 'block' : 'none' }}>
@@ -710,14 +710,14 @@ const LmsHeader = () => {
         </h4>
         <div style={{ margin: '2px' }}>
           <FlexGrid
-            allowMerging="ColumnHeaders"
+            allowMerging='ColumnHeaders'
             alternatingRowStep={0}
             initialized={onPreviewGridInitialized}
             itemsSource={[]}
             ref={previewGridRef}
             autoGenerateColumns={false}
             allowSorting={false}
-            allowDragging="None"
+            allowDragging='None'
           ></FlexGrid>
         </div>
       </div>
