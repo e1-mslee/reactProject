@@ -19,6 +19,7 @@ export default defineConfig({
       { find: "@store", replacement: resolve(__dirname, "src/store") },
       { find: "@hooks", replacement: resolve(__dirname, "src/hooks") },
       { find: "@router", replacement: resolve(__dirname, "src/router") },
+      { find: "@layout", replacement: resolve(__dirname, "src/layout") },
     ],
   },
 });

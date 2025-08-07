@@ -1,5 +1,5 @@
 import { Layout } from 'antd';
-import logo from './../../assets/Logo.png';
+import logo from '@assets/Logo.png';
 import { Button } from 'antd';
 
 const { Header: AntHeader } = Layout;

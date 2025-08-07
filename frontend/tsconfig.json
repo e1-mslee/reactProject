@@ -32,7 +32,8 @@
       "@utils/*": ["src/utils/*"],
       "@store/*": ["src/store/*"],
       "@hooks/*": ["src/hooks/*"],
-      "@router/*": ["src/router/*"]
+      "@router/*": ["src/router/*"],
+      "@layout/*": ["src/layout/*"]
     }
   },
   "include": ["src", "vite-env.d.ts"]

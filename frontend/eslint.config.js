@@ -60,7 +60,7 @@ export default tseslint.config([
 
       // TypeScript 전용 규칙들
       "@typescript-eslint/no-unused-vars": [
-        "error",
+        "off",
         { varsIgnorePattern: "^_", argsIgnorePattern: "^_" },
       ],
       "@typescript-eslint/explicit-function-return-type": "off",

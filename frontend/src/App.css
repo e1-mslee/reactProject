@@ -88,3 +88,21 @@ textarea {
   background-color: #1890ff;
   color: white;
 }
+
+.contentStyle {
+  flex: 1;
+  margin: 0;
+  overflow: 'auto';
+  background: colorBgContainer;
+  border-radius: borderRadiusLG;
+  padding: 2;
+}
+
+.layoutContent {
+  padding: 0 24px 24px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  background-color: #fff;
+  border-radius: 8px;
+}
