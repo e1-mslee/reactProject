@@ -1,19 +1,23 @@
 import "./kjo.css";
 import {useEffect, useRef, useState} from "react";
+import useEvent from "react-use-event-hook";
 
 import BaseButton from '@component/BaseButton.jsx';
-import '@mescius/wijmo.styles/wijmo.css';
-import '@mescius/wijmo.cultures/wijmo.culture.ko' ;
 
 import { DataMap } from '@mescius/wijmo.grid';
 import { FlexGrid, FlexGridColumn } from '@mescius/wijmo.react.grid';
+import * as wjGrid from '@mescius/wijmo.grid';
 
-import useCommonData from "@store/commonStore.js";
-import useColData from "@store/kjoPopupStore.js";
-import useEvent from "react-use-event-hook";
+import '@mescius/wijmo.styles/wijmo.css';
+import '@mescius/wijmo.cultures/wijmo.culture.ko' ;
+
+import useCommonData from "@store/commonStore";
+import useColData from "@store/kjoPopupStore";
+
+import { useRemoveWijmoLink } from "@hooks/useRemoveWijmoLink";
 
 const params = new URLSearchParams(window.location.search);
-const tableSeq = params.get('tableSeq');
+const tableSeq = params.get('tableSeq') || "";
 
 const Header = () => {
     const { saveColData, headerPopup } = useColData();
@@ -31,16 +35,22 @@ const Header = () => {
 
 const TableInfoArea = () => {
     const {initData} = useColData();
-    let data;
 
-    if(initData == null) {
-        data = {
-            tableName: '',
-            tableId: ''
-        }
-    } else {
-        data = initData[0];
+    interface InitData {
+        tableName: string;
+        tableId: string;
     }
+    let data: InitData = {
+        tableName: '',
+        tableId: ''
+    };
+
+    if(initData != null && initData.length > 0) {
+        if(initData[0] != undefined){
+            data = initData[0];
+        }
+    }
+
 
     return (
         <div className={"table_info_area"}>
@@ -73,9 +83,19 @@ const ColGridHeader = () => {
     )
 }
 
-const ColGridArea = ({commCode}) => {
+interface ICode {
+    COM_CD_ID: string;
+    COM_CD: string;
+    COM_CD_NM: string
+    COM_CD_EN: string;
+    SORT_SN: number
+}
+interface CommCode {
+    commCode: ICode[] | null;
+}
+const ColGridArea = ({commCode}: CommCode) => {
     const { setGridRef, gridData } = useColData();
-    const gridRef = useRef(null);
+    const gridRef = useRef<{control: wjGrid.FlexGrid}>(null);
     const [ totalCnt, setTotalCnt ] = useState(0);
 
     let code = null;
@@ -94,8 +114,8 @@ const ColGridArea = ({commCode}) => {
 
         setTotalCnt(gridData.items?.length || 0);
 
-        function onCollectionChanged(e) {
-            setTotalCnt(e?.items?.length);
+        function onCollectionChanged() {
+            if(gridData) setTotalCnt(gridData.items?.length ?? 0);
         }
 
         gridData.collectionChanged.addHandler(onCollectionChanged);
@@ -105,27 +125,27 @@ const ColGridArea = ({commCode}) => {
         };
     }, [gridData]);
 
-    const flexInitialized = useEvent((grid) => {
-        grid.beginningEdit.addHandler((s, e) => {
-            let col = s.columns[e.col];
-            let value = s.getCellData(e.row, 'colType', false);
+    const flexInitialized = useEvent((grid: wjGrid.FlexGrid) => {
+        grid.beginningEdit.addHandler((s: wjGrid.FlexGrid, e: wjGrid.CellRangeEventArgs) => {
+            const col = s.columns[e.col];
+            const value = s.getCellData(e.row, 'colType', false) as string;
 
-            if (col.binding === 'colSize' && value !== "2") {
+            if (col?.binding === 'colSize' && value !== "2") {
                 e.cancel = true;
             }
         });
 
-        grid.cellEditEnded.addHandler((s, e) => {
-            let col = s.columns[e.col];
-            let value = s.getCellData(e.row, 'colType', false);
+        grid.cellEditEnded.addHandler((s:wjGrid.FlexGrid, e: wjGrid.CellRangeEventArgs) => {
+            const col = s.columns[e.col];
+            const value = s.getCellData(e.row, 'colType', false) as string;
 
-            if(col.binding === 'colType' && value !== "2") {
+            if(col?.binding === 'colType' && value !== "2") {
                 s.setCellData(e.row, 'colSize', null);
             }
 
-            if(col.binding === 'colSize' && value === "2") {
+            if(col?.binding === 'colSize' && value === "2") {
                 const regex = /[^0-9]/;
-                let size = s.getCellData(e.row, 'colSize', false);
+                const size = s.getCellData(e.row, 'colSize', false) as string;
 
                 if(regex.test(size)) {
                     s.setCellData(e.row, 'colSize', null);
@@ -134,13 +154,13 @@ const ColGridArea = ({commCode}) => {
             }
         });
 
-    })
+    });
 
     return (
         <div className={"grid_area"}>
             <FlexGrid
                 ref = {gridRef}
-                itemsSource={gridData}
+                itemsSource={gridData || []}
                 initialized={flexInitialized}
                 isReadOnly={false}
                 style={{ height: '300px' }}
@@ -167,20 +187,9 @@ const KjoPop = () =>{
     const { commCode, fetchAllData } = useCommonData();
     const { fetchInitData, fetchGridData } = useColData();
 
+    useRemoveWijmoLink();
+
     useEffect(() => {
-        const link = document.querySelector('a[href="https://www.mescius.co.kr/wijmo#price"]');
-
-        if (link) {
-            link.remove();
-        }
-
-        const link2 = document.querySelector('body>div:last-child');
-
-        if(link2) {
-            console.log(link2);
-            link2.remove();
-        }
-
         fetchAllData();
         fetchInitData(tableSeq);
         fetchGridData(tableSeq);

@@ -151,7 +151,7 @@ bs3_study
 │  │  │  ├─ kjo.css
 │  │  │  ├─ Kjo.jsx
 │  │  │  ├─ kjoHeaderPopup.jsx
-│  │  │  ├─ KjoPop.jsx
+│  │  │  ├─ KjoPop.tsx
 │  │  │  ├─ Lms.css
 │  │  │  ├─ Lms.jsx
 │  │  │  ├─ LmsHeader.jsx
@@ -160,8 +160,8 @@ bs3_study
 │  │  ├─ store
 │  │  │  ├─ commonStore.js
 │  │  │  ├─ kjoHeaderStore.js
-│  │  │  ├─ kjoPopupStore.js
-│  │  │  ├─ kjoStroe.js
+│  │  │  ├─ kjoPopupStore.ts
+│  │  │  ├─ kjoStroe.ts
 │  │  │  └─ lmsStore.js
 │  │  └─ utils
 │  │     └─ openPop.ts

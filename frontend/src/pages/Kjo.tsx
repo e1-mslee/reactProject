@@ -1,11 +1,12 @@
 import "./kjo.css";
-import {useState, useEffect, useRef} from "react";
+import {useState, useEffect, useRef, type KeyboardEvent} from "react";
 import useEvent from "react-use-event-hook";
 
 import '@mescius/wijmo.styles/wijmo.css';
 import '@mescius/wijmo.cultures/wijmo.culture.ko' ;
 
 import { FlexGrid, FlexGridColumn } from '@mescius/wijmo.react.grid';
+import * as wjGrid from '@mescius/wijmo.grid';
 
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -13,9 +14,10 @@ import "react-datepicker/dist/react-datepicker.css";
 import BaseButton from "@component/BaseButton.jsx";
 
 import moment from 'moment';
-import 'moment/locale/ko';
-import useCommonData from "@store/commonStore.js";
-import useGridData from "@store/kjoStroe.js";
+import useCommonData from "@store/commonStore";
+import useGridData from "@store/kjoStroe";
+
+import { useRemoveWijmoLink } from "@hooks/useRemoveWijmoLink";
 
 const nowTime = moment().format('YYYY-MM-DD');
 
@@ -37,11 +39,17 @@ const HeaderLine = () => {
     );
 }
 
-const BaseSearchBox = ({id, txt, boxWidth=160}) => {
+interface BaseSearchBoxProps {
+    id: string;
+    txt: string;
+    boxWidth: number;
+}
+
+const BaseSearchBox = ({id, txt, boxWidth=160}: BaseSearchBoxProps) => {
     const { fetchGridData } = useGridData();
 
-    const keyDown = (ev) => {
-        if(ev.keyCode === 13){
+    const keyDown = (ev: KeyboardEvent<HTMLInputElement>) => {
+        if(ev.key === "Enter") {
             fetchGridData();
         }
     }
@@ -54,8 +62,13 @@ const BaseSearchBox = ({id, txt, boxWidth=160}) => {
     );
 }
 
-const CalendarSelect = ({dateId, date}) => {
-    const [startDate, setStartDate] = useState(date);
+interface CalendarSelectProps {
+    dateId: string;
+    date: Date;
+}
+
+const CalendarSelect = ({dateId, date}: CalendarSelectProps) => {
+    const [startDate, setStartDate] = useState<Date | null>(date);
 
     return (
         <DatePicker
@@ -63,13 +76,19 @@ const CalendarSelect = ({dateId, date}) => {
             className={"date_box"}
             dateFormat='yyyy-MM-dd'
             selected={startDate}
-            onChange={(date) => setStartDate(date)}
-            showMonthYearDropdown />
+            onChange={(date: Date | null) => setStartDate(date)}
+            showMonthYearDropdown={true}
+            minDate={new Date('2000-01-01')}
+            maxDate={new Date('2100-12-31')}
+        />
     );
 };
 
-const BaseSearchDate = ({txt}) => {
-    let startDate = moment().subtract(1, 'M').format('YYYY-MM-DD');
+interface BaseSearchDateProps {
+    txt: string;
+}
+const BaseSearchDate = ({txt}: BaseSearchDateProps) => {
+    const startDate = moment().subtract(1, 'M').format('YYYY-MM-DD');
 
     return (
         <div className={"information"}>
@@ -90,11 +109,9 @@ const SearchArea = () => {
     );
 }
 
-
-
 const GridArea = () => {
     const {setGridRef, gridData, fetchGridData, openPopup} = useGridData();
-    const gridRef = useRef(null);
+    const gridRef = useRef<{control:wjGrid.FlexGrid}>(null);
     const [ totalCnt, setTotalCnt ] = useState(0);
 
     useEffect(()=> {
@@ -108,8 +125,9 @@ const GridArea = () => {
 
         setTotalCnt(gridData.items?.length || 0);
 
-        function onCollectionChanged(e) {
-            setTotalCnt(e?.items?.length);
+        function onCollectionChanged() {
+            if(gridData)
+                setTotalCnt(gridData.items?.length ?? 0);
         }
 
         gridData.collectionChanged.addHandler(onCollectionChanged);
@@ -119,45 +137,46 @@ const GridArea = () => {
         };
     }, [gridData]);
 
-    const flexInitialized = useEvent((grid) => {
-        grid.addEventListener(grid.hostElement, 'click', (ev) => {
-            let ht = grid.hitTest(ev);
-            if(ht.cellType !== 1) return;
+    const flexInitialized = useEvent((grid: wjGrid.FlexGrid) => {
+        grid.addEventListener(grid.hostElement, 'click', (ev: MouseEvent) => {
+            const ht = grid.hitTest(ev);
+            if(ht.cellType !== wjGrid.CellType.Cell) return;
 
-            let tableNm = grid.getCellData(ht.row, "tableName");
-            if(tableNm == null || tableNm === "") return;
+            const tableNm = grid.getCellData(ht.row, "tableName", false) as string;
+
+            if(!tableNm) return;
 
             const col = grid.columns[ht.col];
-            if(col.binding === "tableName") {
-                let tableSeq = grid.getCellData(ht.row, "tableSeq");
+            if(col?.binding === "tableName") {
+                const tableSeq = grid.getCellData(ht.row, "tableSeq", false) as string;
                 openPopup(tableSeq);
             }
         });
     });
 
     return (
-      <div>
-          <FlexGrid
-              ref={gridRef}
-              itemsSource={gridData}
-              initialized={flexInitialized}
-              isReadOnly={false}
-              style={{ height: '500px' }}
-              selectionMode="Row"
-              headersVisibility="Column"
-              allowSorting={true}
-              autoGenerateColumns={false}
-          >
-              <FlexGridColumn header="선택" binding="selected" width={50} dataType="Boolean" />
-              <FlexGridColumn header="논리 테이블명" binding="tableName" width="*" cssClass="click_col" />
-              <FlexGridColumn header="물리 테이블명" binding="tableId" width="*" isReadOnly={true} />
-              <FlexGridColumn header="데이터 수" binding="dataCount" width="0.3*" isReadOnly={true} />
-              <FlexGridColumn header="생성자" binding="vbgCreUser" width="0.4*" isReadOnly={true} />
-              <FlexGridColumn header="수정일" binding="vbgCreDtm" width="0.6*" isReadOnly={true} />
-              <FlexGridColumn header="SEQ" binding="tableSeq" visible={false} />
-          </FlexGrid>
-          <span> Total: {totalCnt}</span>
-      </div>
+        <div>
+            <FlexGrid
+                ref={gridRef}
+                itemsSource={gridData ?? []}
+                initialized={flexInitialized}
+                isReadOnly={false}
+                style={{ height: '500px' }}
+                selectionMode="Row"
+                headersVisibility="Column"
+                allowSorting={true}
+                autoGenerateColumns={false}
+            >
+                <FlexGridColumn header="선택" binding="selected" width={50} dataType="Boolean" />
+                <FlexGridColumn header="논리 테이블명" binding="tableName" width="*" cssClass="click_col" />
+                <FlexGridColumn header="물리 테이블명" binding="tableId" width="*" isReadOnly={true} />
+                <FlexGridColumn header="데이터 수" binding="dataCount" width="0.3*" isReadOnly={true} />
+                <FlexGridColumn header="생성자" binding="vbgCreUser" width="0.4*" isReadOnly={true} />
+                <FlexGridColumn header="수정일" binding="vbgCreDtm" width="0.6*" isReadOnly={true} />
+                <FlexGridColumn header="SEQ" binding="tableSeq" visible={false} />
+            </FlexGrid>
+            <span> Total: {totalCnt}</span>
+        </div>
     );
 }
 
@@ -165,20 +184,9 @@ const Kjo = () =>{
     //Init();
     const { fetchAllData } = useCommonData();
 
+    useRemoveWijmoLink();
+
     useEffect(() => {
-        const link = document.querySelector('a[href="https://www.mescius.co.kr/wijmo#price"]');
-
-        if (link) {
-            link.remove();
-        }
-
-        const link2 = document.querySelector('body>div:last-child');
-
-        if(link2) {
-            console.log(link2);
-            link2.remove();
-        }
-
         fetchAllData();
     }, []);
 
