@@ -6,6 +6,7 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { FlexGrid, FlexGridColumn, FlexGridCellTemplate } from '@mescius/wijmo.react.grid';
 import * as wjcGridXlsx from '@mescius/wijmo.grid.xlsx';
+import { FlexGrid as FlexGridType } from '@mescius/wijmo.grid';
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Button, Flex, Modal, message } from 'antd';
 import openPop from '@utils/openPop';
@@ -34,6 +35,20 @@ const CONSTANTS = {
   MODAL_STYLE: { top: 200 },
 };
 
+interface TableInfo {
+  TABLE_SEQ: string;
+  TABLE_NAME: string;
+  TABLE_ID: string;
+  field_count: string;
+  VBG_CRE_USER: string;
+  VBG_CRE_DTM: string;
+  selected?: boolean;
+}
+
+interface CellContext {
+  item: TableInfo;
+}
+
 const Lms = () => {
   // Wijmo 링크 제거
   useRemoveWijmoLink();
@@ -47,21 +62,21 @@ const Lms = () => {
   const [endDate, setEndDate] = useState(new Date());
 
   // Zustand 스토어 사용
-  const { data, cv, loading, fetchGridData, handleAddRow, saveTable, deleteData } = useLmsStore();
+  const { data, cv, fetchGridData, handleAddRow, saveTable, deleteData } = useLmsStore();
 
-  const gridRef = useRef(null);
+  const gridRef = useRef<{ control: FlexGridType } | null>(null);
 
   // 초기 로드
   useEffect(() => {
-    fetchGridData(startDate, endDate);
+    void fetchGridData(startDate, endDate);
   }, [fetchGridData, startDate, endDate]);
 
   // 팝업 열기 함수 메모이제이션
   const openPopupWithRefresh = useCallback(
-    tableSeq => {
+    (tableSeq: string) => {
       if (!tableSeq) return;
       const url = `/popup/lms_pop?tableSeq=${encodeURIComponent(tableSeq)}`;
-      openPop(url, () => fetchGridData(startDate, endDate));
+      openPop(url, () => void fetchGridData(startDate, endDate));
     },
     [fetchGridData, startDate, endDate]
   );
@@ -70,7 +85,7 @@ const Lms = () => {
   const modifyTableColumn = useCallback(() => {
     if (!cv) return;
 
-    const selectedRows = cv.items.filter(row => row.selected);
+    const selectedRows = cv.items.filter((row) => row.selected);
 
     if (selectedRows.length === 0) {
       message.info(CONSTANTS.MESSAGES.SELECT_ITEM);
@@ -80,19 +95,22 @@ const Lms = () => {
       return;
     }
 
-    openPopupWithRefresh(selectedRows[0].TABLE_SEQ);
+    const tableSeq = selectedRows[0]?.TABLE_SEQ;
+    if (tableSeq) {
+      openPopupWithRefresh(tableSeq);
+    }
   }, [cv, openPopupWithRefresh]);
 
   // 테이블명 클릭 핸들러
   const handleTableNameClick = useCallback(
-    tableSeq => {
+    (tableSeq: string) => {
       openPopupWithRefresh(tableSeq);
     },
     [openPopupWithRefresh]
   );
 
   // 모달 확인 함수 메모이제이션
-  const createConfirmModal = useCallback((content, onOk) => {
+  const createConfirmModal = useCallback((content: string, onOk: () => Promise<void>) => {
     return Modal.confirm({
       title: '알림',
       content,
@@ -119,7 +137,7 @@ const Lms = () => {
 
   // 조회 핸들러
   const handleSearch = useCallback(() => {
-    fetchGridData(startDate, endDate);
+    void fetchGridData(startDate, endDate);
   }, [fetchGridData, startDate, endDate]);
 
   // 엑셀 내보내기
@@ -150,7 +168,7 @@ const Lms = () => {
 
   // 그리드 템플릿 메모이제이션
   const tableNameTemplate = useCallback(
-    ctx => (
+    (ctx: CellContext) => (
       <span
         onClick={() => handleTableNameClick(ctx.item.TABLE_SEQ)}
         style={{ cursor: ctx.item.TABLE_SEQ ? 'pointer' : 'default' }}
@@ -202,7 +220,7 @@ const Lms = () => {
           className='datepicker'
           shouldCloseOnSelect
           selected={startDate}
-          onChange={setStartDate}
+          onChange={(date: Date | null) => date && setStartDate(date)}
         />
         <span style={{ width: '10px' }}>~</span>
         <DatePicker
@@ -210,7 +228,7 @@ const Lms = () => {
           className='datepicker'
           shouldCloseOnSelect
           selected={endDate}
-          onChange={setEndDate}
+          onChange={(date: Date | null) => date && setEndDate(date)}
         />
       </div>
 
@@ -218,7 +236,7 @@ const Lms = () => {
       <div style={{ margin: '2px' }}>
         <FlexGrid
           ref={gridRef}
-          itemsSource={cv}
+          itemsSource={cv ? cv : []}
           isReadOnly={false}
           autoGenerateColumns={false}
           style={CONSTANTS.GRID_STYLES}

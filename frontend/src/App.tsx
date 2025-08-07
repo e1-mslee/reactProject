@@ -43,7 +43,7 @@ const App: React.FC = () => {
     );
   }
 
-  const pathSnippets = location.pathname.split('/').filter(i => i);
+  const pathSnippets = location.pathname.split('/').filter((i) => i);
   const breadcrumbItems: BreadcrumbItem[] = [
     { title: 'Home', path: '/' },
     ...pathSnippets.map((snippet, index) => {
@@ -78,7 +78,7 @@ const App: React.FC = () => {
           }}
         >
           <Breadcrumb
-            items={breadcrumbItems.map(item => ({
+            items={breadcrumbItems.map((item) => ({
               title: item.title,
               href: item.path,
             }))}

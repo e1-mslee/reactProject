@@ -20,21 +20,45 @@ const CONSTANTS = {
   },
 };
 
+interface TableRow {
+  TABLE_SEQ: string;
+  TABLE_NAME: string;
+  TABLE_ID: string;
+  field_count: string;
+  VBG_CRE_USER: string;
+  VBG_CRE_DTM: string;
+  selected: boolean;
+  REQ?: boolean; // 삭제 조건 체크용
+}
+
+interface LmsStoreState {
+  data: TableRow[];
+  cv: CollectionView<TableRow> | null;
+
+  setData: (data: TableRow[]) => void;
+  setCv: (cv: CollectionView<TableRow>) => void;
+  fetchGridData: (startDate: Date, endDate: Date) => Promise<void>;
+  handleAddRow: () => void;
+  saveTable: (startDate: Date, endDate: Date) => Promise<void>;
+  deleteData: (startDate: Date, endDate: Date) => Promise<void>;
+  reset: () => void;
+}
+
 // 날짜 포맷팅 함수
-const formatDate = date => {
+const formatDate = (date: Date) => {
   const tzOffset = date.getTimezoneOffset() * 60000;
-  return new Date(date - tzOffset).toISOString().slice(0, 10);
+  return new Date(date.getTime() - tzOffset).toISOString().slice(0, 10);
 };
 
 // 테이블명 유효성 검사
-const isValidTableName = name => {
+const isValidTableName = (name: string): boolean => {
   if (name === '') return true;
   const regex = /^[A-Za-z0-9_]{1,10}$/;
   return regex.test(name);
 };
 
 // 데이터 검증
-const validateData = items => {
+const validateData = (items: TableRow[]) => {
   for (const item of items) {
     if (!item.TABLE_NAME) {
       message.error(CONSTANTS.MESSAGES.TABLE_NAME_REQUIRED);
@@ -54,35 +78,30 @@ const validateData = items => {
   return true;
 };
 
-export const useLmsStore = create((set, get) => ({
+export const useLmsStore = create<LmsStoreState>((set, get) => ({
   // 상태
   data: [],
   cv: null,
-  loading: false,
 
   // 액션
-  setData: data => set({ data }),
-  setCv: cv => set({ cv }),
-  setLoading: loading => set({ loading }),
+  setData: (data) => set({ data }),
+  setCv: (cv) => set({ cv }),
 
   // API 호출 함수
   fetchGridData: async (startDate, endDate) => {
     try {
-      set({ loading: true });
       const condition = {
         startDate: formatDate(startDate),
         endDate: formatDate(endDate),
       };
 
-      const responseData = await lmsApi.getMainTableInfo(condition);
+      const responseData = (await lmsApi.getMainTableInfo(condition)) as TableRow[];
       set({
         data: responseData,
         cv: new CollectionView(responseData, { trackChanges: true }),
-        loading: false,
       });
     } catch (err) {
       console.error(CONSTANTS.MESSAGES.LOAD_ERROR, err);
-      set({ loading: false });
     }
   },
 
@@ -111,8 +130,8 @@ export const useLmsStore = create((set, get) => ({
     const { cv, fetchGridData } = get();
     if (!cv) return;
 
-    const addedItems = cv.itemsAdded || [];
-    const editedItems = cv.itemsEdited || [];
+    const addedItems = (cv.itemsAdded as TableRow[]) || [];
+    const editedItems = (cv.itemsEdited as TableRow[]) || [];
     const newItems = [...addedItems, ...editedItems];
 
     if (newItems.length === 0) {
@@ -137,8 +156,10 @@ export const useLmsStore = create((set, get) => ({
     const { cv, fetchGridData } = get();
     if (!cv) return;
 
-    const selected = cv.items.filter(row => row.selected);
-    const seqList = selected.map(row => row.TABLE_SEQ).filter(Boolean);
+    const selected = cv.items.filter((row) => row.selected);
+    const seqList: string[] = selected
+      .map((row) => row.TABLE_SEQ)
+      .filter((seq): seq is string => typeof seq === 'string' && seq.length > 0);
 
     if (selected.length === 0) {
       message.error(CONSTANTS.MESSAGES.NO_SELECTED_ROWS);
@@ -146,7 +167,7 @@ export const useLmsStore = create((set, get) => ({
     }
 
     if (seqList.length === 0) {
-      const filtered = cv.items.filter(row => !row.selected || row.REQ);
+      const filtered = cv.items.filter((row) => !row.selected || row.REQ);
       set({ cv: new CollectionView(filtered, { trackChanges: true }) });
       return;
     }
@@ -154,7 +175,7 @@ export const useLmsStore = create((set, get) => ({
     try {
       await lmsApi.deleteMainTableInfo(seqList);
       message.success(CONSTANTS.MESSAGES.DELETE_SUCCESS);
-      fetchGridData(startDate, endDate);
+      await fetchGridData(startDate, endDate);
     } catch (err) {
       console.error('삭제 오류:', err);
       message.error(CONSTANTS.MESSAGES.DELETE_ERROR);
@@ -163,6 +184,6 @@ export const useLmsStore = create((set, get) => ({
 
   // 상태 초기화
   reset: () => {
-    set({ data: [], cv: null, loading: false });
+    set({ data: [], cv: null });
   },
 }));
