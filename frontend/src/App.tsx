@@ -1,19 +1,14 @@
 import './App.css';
 import './index.css';
-import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Breadcrumb, Layout, theme } from 'antd';
 import { useState } from 'react';
 import menuItems from '@data/menuItems';
 import Header from '@component/layout/Header';
 import Sidebar from '@component/layout/Sidebar';
 import Footer from '@component/layout/Footer';
-import Home from '@pages/Home';
-import Lms from '@pages/Lms';
-import Kjo from '@pages/Kjo';
-import LmsPop from '@pages/LmsPop';
-import LmsHeader from '@pages/LmsHeader';
-import KjoPop from './pages/KjoPop';
-import KjoHeaderPopup from '@pages/kjoHeaderPopup';
+import MainRoutes from '@router/routes/MainRoute';
+import PopupRoutes from '@router/routes/PopupRoute';
 
 const { Content } = Layout;
 
@@ -33,14 +28,7 @@ const App: React.FC = () => {
   const isPopup = location.pathname.startsWith('/popup');
 
   if (isPopup) {
-    return (
-      <Routes>
-        <Route path='/popup/lms_pop' element={<LmsPop />} />
-        <Route path='/popup/lms_Header' element={<LmsHeader />} />
-        <Route path='/popup/kjo_pop' element={<KjoPop />} />
-        <Route path='/popup/kjo_header_pop' element={<KjoHeaderPopup />} />
-      </Routes>
-    );
+    return <PopupRoutes />;
   }
 
   const pathSnippets = location.pathname.split('/').filter((i) => i);
@@ -94,12 +82,7 @@ const App: React.FC = () => {
               padding: 2,
             }}
           >
-            <Routes>
-              <Route path='/' element={<Home key={location.key} />} />
-              <Route path='/lms' element={<Lms key={location.key} />} />
-              <Route path='/kjo' element={<Kjo key={location.key} />} />
-              <Route path='*' element={<Home key={location.key} />} />
-            </Routes>
+            <MainRoutes />
           </Content>
         </Layout>
       </Layout>
