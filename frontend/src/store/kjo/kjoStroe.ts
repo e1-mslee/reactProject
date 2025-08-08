@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import api from "../api/api.js";
+import api from "@api/api.js";
 
 import {CollectionView} from "@mescius/wijmo";
 import {FlexGrid as FlexGridType} from '@mescius/wijmo.grid';

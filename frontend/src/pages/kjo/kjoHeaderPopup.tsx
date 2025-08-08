@@ -10,7 +10,7 @@ import {DataMap} from '@mescius/wijmo.grid';
 import {FlexGrid, FlexGridColumn} from '@mescius/wijmo.react.grid';
 import * as wjGrid from '@mescius/wijmo.grid';
 
-import useHeaderData from "@store/kjoHeaderStore";
+import useHeaderData from "@store/kjo/kjoHeaderStore";
 
 interface GridData {
     selected: boolean;

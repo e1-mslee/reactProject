@@ -12,7 +12,7 @@ import '@mescius/wijmo.styles/wijmo.css';
 import '@mescius/wijmo.cultures/wijmo.culture.ko' ;
 
 import useCommonData from "@store/commonStore";
-import useColData from "@store/kjoPopupStore";
+import useColData from "@store/kjo/kjoPopupStore";
 
 import { useRemoveWijmoLink } from "@hooks/useRemoveWijmoLink";
 

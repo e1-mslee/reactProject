@@ -15,7 +15,7 @@ import BaseButton from "@component/BaseButton.jsx";
 
 import moment from 'moment';
 import useCommonData from "@store/commonStore";
-import useGridData from "@store/kjoStroe";
+import useGridData from "@store/kjo/kjoStroe";
 
 import { useRemoveWijmoLink } from "@hooks/useRemoveWijmoLink";
 
