@@ -5,14 +5,12 @@ import Lms from '@pages/lms/Lms';
 import Kjo from '@pages/kjo/Kjo';
 
 const MainRoutes: React.FC = () => {
-  const location = useLocation();
-
   return (
     <Routes>
-      <Route path='/' element={<Home key={location.key} />} />
-      <Route path='/lms' element={<Lms key={location.key} />} />
-      <Route path='/kjo' element={<Kjo key={location.key} />} />
-      <Route path='*' element={<Home key={location.key} />} />
+      <Route path='/' element={<Home />} />
+      <Route path='/lms' element={<Lms />} />
+      <Route path='/kjo' element={<Kjo />} />
+      <Route path='*' element={<Home />} />
     </Routes>
   );
 };
