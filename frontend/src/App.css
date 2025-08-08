@@ -1,4 +1,108 @@
 /* App.css */
+@font-face {
+  font-family: 'NotoSansCjKKr';
+  src: url('@assets/font/NotoSansCJKkr-Regular.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'RobotoRegular';
+  src: url('@assets/font/Roboto-Regular.ttf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+html,
+body,
+div,
+span,
+applet,
+object,
+iframe,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+blockquote,
+pre,
+a,
+abbr,
+acronym,
+address,
+big,
+cite,
+code,
+del,
+dfn,
+em,
+img,
+ins,
+kbd,
+q,
+s,
+samp,
+small,
+strike,
+strong,
+sub,
+sup,
+tt,
+var,
+b,
+u,
+i,
+center,
+dl,
+dt,
+dd,
+ol,
+ul,
+li,
+fieldset,
+form,
+label,
+legend,
+table,
+caption,
+tbody,
+tfoot,
+thead,
+tr,
+th,
+td,
+article,
+aside,
+canvas,
+details,
+embed,
+figure,
+figcaption,
+footer,
+header,
+hgroup,
+menu,
+nav,
+output,
+ruby,
+section,
+summary,
+time,
+mark,
+audio,
+video {
+  font-family: 'NotoSansCjKKr' !important;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-size: 100%;
+  font: inherit;
+  vertical-align: baseline;
+  text-decoration: none;
+}
 
 html,
 body,
@@ -7,7 +111,6 @@ body,
   margin: 0;
   padding: 0;
   overflow: hidden; /* body 스크롤 제거 */
-  font-family: sans-serif;
   background-color: #f6f6f6; /* 전체 배경색 */
   color: #333; /* 기본 글자색 */
 }
@@ -93,8 +196,8 @@ textarea {
   flex: 1;
   margin: 0;
   overflow: 'auto';
-  background: colorBgContainer;
-  border-radius: borderRadiusLG;
+  background-color: #fff;
+  border-radius: 8px;
   padding: 2;
 }
 
