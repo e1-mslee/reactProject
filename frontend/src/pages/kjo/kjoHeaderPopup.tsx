@@ -1,7 +1,8 @@
 import "./kjo.css";
 import {useEffect, useRef, useState} from "react";
+import useEvent from "react-use-event-hook";
 
-import BaseButton from '../components/BaseButton.jsx';
+import BaseButton from '@component/BaseButton.jsx';
 import '@mescius/wijmo.styles/wijmo.css';
 import '@mescius/wijmo.cultures/wijmo.culture.ko';
 
@@ -9,25 +10,39 @@ import {DataMap} from '@mescius/wijmo.grid';
 import {FlexGrid, FlexGridColumn} from '@mescius/wijmo.react.grid';
 import * as wjGrid from '@mescius/wijmo.grid';
 
-import useEvent from "react-use-event-hook";
-import useHeaderData from "@store/kjoHeaderStore.js";
-import {CollectionView, toHeaderCase} from "@mescius/wijmo";
+import useHeaderData from "@store/kjoHeaderStore";
+
+interface GridData {
+    selected: boolean;
+    tableSeq: number;
+    headerId: string
+    headerName: string;
+    supiHeader: string;
+    headerWidth: number;
+    connField: string;
+    sortSn: number;
+    children?: GridData[] | null;
+}
 
 const params = new URLSearchParams(window.location.search);
-const tableSeq = params.get('tableSeq');
+const tableSeq = params.get('tableSeq') || "";
 
 const TmpAreaToggle = () => {
-    let display = document.getElementById("TmpArea").style.display;
+    const display = (document.getElementById("TmpArea") as HTMLInputElement | null)?.style.display || '';
 
-    if(display === "block")
-        document.getElementById("TmpArea").style.display = "none";
-    else
-        document.getElementById("TmpArea").style.display = "block";
+    if(display === "block") {
+        const tmpArea = document.getElementById("TmpArea") as HTMLInputElement | null;
+
+        if(tmpArea) tmpArea.style.display = 'none';
+    } else {
+        const tmpArea = document.getElementById("TmpArea") as HTMLInputElement | null;
+
+        if(tmpArea) tmpArea.style.display = 'block';
+    }
 }
 
 const Header = () => {
     const { fieldMatching, saveGridData } = useHeaderData();
-
 
     return (
         <div className={"header_line"}>
@@ -43,15 +58,20 @@ const Header = () => {
 
 const TableInfo = () => {
     const {initData} = useHeaderData();
-    let data;
 
-    if(initData == null) {
-        data = {
-            tableName: '',
-            tableId: ''
+    interface InitData {
+        tableName: string;
+        tableId: string;
+    }
+    let data: InitData = {
+        tableName: '',
+        tableId: ''
+    };
+
+    if(initData != null && initData.length > 0) {
+        if(initData[0] != undefined){
+            data = initData[0];
         }
-    } else {
-        data = initData[0];
     }
 
     return (
@@ -84,7 +104,7 @@ const GridHeader = () => {
 
 const GridArea = () => {
     const { setGridRef, gridData, fieldData, headerData, markAsEdited } = useHeaderData();
-    const gridRef = useRef(null);
+    const gridRef = useRef<{control: wjGrid.FlexGrid}>(null);
     const [ totalCnt, setTotalCnt ] = useState(0);
 
     let header = null;
@@ -105,13 +125,18 @@ const GridArea = () => {
     useEffect(() => {
         if (!gridData) return;
 
-        function onCollectionChanged(e) {
-            if(e?.items?.length === 0)
-                document.getElementById("fieldMatching").style.display = "block";
-            else
-                document.getElementById("fieldMatching").style.display = "none";
+        function onCollectionChanged() {
+            const gridLength = gridData?.items?.length ?? 0;
 
-            setTotalCnt(gridRef.current.control.rows.length);
+            setTotalCnt(gridLength);
+
+            if(gridLength === 0) {
+                const fieldMatching = document.getElementById("fieldMatching") as HTMLInputElement || null;
+                if(fieldMatching) fieldMatching.style.display = "block";
+            } else {
+                const fieldMatching = document.getElementById("fieldMatching") as HTMLInputElement || null;
+                if(fieldMatching) fieldMatching.style.display = "none";
+            }
         }
 
         gridData.collectionChanged.addHandler(onCollectionChanged);
@@ -121,40 +146,41 @@ const GridArea = () => {
         };
     }, [gridData]);
 
-    const initialGrid = useEvent((grid) => {
-        grid.loadedRows.addHandler((s, e) => {
+    const initialGrid = useEvent((grid: wjGrid.FlexGrid) => {
+        grid.loadedRows.addHandler(() => {
             grid.rows.forEach((row) => {
                 row.isReadOnly = false;
             });
-            setTotalCnt(gridRef.current.control.rows.length || 0);
+            setTotalCnt(gridRef?.current?.control.rows.length || 0);
         });
 
-        grid.formatItem.addHandler((s, e) => {
-            if (e.panel.cellType === 1 && s.activeEditor) {
+        grid.formatItem.addHandler((s: wjGrid.FlexGrid, e: wjGrid.FormatItemEventArgs) => {
+
+            if (e.panel.cellType === wjGrid.CellType.Cell && s.activeEditor) {
                 if (s.editRange.row === e.row && s.editRange.col === e.col) {
                     return;
                 }
             }
 
             // add custom expand/collapse in another column
-            if (e.panel.cellType !== 1) {
+            if (e.panel.cellType !== wjGrid.CellType.Cell) {
                 return;
             }
 
-             var col = e.panel.columns[e.col];
-             var row = e.panel.rows[e.row];
+            const col = e.panel.columns[e.col];
+            const row = e.panel.rows[e.row] as wjGrid.GroupRow;
 
             // reset padding for first column
-            if (col.index === 0) {
-                e.cell.style.paddingLeft = null;
+            if (col?.index === 0) {
+                e.cell.style.paddingLeft = "";
                 // remove buttons from first column
                 e.cell.innerHTML = '';
             }
 
             // add padding for second column
-            if (col.binding === 'headerId') {
-                let padding = row.level * 14;
-                if (!row.hasChildren) {
+            if (col?.binding === 'headerId') {
+                let padding = row?.level * 14;
+                if (!row?.hasChildren) {
                     padding += 20;
                 } else {
                     // has child node, add collapse/expand buttons
@@ -168,7 +194,7 @@ const GridArea = () => {
                         '">' +
                         '</span>' +
                         '</button>' +
-                        row.dataItem.headerId +
+                        (row.dataItem as GridData).headerId +
                         '';
                 }
                 e.cell.style.paddingLeft = padding + 'px';
@@ -176,11 +202,11 @@ const GridArea = () => {
         });
 
         grid.beginningEdit.addHandler((s, e) => {
-            let col = e.panel.columns[e.col];
+            const col = e.panel.columns[e.col];
 
-            if(col.binding === 'connField' && e.panel.cellType === 1) {
-                let headerId = s.getCellData(e.row, 'headerId');
-                let childRows = s.rows.find(d => d.dataItem.supiHeader === headerId);
+            if(col?.binding === 'connField' && e.panel.cellType === wjGrid.CellType.Cell) {
+                const headerId = s.getCellData(e.row, 'headerId', false) as string;
+                const childRows = s.rows.find(d => (d.dataItem as GridData).supiHeader === headerId);
 
                 if(childRows) {
                     e.cancel = true;
@@ -195,9 +221,9 @@ const GridArea = () => {
             const col = s.columns[e.col];
             const editorValue = s.activeEditor?.value;
 
-            if(col.binding === 'supiHeader' && e.panel.cellType === 1) {
-                let supiHeader = col.dataMap.getKeyValue(editorValue);
-                let supiRow = s.rows.find(d => d.dataItem.headerId === supiHeader);
+            if(col?.binding === 'supiHeader' && e.panel.cellType === wjGrid.CellType.Cell) {
+                const supiHeader = col?.dataMap?.getKeyValue(editorValue) as string;
+                const supiRow = s.rows.find(d => (d.dataItem as GridData).headerId === supiHeader);
 
                 if(supiRow) {
                     e.cancel = true;
@@ -206,9 +232,9 @@ const GridArea = () => {
                 }
             }
 
-            if(col.binding === 'connField' && e.panel.cellType === 1) {
-                let connField = col.dataMap.getKeyValue(editorValue);
-                let childRows = s.rows.find(d => d.dataItem.connField === connField);
+            if(col?.binding === 'connField' && e.panel.cellType === wjGrid.CellType.Cell) {
+                const connField = col?.dataMap?.getKeyValue(editorValue) as string;
+                const childRows = s.rows.find(d => (d.dataItem as GridData).connField === connField);
 
                 if(childRows) {
                     e.cancel = true;
@@ -219,18 +245,17 @@ const GridArea = () => {
         })
 
         grid.cellEditEnded.addHandler((s, e) => {
-            let col = e.panel.columns[e.col];
-            let oriData = s.rows[e.row].dataItem;
-            let cellData = s.getCellData(e.row, 'selected');
+            const col = e.panel.columns[e.col];
+            const oriData = s.rows[e.row]?.dataItem as GridData;
+            const cellData = s.getCellData(e.row, 'selected', false) as string;
 
             markAsEdited(oriData);
 
+            if(col?.binding !== 'selected' || e.panel.cellType !== wjGrid.CellType.Cell) return;
 
-            if(col.binding !== 'selected' || e.panel.cellType !== 1) return;
-
-            const findSupiRow = (supiHeader) => {
+/*            const findSupiRow = (supiHeader: string) => {
                 for(let i = 0; i < e.row; i++) {
-                    let data = s.rows[i].dataItem;
+                    const data = s.rows[i]?.dataItem as GridData;
 
                     if(supiHeader === data.headerId && cellData) {
                         s.setCellData(i, 'selected', cellData);
@@ -239,14 +264,14 @@ const GridArea = () => {
                         return;
                     }
                 }
-            }
+            }*/
 
-            const findChildRow = (children) => {
-                if(children == null || children.length === 0) return;
+            const findChildRow = (children: GridData[] | null | undefined) => {
+                if(!children || children.length === 0) return;
 
-                for(let child of children) {
+                for(const child of children) {
                     for(let i = e.row+1; i < s.rows.length; i++) {
-                        let data = s.rows[i].dataItem;
+                        const data = s.rows[i]?.dataItem as GridData;
                         if(data.headerId === child.headerId) {
                             s.setCellData(i, 'selected', cellData);
                             findChildRow(data.children);
@@ -266,7 +291,7 @@ const GridArea = () => {
         <div className={"grid_area"}>
             <FlexGrid
                 ref = {gridRef}
-                itemsSource={gridData}
+                itemsSource={gridData || []}
                 initialized={initialGrid}
                 isReadOnly={false}
                 style={{ height: '300px' }}
@@ -302,22 +327,24 @@ const TmpGridHeader = () => {
 
 const TmpGridArea = () => {
     const { gridHeaderData } = useHeaderData();
-    const tmpGridRef = useRef(null);
+    const tmpGridRef = useRef<{control: wjGrid.FlexGrid}>(null);
 
     useEffect(() => {
         if(!tmpGridRef || !gridHeaderData || gridHeaderData.length === 0) return;
 
-        let grid = tmpGridRef.current.control;
-        let deptList = gridHeaderData.map((col) => col.dept);
-        let maxDept = Math.max(...deptList);
-        let colIdx = new Array(maxDept+1).fill(0);
-        let headerList = new Array(maxDept+1);
+        const grid = tmpGridRef?.current?.control;
+        const deptList = gridHeaderData.map((col) => col.dept);
+        const maxDept = Math.max(...deptList);
+        //const colIdx = new Array(maxDept+1).fill(0);
+        const headerList: string[][] = new Array<string[]>(maxDept + 1).fill(new Array<string>());
+        
+        if(!grid) return;
 
-        let panel = grid.columnHeaders;
+        const panel = grid.columnHeaders;
         panel.rows.splice(0, panel.rows.length-1);
 
         for(let i = 0; i < maxDept; i++) {
-            let extraRow = new wjGrid.Row();
+            const extraRow = new wjGrid.Row();
             extraRow.allowMerging = true;
 
             // add extra header row to the grid
@@ -330,20 +357,26 @@ const TmpGridArea = () => {
             grid.columns.push(new wjGrid.Column({ binding: col.headerId, header: col.headerName, width: col.headerWidth, allowMerging: true}));
         });
 
-        for(let header of gridHeaderData) {
+        for(const header of gridHeaderData) {
             if(typeof headerList[header.dept] === 'undefined') {
-                headerList[header.dept] = new Array();
+                headerList[header.dept] = [];
             }
 
             for(let i = 0; i < header.cellSize; i++) {
-                headerList[header.dept].push(header.headerId);
+                headerList[header.dept]?.push(header.headerId);
             }
         }
 
         for(let i = 0; i < headerList.length; i++) {
-            for(let j = 0; j < headerList[i].length; j++) {
-                let headerId = headerList[i][j];
-                let header = gridHeaderData.filter((col) => col.headerId === headerId && col.dept === i)[0];
+            const headers = headerList[i];
+
+            if(!headers) continue;
+
+            for(let j = 0; j < headers.length; j++) {
+                const headerId = headers[j];
+                const header = gridHeaderData.filter((col) => col.headerId === headerId && col.dept === i)[0];
+
+                if(!header) continue;
 
                 panel.setCellData(header.dept, j, header.headerName);
             }
@@ -351,9 +384,9 @@ const TmpGridArea = () => {
 
         //
         // center-align merged header cells
-        function tmpGridFormat(s, e) {
+        function tmpGridFormat(s: wjGrid.FlexGrid, e: wjGrid.FormatItemEventArgs) {
             if (e.panel === s.columnHeaders && e.range.rowSpan > 1) {
-                let html = e.cell.innerHTML;
+                const html = e.cell.innerHTML;
                 e.cell.innerHTML = '<div class="v-center">' + html + '</div>';
             }
         }

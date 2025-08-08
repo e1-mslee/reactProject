@@ -150,7 +150,7 @@ bs3_study
 │  │  │  ├─ Home.tsx
 │  │  │  ├─ kjo.css
 │  │  │  ├─ Kjo.jsx
-│  │  │  ├─ kjoHeaderPopup.jsx
+│  │  │  ├─ kjoHeaderPopup.tsx
 │  │  │  ├─ KjoPop.tsx
 │  │  │  ├─ Lms.css
 │  │  │  ├─ Lms.jsx
@@ -159,7 +159,7 @@ bs3_study
 │  │  │  └─ Notfound.tsx
 │  │  ├─ store
 │  │  │  ├─ commonStore.js
-│  │  │  ├─ kjoHeaderStore.js
+│  │  │  ├─ kjoHeaderStore.ts
 │  │  │  ├─ kjoPopupStore.ts
 │  │  │  ├─ kjoStroe.ts
 │  │  │  └─ lmsStore.js

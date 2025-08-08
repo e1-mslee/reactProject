@@ -2,8 +2,8 @@ import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import LmsPop from '@pages/lms/LmsPop';
 import LmsHeader from '@pages/lms/LmsHeader';
-import KjoPop from '@pages/KjoPop';
-import KjoHeaderPopup from '@pages/kjoHeaderPopup';
+import KjoPop from '@pages/kjo/KjoPop';
+import KjoHeaderPopup from '@pages/kjo/kjoHeaderPopup';
 
 const PopupRoutes: React.FC = () => {
   return (
