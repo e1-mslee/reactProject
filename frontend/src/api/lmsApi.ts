@@ -1,4 +1,4 @@
-import { apiClient } from './api';
+import { apiClient } from '@api/api';
 
 // LMS 관련 API 타입 정의
 export interface TableInfo {

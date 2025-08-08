@@ -11,10 +11,8 @@ import MainRoutes from '@router/routes/MainRoute';
 import PopupRoutes from '@router/routes/PopupRoute';
 
 import './App.css';
-import './index.css';
 
 const { Content } = Layout;
-
 const TITLE_MAP: { [key: string]: string } = {
   lms: 'LMS',
   kjo: 'KJO',

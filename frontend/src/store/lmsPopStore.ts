@@ -2,8 +2,8 @@ import { create } from 'zustand';
 import { CollectionView } from '@mescius/wijmo';
 import { DataMap } from '@mescius/wijmo.grid';
 import { message } from 'antd';
-import lmsPopApi from '../api/lmsPopApi';
-import type { CommCode, GridInfo, GridItem, DeleteItem } from '../api/lmsPopApi';
+import lmsPopApi from '@api/lmsPopApi';
+import type { CommCode, GridInfo, GridItem, DeleteItem } from '@api/lmsPopApi';
 
 // 상수 정의
 const CONSTANTS = {

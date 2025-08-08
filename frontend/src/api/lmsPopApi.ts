@@ -1,4 +1,4 @@
-import { apiClient } from './api';
+import { apiClient } from '@api/api';
 
 // LmsPop 관련 타입 정의
 export interface CommCode {

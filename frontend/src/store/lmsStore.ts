@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { CollectionView } from '@mescius/wijmo';
 import { message } from 'antd';
-import lmsApi from '../api/lmsApi';
+import lmsApi from '@api/lmsApi';
 
 // 상수 정의
 const CONSTANTS = {

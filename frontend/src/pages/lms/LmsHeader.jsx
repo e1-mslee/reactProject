@@ -3,7 +3,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import './Lms.css';
 import '@mescius/wijmo.cultures/wijmo.culture.ko';
 import 'react-datepicker/dist/react-datepicker.css';
-import api from '../../api/api.js';
+import api from '@api/api.js';
 import { FlexGrid, FlexGridColumn } from '@mescius/wijmo.react.grid';
 import { DataMap, CellType } from '@mescius/wijmo.grid';
 import { CollectionView, isEmpty } from '@mescius/wijmo';

@@ -1,6 +1,6 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
-import path, { resolve } from "path";
+import path from "path";
 import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -8,18 +8,18 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export default defineConfig({
   plugins: [react()],
   resolve: {
-    alias: [
-      { find: "@", replacement: resolve(__dirname, "./src/pages") },
-      { find: "@pages", replacement: resolve(__dirname, "src/pages") },
-      { find: "@component", replacement: resolve(__dirname, "src/components") },
-      { find: "@api", replacement: resolve(__dirname, "src/api") },
-      { find: "@data", replacement: resolve(__dirname, "src/data") },
-      { find: "@assets", replacement: resolve(__dirname, "src/assets") },
-      { find: "@utils", replacement: resolve(__dirname, "src/utils") },
-      { find: "@store", replacement: resolve(__dirname, "src/store") },
-      { find: "@hooks", replacement: resolve(__dirname, "src/hooks") },
-      { find: "@router", replacement: resolve(__dirname, "src/router") },
-      { find: "@layout", replacement: resolve(__dirname, "src/layout") },
-    ],
+    alias: {
+      "@": path.resolve(__dirname, "src"),
+      "@pages": path.resolve(__dirname, "src/pages"),
+      "@component": path.resolve(__dirname, "src/components"),
+      "@api": path.resolve(__dirname, "src/api"),
+      "@data": path.resolve(__dirname, "src/data"),
+      "@assets": path.resolve(__dirname, "src/assets"),
+      "@utils": path.resolve(__dirname, "src/utils"),
+      "@store": path.resolve(__dirname, "src/store"),
+      "@hooks": path.resolve(__dirname, "src/hooks"),
+      "@router": path.resolve(__dirname, "src/router"),
+      "@layout": path.resolve(__dirname, "src/layout"),
+    },
   },
 });
