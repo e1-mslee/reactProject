@@ -1,15 +1,15 @@
 import { Layout, Menu, theme, type MenuProps } from 'antd';
-import { type NavigateFunction } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 const { Sider } = Layout;
 
 interface SidebarProps {
   selectedKey: string;
   setSelectedKey: (key: string) => void;
-  navigate: NavigateFunction;
   items: MenuProps['items'];
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ selectedKey, setSelectedKey, navigate, items }) => {
+const Sidebar: React.FC<SidebarProps> = ({ selectedKey, setSelectedKey, items }) => {
+  const navigate = useNavigate();
   const {
     token: { colorBgContainer },
   } = theme.useToken();

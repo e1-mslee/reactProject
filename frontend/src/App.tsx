@@ -41,7 +41,7 @@ const App: React.FC = () => {
     <Layout style={{ height: '100vh' }}>
       <Header />
       <Layout style={{ flex: 1 }}>
-        <Sidebar selectedKey={selectedKey} setSelectedKey={setSelectedKey} navigate={navigate} items={menuItems} />
+        <Sidebar selectedKey={selectedKey} setSelectedKey={setSelectedKey} items={menuItems} />
         <Layout className='layoutContent'>
           <Breadcrumb
             items={breadcrumbItems.map((item) => ({
