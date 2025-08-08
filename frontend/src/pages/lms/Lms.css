@@ -7,6 +7,7 @@ body,
 .datepicker {
   border: 1px solid #dbdbdb !important;
   height: 28px;
+  font-size: 13px;
 }
 
 .react-datepicker-popper {
