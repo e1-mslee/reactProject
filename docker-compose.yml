@@ -3,6 +3,9 @@ services:
     build: ./frontend
     ports:
       - 80:5173
+    volumes:
+      - ./frontend:/app # 소스코드 실시간 반영
+      - /app/node_modules # node_modules 캐싱
   spring-prj-server:
     build: ./backend
     ports:
