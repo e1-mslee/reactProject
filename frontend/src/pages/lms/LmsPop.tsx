@@ -8,7 +8,7 @@ import { FlexGrid as FlexGridType, CellRangeEventArgs } from '@mescius/wijmo.gri
 import { useEffect, useRef, useCallback } from 'react';
 import { Button, Flex, Modal } from 'antd';
 import openPop from '@utils/openPop';
-import { useLmsPopStore } from '@store/lmsPopStore';
+import { useLmsPopStore } from '@/store/lms/lmsPopStore';
 import { useRemoveWijmoLink } from '@hooks/useRemoveWijmoLink';
 // 상수 정의
 const CONSTANTS = {

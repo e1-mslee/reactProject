@@ -10,7 +10,7 @@ import { FlexGrid as FlexGridType } from '@mescius/wijmo.grid';
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Button, Flex, Modal, message } from 'antd';
 import openPop from '@utils/openPop';
-import { useLmsStore } from '@store/lmsStore';
+import { useLmsStore } from '@/store/lms/lmsStore';
 import { useRemoveWijmoLink } from '@hooks/useRemoveWijmoLink';
 
 // 상수 정의

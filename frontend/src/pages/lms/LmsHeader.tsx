@@ -4,7 +4,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import './Lms.css';
 import '@mescius/wijmo.cultures/wijmo.culture.ko';
 import 'react-datepicker/dist/react-datepicker.css';
-import { useLmsHeaderStore } from '@store/lmsHeaderStore';
+import { useLmsHeaderStore } from '@/store/lms/lmsHeaderStore';
 import type { HeaderItem } from '@api/lmsHeaderApi';
 import { FlexGrid, FlexGridColumn } from '@mescius/wijmo.react.grid';
 import { FlexGrid as FlexGridType, CellRangeEventArgs } from '@mescius/wijmo.grid';
