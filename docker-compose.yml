@@ -2,7 +2,7 @@ services:
   react-prj-server:
     build: ./frontend
     ports:
-      - 80:5173
+      - 80:80
   spring-prj-server:
     build: ./backend
     ports:
