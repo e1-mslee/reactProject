@@ -51,7 +51,7 @@ interface CellContext {
 
 const Lms = () => {
   // Wijmo 링크 제거
-  useRemoveWijmoLink();
+  //useRemoveWijmoLink();
 
   // 날짜 상태 관리
   const [startDate, setStartDate] = useState(() => {
