@@ -53,7 +53,7 @@ public class ApiController {
     }
 
     @PostMapping("/api/saveTableFieldList")
-    public ResponseEntity<?>  saveTableFieldList(@RequestBody List<Map<String,Object>> data) {
+    public ResponseEntity<?>  saveTableFieldList(@RequestBody Map<String, Object> data) {
         apiService.saveTableFieldList(data);
         
         return ResponseEntity.ok().build();

@@ -7,7 +7,7 @@ body,
 .datepicker {
   border: 1px solid #dbdbdb !important;
   height: 28px;
-  font-size: 13px;
+  font-size: 12px;
 }
 
 .react-datepicker-popper {
@@ -112,6 +112,7 @@ body,
   margin-bottom: 10px;
   border-bottom: 1px solid #e4dcdd;
   border-top: 1px solid #e4dcdd;
+  font-size: 12px;
 }
 
 .formWrap span {
@@ -173,4 +174,22 @@ body,
   top: 50%;
   transform: translateY(-50%);
   white-space: pre-wrap;
+}
+
+.inputBox {
+  width: 300px;
+  height: 28px;
+  border: 1px solid #dbdbdb;
+}
+
+.totalCount {
+  font-size: 13px;
+  font-weight: bold;
+  margin-left: 5px;
+}
+
+.buttonGroup {
+  display: flex;
+  justify-content: flex-end;
+  margin: 2px 0 10px 0;
 }

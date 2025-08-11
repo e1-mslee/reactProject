@@ -111,7 +111,6 @@ body,
   margin: 0;
   padding: 0;
   overflow: hidden; /* body 스크롤 제거 */
-  background-color: #f6f6f6; /* 전체 배경색 */
   color: #333; /* 기본 글자색 */
 }
 

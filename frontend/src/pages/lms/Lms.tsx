@@ -28,9 +28,9 @@ const CONSTANTS = {
     SELECT: 50,
     TABLE_NAME: '*',
     TABLE_ID: '*',
-    FIELD_COUNT: '0.4*',
-    CREATOR: '*',
-    CREATED_DATE: '0.5*',
+    FIELD_COUNT: '0.3*',
+    CREATOR: '0.4*',
+    CREATED_DATE: '0.4*',
   },
   MODAL_STYLE: { top: 200 },
 };
@@ -51,7 +51,7 @@ interface CellContext {
 
 const Lms = () => {
   // Wijmo 링크 제거
-  //useRemoveWijmoLink();
+  useRemoveWijmoLink();
 
   // 날짜 상태 관리
   const [startDate, setStartDate] = useState(() => {
@@ -61,7 +61,6 @@ const Lms = () => {
   });
   const [endDate, setEndDate] = useState(new Date());
 
-  // Zustand 스토어 사용
   const { data, cv, fetchGridData, handleAddRow, saveTable, deleteData } = useLmsStore();
 
   const gridRef = useRef<{ control: FlexGridType } | null>(null);
@@ -109,7 +108,6 @@ const Lms = () => {
     [openPopupWithRefresh]
   );
 
-  // 모달 확인 함수 메모이제이션
   const createConfirmModal = useCallback((content: string, onOk: () => Promise<void>) => {
     return Modal.confirm({
       title: '알림',
@@ -153,7 +151,6 @@ const Lms = () => {
     );
   }, []);
 
-  // 버튼 핸들러들 메모이제이션
   const buttonHandlers = useMemo(
     () => ({
       onSearch: handleSearch,
@@ -166,7 +163,6 @@ const Lms = () => {
     [handleSearch, handleAddRow, modifyTableColumn, handleSave, handleDelete, exportToExcel]
   );
 
-  // 그리드 템플릿 메모이제이션
   const tableNameTemplate = useCallback(
     (ctx: CellContext) => (
       <span
@@ -184,7 +180,7 @@ const Lms = () => {
       <span style={{ fontSize: '22px', fontWeight: 'bold' }}>UDA 목록</span>
 
       {/* 액션 버튼 */}
-      <div style={{ display: 'flex', justifyContent: 'flex-end', margin: '2px 0 10px 0' }}>
+      <div className='buttonGroup'>
         <Flex gap='small' wrap>
           <Button className='custom-button' onClick={buttonHandlers.onSearch}>
             조회
@@ -210,10 +206,7 @@ const Lms = () => {
       {/* 검색 조건 */}
       <div className='formWrap'>
         <span>검색조건</span>
-        <input
-          style={{ width: '300px', height: '28px', border: '1px solid #dbdbdb' }}
-          placeholder='검색조건을 입력하세요.'
-        />
+        <input className='inputBox' placeholder='검색조건을 입력하세요.' />
         <span>수정일</span>
         <DatePicker
           dateFormat='yyyy-MM-dd'
@@ -236,7 +229,7 @@ const Lms = () => {
       <div style={{ margin: '2px' }}>
         <FlexGrid
           ref={gridRef}
-          itemsSource={cv ? cv : []}
+          itemsSource={cv || []}
           isReadOnly={false}
           autoGenerateColumns={false}
           style={CONSTANTS.GRID_STYLES}
@@ -278,7 +271,7 @@ const Lms = () => {
       </div>
 
       {/* 총 개수 표시 */}
-      <span style={{ fontSize: '13px', fontWeight: 'bold', marginLeft: '5px' }}>TOTAL : {data.length || 0}</span>
+      <span className='totalCount'>TOTAL : {data.length || 0}</span>
     </div>
   );
 };

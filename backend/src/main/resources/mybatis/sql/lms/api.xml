@@ -8,9 +8,9 @@
 			   COM_CD,
 			   COM_CD_NM,
 			   COM_CD_EN,
-			   SORT_SN,
 			   CODE_OPTION_NAME,
-			   CODE_OPTION_VALUE
+			   CODE_OPTION_VALUE,			   
+			   SORT_SN
 		  from comm_code 
 	  order by SORT_SN
     </select>
@@ -181,4 +181,19 @@
 		  AND TABLE_SEQ = #{TABLE_SEQ}
 	</delete>
 
+	<update id="createTable" parameterType="string">
+		${query}
+	</update>
+
+	<select id="tableCreateCheck" parameterType="string">
+		SELECT table_name 
+		  FROM information_schema.tables 
+		 WHERE table_schema = DATABASE()
+		   and table_name = #{tableName}
+	</select>
+
+
+	<delete id="dropTable" parameterType="string">
+		drop table ${tableName}
+	</delete>
 </mapper>

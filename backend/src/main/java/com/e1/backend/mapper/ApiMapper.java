@@ -40,4 +40,10 @@ public interface ApiMapper {
     void updateHeaderList(Map<String, Object> data);
 
     void deleteHeaderList(Map<String, Object> data);
+
+    void createTable(String query);
+
+    String tableCreateCheck(String tableName);
+
+    void dropTable(String tableName);
 }

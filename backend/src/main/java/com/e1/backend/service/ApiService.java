@@ -15,7 +15,7 @@ public interface ApiService {
 
     List<Map<String,Object>> getTableFieldList(String tableSeq);
 
-    void saveTableFieldList(List<Map<String,Object>> data);
+    void saveTableFieldList(Map<String,Object> data);
 
     void deleteTableField(List<Map<String,Object>> data);
 

@@ -25,6 +25,12 @@ export interface GridItem {
   STATUS?: 'INS' | 'UPD' | 'DEL';
 }
 
+// 필드 저장 시 테이블 정보까지 함께 전달하기 위한 페이로드
+export interface SaveTableFieldPayload {
+  gridInfo: GridInfo;
+  items: GridItem[];
+}
+
 export interface DeleteItem {
   COL_ID: string;
   TABLE_SEQ: string;
@@ -76,9 +82,9 @@ export const lmsPopApi = {
   },
 
   // 테이블 필드 목록 저장
-  saveTableFieldList: async (data: GridItem[]): Promise<void> => {
+  saveTableFieldList: async (payload: SaveTableFieldPayload): Promise<void> => {
     try {
-      await apiClient.post('/api/saveTableFieldList', data);
+      await apiClient.post('/api/saveTableFieldList', payload);
     } catch (error: unknown) {
       console.error('테이블 필드 목록 저장 실패:', error);
       throw error;

@@ -34,7 +34,6 @@ const CONSTANTS = {
 interface GridRow {
   COL_TYPE?: string;
   COL_SIZE?: number | null;
-  [key: string]: any; // 다른 컬럼도 있을 수 있으므로
 }
 
 const LmsPop = () => {
@@ -45,7 +44,6 @@ const LmsPop = () => {
   const tableSeq = params.get('tableSeq') || '';
   const gridRef = useRef<{ control: FlexGridType } | null>(null);
 
-  // Zustand 스토어 사용
   const {
     flag,
     gridData,
@@ -62,11 +60,6 @@ const LmsPop = () => {
 
   // 초기 로드
   useEffect(() => {
-    const link = document.querySelector('a[href="https://www.mescius.co.kr/wijmo#price"]');
-    if (link) {
-      link.remove();
-    }
-
     void fetchCommCodes();
     if (tableSeq) {
       void fetchTableInfo(tableSeq);
@@ -163,7 +156,7 @@ const LmsPop = () => {
           ></i>
           열 속성 목록
         </h4>
-        <div style={{ display: 'flex', justifyContent: 'flex-end', margin: '2px 0 4px 0' }}>
+        <div className='buttonGroup'>
           <Flex gap='small' wrap>
             <Button className='custom-button' onClick={handleAddRowClick}>
               행추가
@@ -203,8 +196,19 @@ const LmsPop = () => {
               const item = s.rows[e.row]?.dataItem as GridRow | undefined;
 
               if (col?.binding === 'COL_TYPE' && item) {
-                item.COL_SIZE = null;
-                s.invalidate(); // 그리드 리렌더링
+                if (item.COL_TYPE === '3') {
+                  item.COL_SIZE = 700;
+                  //s.invalidate(); // 그리드 리프레시 (필요시)
+                } else if (item.COL_TYPE === '4') {
+                  item.COL_SIZE = 10;
+                } else if (item.COL_TYPE === '5') {
+                  item.COL_SIZE = 20;
+                } else if (item.COL_TYPE === '6') {
+                  item.COL_SIZE = 1;
+                } else {
+                  item.COL_SIZE = null;
+                }
+                s.invalidate();
               }
             });
           }}

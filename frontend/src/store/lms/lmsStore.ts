@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { CollectionView } from '@mescius/wijmo';
 import { message } from 'antd';
 import lmsApi from '@api/lmsApi';
+import { getNextTableId } from '@utils/tableUtils';
 
 // 상수 정의
 const CONSTANTS = {
@@ -87,7 +88,6 @@ export const useLmsStore = create<LmsStoreState>((set, get) => ({
   setData: (data) => set({ data }),
   setCv: (cv) => set({ cv }),
 
-  // API 호출 함수
   fetchGridData: async (startDate, endDate) => {
     try {
       const condition = {
@@ -110,11 +110,13 @@ export const useLmsStore = create<LmsStoreState>((set, get) => ({
     const { cv } = get();
     if (!cv) return;
 
+    const nextTableId = getNextTableId(cv.items);
+
     const newRow = {
       TABLE_SEQ: '',
       TABLE_NAME: '',
-      TABLE_ID: '',
-      field_count: '',
+      TABLE_ID: nextTableId,
+      field_count: 0,
       VBG_CRE_USER: '',
       VBG_CRE_DTM: new Date().toISOString().split('T')[0],
       selected: false,

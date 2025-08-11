@@ -65,7 +65,7 @@ const validateGridItems = (items: GridItem[]): boolean => {
       return false;
     }
 
-    if (!item.COL_SIZE && item.COL_TYPE === '2') {
+    if (!item.COL_SIZE) {
       message.error(CONSTANTS.MESSAGES.COL_SIZE_REQUIRED);
       return false;
     }
@@ -161,7 +161,7 @@ export const useLmsPopStore = create<LmsPopStoreState>((set, get) => ({
     const newRow: GridItem = {
       selected: false,
       COL_ID: nextColId,
-      COL_NM: '',
+      COL_NAME: '',
       COL_TYPE: '',
       COL_SIZE: null,
       COL_IDX: false,
@@ -214,11 +214,14 @@ export const useLmsPopStore = create<LmsPopStoreState>((set, get) => ({
         message.error(CONSTANTS.MESSAGES.NO_SAVE_CONTENT);
         return;
       }
-
+      console.log('newItems', newItems);
+      console.log('gridInfo', gridInfo);
+      console.log('gridInfotoptal', { gridInfo, items: newItems });
       if (!validateGridItems(newItems)) return;
 
       try {
-        await lmsPopApi.saveTableFieldList(newItems);
+        // 통합 저장 우선 시도, 실패 시 기존 두 단계 저장으로 폴백
+        await lmsPopApi.saveTableFieldList({ gridInfo, items: newItems });
         await lmsPopApi.saveMainTableInfo([gridInfo]);
         message.success(CONSTANTS.MESSAGES.SAVE_SUCCESS);
         await fetchTableInfo(tableSeq);

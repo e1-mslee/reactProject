@@ -21,7 +21,7 @@ export const lmsApi = {
   // 메인 테이블 정보 조회
   getMainTableInfo: async (condition: SearchCondition): Promise<TableInfo[]> => {
     try {
-      const result: TableInfo[] = await apiClient.post<TableInfo[]>('/api/getMainTableInfo', condition);
+      const result: TableInfo[] = (await apiClient.post<TableInfo[]>('/api/getMainTableInfo', condition)) || [];
       return result;
     } catch (error: unknown) {
       console.error('메인 테이블 정보 조회 실패:', error);
