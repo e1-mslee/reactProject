@@ -46,7 +46,7 @@ interface LmsPopStoreState {
   // 비즈니스 로직 함수
   handleAddRow: (tableSeq: string) => void;
   saveTableInfo: (tableSeq: string) => Promise<void>;
-  deleteData: (tableSeq: string) => Promise<void>;
+  deleteData: (tableSeq: string) => void;
 
   // 초기화
   reset: () => void;
@@ -208,7 +208,14 @@ export const useLmsPopStore = create<LmsPopStoreState>((set, get) => ({
         STATUS: 'UPD' as const,
       })) as GridItem[];
 
-      const newItems = [...addedItems, ...editedItems];
+      const deletedItems = (gridData.itemsRemoved || []).map((item) => ({
+        ...item,
+        STATUS: 'DEL' as const,
+      })) as GridItem[];
+
+      console.log('deletedItems', deletedItems);
+
+      const newItems = [...deletedItems, ...editedItems, ...addedItems];
 
       if (newItems.length === 0 && initialGridInfo?.TABLE_NAME === gridInfo.TABLE_NAME) {
         message.error(CONSTANTS.MESSAGES.NO_SAVE_CONTENT);
@@ -240,8 +247,8 @@ export const useLmsPopStore = create<LmsPopStoreState>((set, get) => ({
     }
   },
 
-  deleteData: async (tableSeq: string) => {
-    const { gridData, fetchFieldList } = get();
+  deleteData: (tableSeq: string) => {
+    const { gridData } = get();
     if (!gridData) return;
 
     const selected = gridData.items.filter((row) => row.selected);
@@ -251,27 +258,12 @@ export const useLmsPopStore = create<LmsPopStoreState>((set, get) => ({
       return;
     }
 
-    const deleteList: DeleteItem[] = selected
-      .filter((row): row is GridItem & { COL_ID: string; TABLE_SEQ: string } => !!row.COL_ID && !!row.TABLE_SEQ)
-      .map((row) => ({
-        COL_ID: row.COL_ID,
-        TABLE_SEQ: row.TABLE_SEQ,
-      }));
-
-    if (deleteList.length === 0) {
-      const filtered = gridData.items.filter((row) => !row.selected || row.COL_ID);
-      set({ gridData: new CollectionView(filtered, { trackChanges: true }) });
-      return;
-    }
-
-    try {
-      await lmsPopApi.deleteTableField(deleteList);
-      message.success(CONSTANTS.MESSAGES.DELETE_SUCCESS);
-      await fetchFieldList(tableSeq);
-    } catch (err) {
-      console.error('삭제 오류:', err);
-      message.error(CONSTANTS.MESSAGES.DELETE_ERROR);
-    }
+    selected.forEach((row) => {
+      gridData.remove(row);
+    });
+    gridData.refresh();
+    message.success(CONSTANTS.MESSAGES.DELETE_SUCCESS);
+    return;
   },
 
   // 초기화

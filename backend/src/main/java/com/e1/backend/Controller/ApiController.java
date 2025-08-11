@@ -59,13 +59,6 @@ public class ApiController {
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/api/deleteTableField")
-    public ResponseEntity<?>  deleteTableField(@RequestBody List<Map<String,Object>> data) {
-        apiService.deleteTableField(data);
-        
-        return ResponseEntity.ok().build();
-    }
-
     @PostMapping("/api/getMainTableInfoData")
     public List<Map<String, Object>> getMainTableInfoData(@RequestBody String tableSeq) {
         return apiService.getMainTableInfoData(tableSeq);

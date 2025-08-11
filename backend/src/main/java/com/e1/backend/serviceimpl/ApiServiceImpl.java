@@ -149,6 +149,7 @@ public class ApiServiceImpl implements ApiService {
         if(!finalQuery.isEmpty()){
              apiMapper.createTable(finalQuery);
         }
+        
 
         for (Map<String, Object> item : items) {
             String status = String.valueOf(item.get("STATUS"));
@@ -156,13 +157,10 @@ public class ApiServiceImpl implements ApiService {
                 apiMapper.insertTableField(item);
             } else if ("UPD".equals(status)) {
                 apiMapper.updateTableField(item);
+            } else if ("DEL".equals(status)) {
+                 apiMapper.deleteTablefield(item);
             }
         }
-    }
-
-    @Override
-    public void deleteTableField(List<Map<String, Object>> data) {
-        apiMapper.deleteTablefield(data);
     }
 
     @Override

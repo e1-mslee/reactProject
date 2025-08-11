@@ -101,8 +101,8 @@ const LmsPop = () => {
       title: '알림',
       content: CONSTANTS.MESSAGES.CONFIRM_DELETE,
       style: CONSTANTS.MODAL_STYLE,
-      async onOk() {
-        await deleteData(tableSeq);
+      onOk() {
+        deleteData(tableSeq);
       },
     });
   }, [deleteData, tableSeq]);
