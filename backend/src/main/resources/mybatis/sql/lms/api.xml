@@ -8,7 +8,9 @@
 			   COM_CD,
 			   COM_CD_NM,
 			   COM_CD_EN,
-			   SORT_SN
+			   SORT_SN,
+			   CODE_OPTION_NAME,
+			   CODE_OPTION_VALUE
 		  from comm_code 
 	  order by SORT_SN
     </select>
