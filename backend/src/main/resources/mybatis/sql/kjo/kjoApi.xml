@@ -26,14 +26,18 @@
          </where>
     </select>
 
-    <insert id="insertMainTable" parameterType="list">
+    <insert id="insertMainTable" parameterType="map">
         insert into std_main
             (TABLE_ID, TABLE_NAME, VBG_CRE_USER, VBG_CRE_DTM)
         values
-        <foreach collection="list" item="item" separator=",">
-            (#{item.tableId}, #{item.tableName}, '김정욱', now())
-        </foreach>
+            <foreach collection="list" item="item" separator=",">
+                (#{item.tableId}, #{item.tableName}, '김정욱', now())
+            </foreach>
     </insert>
+
+    <select id="definitionMainTable" parameterType="string">
+            ${query}
+    </select>
 
     <update id="updateMainTable" parameterType="list">
         update std_main
@@ -47,7 +51,7 @@
         delete from std_main
          where TABLE_SEQ in
          <foreach collection="list" item="item" separator="," open="(" close=")">
-             #{item}
+             #{item.tableSeq}
          </foreach>
     </delete>
 
@@ -99,7 +103,9 @@
     <delete id="deleteFieldTable" parameterType="map">
         delete from std_field
          where TABLE_SEQ = #{tableSeq}
-           and COL_ID = #{colId}
+           <if test="colId != null and colId != ''">
+                and COL_ID = #{colId}
+           </if>
     </delete>
 
     <select id="selectHeaderTable" parameterType="map">
@@ -139,7 +145,9 @@
     <delete id="deleteHeaderTable" parameterType="map">
         delete from std_header
          where TABLE_SEQ = #{tableSeq}
-           and HEADER_ID = #{headerId}
+           <if test="headerId != null and headerId != ''">
+                and HEADER_ID = #{headerId}
+           </if>
     </delete>
 
     <select id="selectHeaderId" parameterType="map">
@@ -186,5 +194,12 @@
                (select count(*) from std_header h where h.SUPI_HEADER = c.HEADER_ID and TABLE_SEQ = #{tableSeq}) as child
           from cte c
          order by sort_sn
+    </select>
+
+    <select id="selectColTypeCode" resultType="map">
+        select COM_CD       as code,
+               COM_CD_EN    as value
+          from comm_code
+         where COM_CD_ID = '00001'
     </select>
 </mapper>

@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Service
@@ -25,6 +26,10 @@ public class KjoApiServiceImpl implements KjoApiService {
     @Override
     @Transactional
     public ResponseEntity<?> insertMainTable(List<Map<String, Object>> data) {
+
+        kjoApiMapper.insertMainTable(data);
+
+        /*
         List<Map<String, Object>> insertData = data.stream().filter(map -> map.get("tableSeq") == null || map.get("tableSeq").equals("")).toList();
         List<Map<String, Object>> updateData = data.stream().filter(map -> map.get("tableSeq") != null && !map.get("tableSeq").equals("")).toList();
 
@@ -35,7 +40,7 @@ public class KjoApiServiceImpl implements KjoApiService {
             for(Map<String, Object> map : updateData) {
                 kjoApiMapper.updateMainTable(map);
             }
-        }
+        }*/
 
         return ResponseEntity.ok().build();
     }
@@ -43,12 +48,25 @@ public class KjoApiServiceImpl implements KjoApiService {
     @Override
     public ResponseEntity<?> updateMainTable(Map<String, Object> data) {
         kjoApiMapper.updateMainTable(data);
+
         return ResponseEntity.ok().build();
     }
 
     @Override
-    public ResponseEntity<?> deleteMainTable(List<String> data) {
+    @Transactional
+    public ResponseEntity<?> deleteMainTable(List<Map<String, Object>> data) {
         kjoApiMapper.deleteMainTable(data);
+
+        String query = "";
+        for(Map<String, Object> map : data) {
+            kjoApiMapper.deleteFieldTable(map);
+
+            kjoApiMapper.deleteHeaderTable(map);
+
+            query = "drop table if exists " + map.get("tableId").toString();
+            kjoApiMapper.definitionMainTable(query);
+        }
+
         return ResponseEntity.ok().build();
     }
 
@@ -64,10 +82,20 @@ public class KjoApiServiceImpl implements KjoApiService {
 
     @Override
     @Transactional
-    public ResponseEntity<?> saveFieldTable(Map<String, List<Map<String, Object>>> data) {
-        List<Map<String, Object>> added = data.get("added");
-        List<Map<String, Object>> edited = data.get("edited");
-        List<Map<String, Object>> removed = data.get("removed");
+    public ResponseEntity<?> saveFieldTable(Map<String, Object> data) {
+        List<Map<String, Object>> codeList = kjoApiMapper.selectColTypeCode();
+
+        Map<String, String> code =  new HashMap<>();
+
+        for(Map<String, Object> map : codeList){
+            code.put((String) map.get("code"), (String) map.get("value"));
+        }
+
+        List<Map<String, Object>> items = (List<Map<String, Object>>) data.get("items");
+
+        List<Map<String, Object>> added = (List<Map<String, Object>>) data.get("added");
+        List<Map<String, Object>> edited = (List<Map<String, Object>>) data.get("edited");
+        List<Map<String, Object>> removed = (List<Map<String, Object>>) data.get("removed");
 
         if(!added.isEmpty())
             kjoApiMapper.insertFieldTable(added);
@@ -83,6 +111,23 @@ public class KjoApiServiceImpl implements KjoApiService {
                 kjoApiMapper.deleteFieldTable(map);
             }
         }
+
+        String query = "drop table if exists " + data.get("tableId").toString();
+        kjoApiMapper.definitionMainTable(query);
+
+        if(!items.isEmpty()) {
+            query = "create table " + data.get("tableId").toString() + " (\n";
+            List<String> primaryKeys = new ArrayList<>();
+
+            List<Map<String, Object>> queryMap = Stream.of(edited, added)
+                    .flatMap(Collection::stream)
+                    .collect(Collectors.toList());
+
+            query += makeQueryTmp(queryMap, primaryKeys, code);
+            query += "\n)";
+        }
+
+        kjoApiMapper.definitionMainTable(query);
 
         return ResponseEntity.ok().build();
     }
@@ -204,4 +249,49 @@ public class KjoApiServiceImpl implements KjoApiService {
         return result;
     }
 
+    private String makeQueryTmp(List<Map<String, Object>> listMap, List<String> primaryKeys, Map<String, String> code) {
+        StringBuilder sb = new StringBuilder();
+
+        Map<String, Object> map = listMap.get(0);
+
+        String colNm = map.get("colName").toString();
+        String colType = map.get("colType").toString();
+        String colSize = map.get("colSize").toString();
+        String colIdx = map.get("colIdx").toString();
+
+        sb.append(colNm).append(" ").append(code.get(colType));
+
+        if(code.get(colType).equalsIgnoreCase("VARCHAR")) {
+            sb.append("(").append(colSize).append(")");
+        }
+
+        if(colIdx.equals("1")) {
+            primaryKeys.add(colIdx);
+        }
+
+        for(int i = 1; i < listMap.size(); i++) {
+            map = listMap.get(i);
+
+            colNm = map.get("colName").toString();
+            colType = map.get("colType").toString();
+            colSize = map.get("colSize").toString();
+            colIdx = map.get("colIdx").toString();
+
+            sb.append(",\n").append(colNm).append(" ").append(code.get(colType));
+
+            if(code.get(colType).equalsIgnoreCase("varchar")) {
+                sb.append("(").append(colSize).append(")");
+            }
+
+            if(colIdx.equals("1")) {
+                primaryKeys.add(colIdx);
+            }
+        }
+
+        if(!primaryKeys.isEmpty()) {
+            sb.append(",\n").append("primary key (").append(primaryKeys).append(")");
+        }
+
+        return sb.toString();
+    }
 }

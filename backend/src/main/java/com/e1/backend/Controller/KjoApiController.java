@@ -30,7 +30,7 @@ public class KjoApiController {
     }
 
     @PostMapping("/deleteMainTable")
-    public ResponseEntity<?> deleteMainTable(@RequestBody List<String> data) {
+    public ResponseEntity<?> deleteMainTable(@RequestBody List<Map<String, Object>> data) {
         return kjoApiService.deleteMainTable(data);
     }
 
@@ -45,7 +45,7 @@ public class KjoApiController {
     }
 
     @PostMapping("/fieldTable")
-    public ResponseEntity<?> saveFieldTable(@RequestBody Map<String, List<Map<String, Object>>> data) {
+    public ResponseEntity<?> saveFieldTable(@RequestBody Map<String, Object> data) {
         return kjoApiService.saveFieldTable(data);
     }
 

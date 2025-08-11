@@ -51,7 +51,6 @@ const TableInfoArea = () => {
         }
     }
 
-
     return (
         <div className={"table_info_area"}>
             <div className={"table_info"}>
@@ -64,7 +63,7 @@ const TableInfoArea = () => {
                 <div className={"table_info_cell"}>
                     <span className={"table_info_span"}>{"ID"}</span>
                 </div>
-                <input type="text" id={"tableId"} className={"text_box"} defaultValue={data.tableId} style={{width: 300}} ></input>
+                <input type="text" id={"tableId"} className={"text_box"} defaultValue={data.tableId} style={{width: 300}} readOnly={true}></input>
             </div>
         </div>
     )
@@ -88,7 +87,9 @@ interface ICode {
     COM_CD: string;
     COM_CD_NM: string
     COM_CD_EN: string;
-    SORT_SN: number
+    SORT_SN: number;
+    CODE_OPTION_NAME: string;
+    CODE_OPTION_VALUE: string;
 }
 interface CommCode {
     commCode: ICode[] | null;
@@ -110,6 +111,45 @@ const ColGridArea = ({commCode}: CommCode) => {
     }, []);
 
     useEffect(() => {
+        const ref = gridRef.current?.control;
+
+        function cellEditEnded(s: wjGrid.FlexGrid, e: wjGrid.CellRangeEventArgs) {
+            const col = s.columns[e.col];
+            const value = s.getCellData(e.row, 'colType', false) as string;
+
+            if(col?.binding === 'colType') {
+                if(value !== "1" && value !== "2") {
+                    const codeSize = commCode?.filter(code => code?.COM_CD == value) || [];
+
+                    if(!codeSize) return;
+
+                    if(codeSize[0]?.CODE_OPTION_VALUE !== "input") {
+                        s.setCellData(e.row, 'colSize', codeSize[0]?.CODE_OPTION_VALUE, true);
+                    }
+                } else if(value === "1" || value === "2") {
+                    s.setCellData(e.row, 'colSize', '', true);
+                }
+            }
+
+            if(col?.binding === 'colSize' && (value === "1" || value === "2")) {
+                const regex = /[^0-9]/;
+                const size = s.getCellData(e.row, 'colSize', false) as string;
+
+                if(regex.test(size)) {
+                    s.setCellData(e.row, 'colSize', null);
+                    alert("숫자만 입력 가능합니다.");
+                }
+            }
+        }
+
+        ref?.cellEditEnded.addHandler(cellEditEnded);
+
+        return () => {
+            ref?.cellEditEnded.removeHandler(cellEditEnded);
+        }
+    }, [commCode]);
+
+    useEffect(() => {
         if (!gridData) return;
 
         setTotalCnt(gridData.items?.length || 0);
@@ -117,6 +157,7 @@ const ColGridArea = ({commCode}: CommCode) => {
         function onCollectionChanged() {
             if(gridData) setTotalCnt(gridData.items?.length ?? 0);
         }
+
 
         gridData.collectionChanged.addHandler(onCollectionChanged);
 
@@ -130,30 +171,10 @@ const ColGridArea = ({commCode}: CommCode) => {
             const col = s.columns[e.col];
             const value = s.getCellData(e.row, 'colType', false) as string;
 
-            if (col?.binding === 'colSize' && value !== "2") {
+            if (col?.binding === 'colSize' && value !== "1" && value !== "2") {
                 e.cancel = true;
             }
         });
-
-        grid.cellEditEnded.addHandler((s:wjGrid.FlexGrid, e: wjGrid.CellRangeEventArgs) => {
-            const col = s.columns[e.col];
-            const value = s.getCellData(e.row, 'colType', false) as string;
-
-            if(col?.binding === 'colType' && value !== "2") {
-                s.setCellData(e.row, 'colSize', null);
-            }
-
-            if(col?.binding === 'colSize' && value === "2") {
-                const regex = /[^0-9]/;
-                const size = s.getCellData(e.row, 'colSize', false) as string;
-
-                if(regex.test(size)) {
-                    s.setCellData(e.row, 'colSize', null);
-                    alert("숫자만 입력 가능합니다.");
-                }
-            }
-        });
-
     });
 
     return (

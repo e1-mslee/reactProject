@@ -134,6 +134,12 @@ const useColData = create<UseColData>((set) => ({
         const tableNm = (document.getElementById("tableNm") as HTMLInputElement || null)?.value || '';
         const tableId = (document.getElementById("tableId") as HTMLInputElement || null)?.value || '';
 
+        const items = view?.items || [];
+
+        const added = view?.itemsAdded || [];
+        const edited = view?.itemsEdited || [];
+        const removed = view?.itemsRemoved || [];
+
         if(!confirm("저장하시겠습니까?")) return;
 
         if(tableNm == null || tableNm === "") {
@@ -146,17 +152,49 @@ const useColData = create<UseColData>((set) => ({
             return;
         }
 
-        if(initData != null && initData?.[0]?.tableId) {
-            const added = view?.itemsAdded || [];
-            const edited = view?.itemsEdited || [];
-            const removed = view?.itemsRemoved || [];
+        if(added.length === 0 && edited.length === 0 && removed.length === 0 && initData?.[0]?.tableName !== tableNm) {
+            alert("변경사항이 없습니다.");
+            return;
+        }
 
-            if(added.length === 0 && edited.length === 0 && removed.length === 0) {
-                alert("변경사항이 없습니다.");
-                return;
+        const addedName = added.filter(d => !d.colName);
+        const editedName = edited.filter(d => !d.colName);
+
+        if(addedName.length > 0 || editedName.length > 0) {
+            alert("컬럼명은 필수 값입니다.");
+            return;
+        }
+
+        const addedSize = added.filter(d => !d.colSize);
+        const editedSize = edited.filter(d => !d.colSize);
+
+        if(addedSize.length > 0 || editedSize.length > 0) {
+            alert("길이는 필수 값입니다.");
+            return;
+        }
+
+        if(initData?.[0]?.tableName !== tableNm || !initData?.[0]?.tableId) {
+            const cond = {
+                tableSeq: seq,
+                tableNm: tableNm,
+                tableId: tableId
             }
 
+            api.put('/kjoApi/mainTable', cond)
+                .then(() => {
+                    alert("저장되었습니다.");
+                    useColData.getState().fetchInitData(seq);
+                }).catch((err) => {
+                console.error(err);
+            });
+        }
+
+        if(initData != null && initData?.[0]?.tableId) {
+            if(added.length === 0 && edited.length === 0 && removed.length === 0) return;
+
             const cond = {
+                tableId: tableId,
+                items: Array.from(items).map(row => ({ ...row })),
                 added: Array.from(added).map(row => ({ ...row })),
                 edited: Array.from(edited).map(row => ({ ...row })),
                 removed: Array.from(removed).map(row => ({ ...row }))
@@ -170,18 +208,7 @@ const useColData = create<UseColData>((set) => ({
             });
         }
 
-        const cond = {
-            tableSeq: seq,
-            tableNm: tableNm,
-            tableId: tableId
-        }
-        api.put('/kjoApi/mainTable', cond)
-            .then(() => {
-            alert("저장되었습니다.");
-            useColData.getState().fetchInitData(seq);
-        }).catch((err) => {
-            console.error(err);
-        });
+
     },
     headerPopup : (seq) => {
         const url = `/popup/kjo_header_pop?tableSeq=${encodeURIComponent(seq)}`;

@@ -13,13 +13,13 @@ public interface KjoApiService {
 
     ResponseEntity<?> updateMainTable(Map<String, Object> data);
 
-    ResponseEntity<?> deleteMainTable(List<String> data);
+    ResponseEntity<?> deleteMainTable(List<Map<String, Object>> data);
 
     List<Map<String, Object>> selectTableName(Map<String, Object> data);
 
     List<Map<String, Object>> selectFieldTable(Map<String, Object> data);
 
-    ResponseEntity<?> saveFieldTable(Map<String, List<Map<String, Object>>> data);
+    ResponseEntity<?> saveFieldTable(Map<String, Object> data);
 
     List<Map<String, Object>> selectHeaderTable(Map<String, Object> data);
 

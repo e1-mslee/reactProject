@@ -6,7 +6,9 @@ interface ICode {
     COM_CD: string;
     COM_CD_NM: string
     COM_CD_EN: string;
-    SORT_SN: number
+    SORT_SN: number;
+    CODE_OPTION_NAME: string;
+    CODE_OPTION_VALUE: string;
 }
 
 interface IUseCommonData {

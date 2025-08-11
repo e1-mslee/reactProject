@@ -12,9 +12,11 @@ public interface KjoApiMapper {
 
     void insertMainTable(List<Map<String, Object>> data);
 
+    void definitionMainTable(String query);
+
     void updateMainTable(Map<String, Object> data);
 
-    void deleteMainTable(List<String> data);
+    void deleteMainTable(List<Map<String, Object>> data);
 
     List<Map<String, Object>> selectTableName(Map<String, Object> data);
 
@@ -37,4 +39,6 @@ public interface KjoApiMapper {
     List<Map<String, Object>> selectHeaderId(Map<String, Object> data);
 
     List<Map<String, Object>> selectGridHeaderTable(Map<String, Object> data);
+
+    List<Map<String, Object>> selectColTypeCode();
 }

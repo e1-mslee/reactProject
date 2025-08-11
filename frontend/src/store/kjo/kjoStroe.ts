@@ -72,12 +72,29 @@ const useGridData = create<UdaGridData>((set) => ({
 
         if(!view) return;
 
+        let maxTableId: string = '';
+        const items = view.items;
+
+        if(items.length === 0) {
+            maxTableId = "uda_db_001";
+        } else {
+            const tableIds: number[] = view.items.map(d => Number(d.tableId?.split("_")[2]));
+
+            let max = 0;
+            tableIds.forEach(n => {
+                max = Math.max(max, n+1);
+            });
+
+            maxTableId = "uda_db_" + String(max).padStart(3, '0');
+        }
+
         const newItem = view.addNew();
+
         newItem.tableSeq = null;
         newItem.selected = false;
+        newItem.tableId = maxTableId;
 
         view.commitNew();
-        //set({ gridData: new CollectionView([...data, newData], { trackChanges: true }) });
     },
     saveGridData: async () => {
         const view = useGridData.getState().gridData;
@@ -85,25 +102,22 @@ const useGridData = create<UdaGridData>((set) => ({
         if(!view) return;
 
         const added = view.itemsAdded || [];
-        const edited = view.itemsEdited || [];
 
-        const updatedData = [ ...added, ...edited];
-
-
-        if(updatedData.length === 0) {
+        if(added.length === 0) {
             alert("추가된 행이 없습니다.");
             return;
         }
 
-        for(const data of updatedData){
+        for(const data of added){
             if(data.tableName == null || data.tableName === '') {
                 alert("논리 테이블명은 필수 값 입니다.");
                 return;
             }
         }
+        const cond = Array.from(added).map(row => ({ ...row }));
 
         if(confirm("저장하시겠습니까?")) {
-            await api.post(`/kjoApi/mainTable`, updatedData);
+            await api.post(`/kjoApi/mainTable`, cond);
             useGridData.getState().fetchGridData();
         }
     },
@@ -120,7 +134,7 @@ const useGridData = create<UdaGridData>((set) => ({
             return;
         }
 
-        const deleteData = selectedRows.filter((data) => {return data.tableSeq != null}).map(m => m.tableSeq);
+        const deleteData = selectedRows.filter((data) => {return data.tableSeq != null});
 
         if(deleteData.length !== 0){
             if(confirm("삭제하시겠습니까?")) {
@@ -147,16 +161,15 @@ const useGridData = create<UdaGridData>((set) => ({
         if(!tableSeq) {
             if(selectedRows.length === 0){
                 alert("수정할 행을 선택해주세요.");
+            } else if(selectedRows.length > 1){
+                alert("1개의 행을 선택해주세요.");
             } else {
                 alert("신규 추가된 행 입니다. 저장 후 수정해주세요");
             }
+
             return;
         }
 
-        if(selectedRows.length > 1){
-            alert("1개의 행을 선택해주세요.");
-            return;
-        }
 
         const url = `/popup/kjo_pop?tableSeq=${encodeURIComponent(tableSeq)}`;
         openPop(url, ()=> {});

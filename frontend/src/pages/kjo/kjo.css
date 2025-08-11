@@ -107,6 +107,10 @@
     width: 70px;
 }
 
+input:read-only {
+    background-color: #F3F3F3;
+}
+
 input:disabled {
     background-color: #F3F3F3;
 }
