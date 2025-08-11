@@ -74,6 +74,10 @@ const validateGridItems = (items: GridItem[]): boolean => {
   return true;
 };
 
+const isTableCountInfo = (value: unknown): value is TableCountInfo => {
+  return typeof value === 'object' && value !== null && 'FLAG' in (value as Record<string, unknown>);
+};
+
 export const useLmsPopStore = create<LmsPopStoreState>((set, get) => ({
   // 초기 상태
   flag: false,
@@ -140,8 +144,8 @@ export const useLmsPopStore = create<LmsPopStoreState>((set, get) => ({
   fetchTableCountInfo: async (tableSeq: string) => {
     if (!tableSeq) return;
     try {
-      const data: TableCountInfo[] = await lmsPopApi.getTableCount(tableSeq);
-      set({ readOnlyFlag: !!data?.[0]?.FLAG });
+      const resp = await lmsPopApi.getTableCount(tableSeq);
+      set({ readOnlyFlag: Boolean(resp.FLAG) });
     } catch (err) {
       console.error(CONSTANTS.MESSAGES.LOAD_ERROR, err);
     }
@@ -284,7 +288,6 @@ export const useLmsPopStore = create<LmsPopStoreState>((set, get) => ({
       flag: false,
       initialGridInfo: null,
       gridData: null,
-      readOnlyFlag: false,
       commCodes: [],
       gridInfo: { TABLE_NAME: '', TABLE_ID: '', TABLE_SEQ: '' },
       statusMap: new DataMap([], 'COM_CD', 'COM_CD_NM'),

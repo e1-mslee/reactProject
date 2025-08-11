@@ -95,7 +95,7 @@ const LmsPop = () => {
   const handleAddRowClick = useCallback(() => {
     if (!tableSeq) return;
     handleAddRow(tableSeq);
-  }, [handleAddRow, tableSeq]);
+  }, [handleAddRow, tableSeq, readOnlyFlag]);
 
   // 삭제 핸들러
   const handleDelete = useCallback(() => {
@@ -161,10 +161,10 @@ const LmsPop = () => {
         </h4>
         <div className='buttonGroup'>
           <Flex gap='small' wrap>
-            <Button className='custom-button' onClick={handleAddRowClick} disabled={readOnlyFlag}>
+            <Button className='custom-button' onClick={handleAddRowClick} disabled={!readOnlyFlag}>
               행추가
             </Button>
-            <Button className='custom-button' onClick={handleDelete} disabled={readOnlyFlag}>
+            <Button className='custom-button' onClick={handleDelete} disabled={!readOnlyFlag}>
               행삭제
             </Button>
           </Flex>
@@ -175,7 +175,7 @@ const LmsPop = () => {
         <FlexGrid
           ref={gridRef}
           itemsSource={gridData || []}
-          isReadOnly={readOnlyFlag}
+          isReadOnly={!readOnlyFlag}
           autoGenerateColumns={false}
           style={CONSTANTS.GRID_STYLES}
           selectionMode='Row'

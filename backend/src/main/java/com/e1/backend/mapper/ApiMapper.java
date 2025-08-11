@@ -43,7 +43,7 @@ public interface ApiMapper {
 
     void createTable(String query);
 
-    String tableCreateCheck(String tableName);
+    String tableCreateCheck(String tableSeq);
 
     String tableexistCheck(String tableSeq);
 

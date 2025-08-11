@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.e1.backend.mapper.ApiMapper;
 import com.e1.backend.service.ApiService;
@@ -80,16 +81,11 @@ public class ApiServiceImpl implements ApiService {
 
     @Override
     @SuppressWarnings("unchecked")
+    @Transactional
     public void saveTableFieldList(Map<String, Object> data) {
         if (data == null) {return;}
-
+        log.info("data List ={}",data);
         Map<String, Object> gridInfo = (Map<String, Object>) data.get("gridInfo");
-        String tableName = String.valueOf(gridInfo.get("TABLE_NAME"));
-        String chackFlag = apiMapper.tableCreateCheck(tableName);        
-
-        if(chackFlag != null) {
-            apiMapper.dropTable(tableName);
-        }
 
         List<Map<String,Object>> codeList = apiMapper.selectAllCode();
         
@@ -102,24 +98,38 @@ public class ApiServiceImpl implements ApiService {
         
         List<Map<String, Object>> items = (List<Map<String, Object>>) data.get("items");
         if (items == null || items.isEmpty()) {return;}
+        
+        for (Map<String, Object> item : items) {
+            String status = String.valueOf(item.get("STATUS"));
+            if ("INS".equals(status)) {
+                apiMapper.insertTableField(item);
+            } else if ("UPD".equals(status)) {
+                apiMapper.updateTableField(item);
+            } else if ("DEL".equals(status)) {
+                 apiMapper.deleteTablefield(item);
+            }
+        }
+        
+        String tableSeq = String.valueOf(gridInfo.get("TABLE_SEQ"));
+        String chackFlag = apiMapper.tableCreateCheck(tableSeq);        
 
+        if(chackFlag != null) {
+            apiMapper.dropTable(chackFlag);
+        }
         StringBuilder tableQuery = new StringBuilder();
         StringBuilder pkList = new StringBuilder();
         StringBuilder indexList = new StringBuilder();
 
-        tableQuery.append("create table ").append(gridInfo.get("TABLE_NAME")).append(" (");
-        for (Map<String, Object> item : items) {
+        List<Map<String, Object>> colList = apiMapper.selectFieldList(tableSeq);
+
+        tableQuery.append("create table ").append(gridInfo.get("TABLE_ID")).append(" (");
+        for (Map<String, Object> item : colList) {
             String colName = String.valueOf(item.get("COL_NAME"));
             String colTypeKey = String.valueOf(item.get("COL_TYPE"));
             String colSize = String.valueOf(item.get("COL_SIZE"));
             String colType = codeMap.getOrDefault(colTypeKey, colTypeKey);
             String primaryKey = String.valueOf(item.get("COL_IDX"));
             String indexKey = String.valueOf(item.get("COL_SCH"));
-            String status = String.valueOf(item.get("STATUS"));
-
-            if(status.equals("DEL")){
-                continue;
-            }
 
             if(primaryKey.equals("1")){
                pkList.append(colName).append(",");
@@ -155,18 +165,7 @@ public class ApiServiceImpl implements ApiService {
         if(!finalQuery.isEmpty()){
              apiMapper.createTable(finalQuery);
         }
-        
 
-        for (Map<String, Object> item : items) {
-            String status = String.valueOf(item.get("STATUS"));
-            if ("INS".equals(status)) {
-                apiMapper.insertTableField(item);
-            } else if ("UPD".equals(status)) {
-                apiMapper.updateTableField(item);
-            } else if ("DEL".equals(status)) {
-                 apiMapper.deleteTablefield(item);
-            }
-        }
     }
 
     @Override

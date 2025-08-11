@@ -184,14 +184,16 @@
 	</update>
 
 	<select id="tableCreateCheck" parameterType="string">
-		SELECT table_name 
+		SELECT table_name
 		  FROM information_schema.tables 
 		 WHERE table_schema = DATABASE()
-		   and table_name = #{tableName}
+		   and table_name = (select table_id 
+		   					   from std_main 
+		   					  where table_seq = #{tableSeq})
 	</select>
 
 	<delete id="dropTable" parameterType="string">
-		drop table ${tableName}
+		drop table ${tableSeq}
 	</delete>
 
 	<select  id="tableCountInfo" parameterType="string">
@@ -203,7 +205,7 @@
 		SELECT table_name 
 		  FROM information_schema.tables 
 		 WHERE table_schema = DATABASE()
-		   and table_name = (select table_name 
+		   and table_name = (select table_id 
 		   					   from std_main 
 		   					  where table_seq = #{tableSeq})
 	</select>

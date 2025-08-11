@@ -105,10 +105,9 @@ export const lmsPopApi = {
     }
   },
 
-  // 테이블 카운트/읽기전용 여부 조회
-  getTableCount: async (tableSeq: string): Promise<TableCountInfo[]> => {
+  getTableCount: async (tableSeq: string): Promise<TableCountInfo> => {
     try {
-      const result = await apiClient.post<TableCountInfo[]>('/api/tableValidationCheck', tableSeq);
+      const result = await apiClient.post<TableCountInfo>('/api/tableValidationCheck', tableSeq);
       return result;
     } catch (error: unknown) {
       console.error('테이블 카운트 조회 실패:', error);
