@@ -115,6 +115,11 @@ public class ApiServiceImpl implements ApiService {
             String colType = codeMap.getOrDefault(colTypeKey, colTypeKey);
             String primaryKey = String.valueOf(item.get("COL_IDX"));
             String indexKey = String.valueOf(item.get("COL_SCH"));
+            String status = String.valueOf(item.get("STATUS"));
+
+            if(status.equals("DEL")){
+                continue;
+            }
 
             if(primaryKey.equals("1")){
                pkList.append(colName).append(",");
