@@ -29,7 +29,7 @@ public interface ApiMapper {
 
     int updateTableField(Map<String, Object> data);
 
-    int deleteTablefield(List<Map<String,Object>> data);
+    int deleteTablefield(Map<String, Object> data);
 
     List<Map<String, Object>> getMainTableInfoData(String tableSeq);
 
@@ -45,5 +45,9 @@ public interface ApiMapper {
 
     String tableCreateCheck(String tableName);
 
+    String tableexistCheck(String tableSeq);
+
     void dropTable(String tableName);
+
+    int tableCountInfo(String tableName);
 }

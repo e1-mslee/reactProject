@@ -125,12 +125,10 @@
 		   AND COL_ID = #{COL_ID}
 	</update>
 
-	<delete id="deleteTablefield" parameterType="list">
+	<delete id="deleteTablefield" parameterType="map">
 		delete from std_field
-		where 
-		<foreach collection="list" item="item" separator=" OR ">
-			(TABLE_SEQ = #{item.TABLE_SEQ} AND COL_ID = #{item.COL_ID})
-		</foreach>
+		 where TABLE_SEQ = #{TABLE_SEQ} 
+		   AND COL_ID = #{COL_ID}
 	</delete>
 
 	<select id="getMainTableInfoData" parameterType="String" resultType="map">
@@ -192,8 +190,22 @@
 		   and table_name = #{tableName}
 	</select>
 
-
 	<delete id="dropTable" parameterType="string">
 		drop table ${tableName}
 	</delete>
+
+	<select  id="tableCountInfo" parameterType="string">
+		select count(*)
+		  from ${tableName}
+	</select>
+
+	<select id="tableexistCheck" parameterType="string">
+		SELECT table_name 
+		  FROM information_schema.tables 
+		 WHERE table_schema = DATABASE()
+		   and table_name = (select table_name 
+		   					   from std_main 
+		   					  where table_seq = #{tableSeq})
+	</select>
+
 </mapper>

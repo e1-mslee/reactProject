@@ -17,11 +17,11 @@ public interface ApiService {
 
     void saveTableFieldList(Map<String,Object> data);
 
-    void deleteTableField(List<Map<String,Object>> data);
-
     List<Map<String, Object>> getMainTableInfoData(String tableSeq);
 
     List<Map<String,Object>> getHeaderList(String tableSeq);
 
     void saveHeaderList(List<Map<String,Object>> data);
+
+    Map<String,Object> tableValidationCheck (String tableSeq);
 }

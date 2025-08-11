@@ -46,6 +46,7 @@ const LmsPop = () => {
 
   const {
     flag,
+    readOnlyFlag,
     gridData,
     gridInfo,
     statusMap,
@@ -53,6 +54,7 @@ const LmsPop = () => {
     fetchCommCodes,
     fetchFieldList,
     fetchTableInfo,
+    fetchTableCountInfo,
     handleAddRow,
     saveTableInfo,
     deleteData,
@@ -64,8 +66,9 @@ const LmsPop = () => {
     if (tableSeq) {
       void fetchTableInfo(tableSeq);
       void fetchFieldList(tableSeq);
+      void fetchTableCountInfo(tableSeq);
     }
-  }, [fetchCommCodes, fetchTableInfo, fetchFieldList, tableSeq]);
+  }, [fetchCommCodes, fetchTableInfo, fetchFieldList, fetchTableCountInfo, tableSeq]);
 
   // 헤더 관리 팝업 열기
   const openHeaderManage = useCallback(() => {
@@ -101,8 +104,8 @@ const LmsPop = () => {
       title: '알림',
       content: CONSTANTS.MESSAGES.CONFIRM_DELETE,
       style: CONSTANTS.MODAL_STYLE,
-      async onOk() {
-        await deleteData(tableSeq);
+      onOk() {
+        deleteData(tableSeq);
       },
     });
   }, [deleteData, tableSeq]);
@@ -158,10 +161,10 @@ const LmsPop = () => {
         </h4>
         <div className='buttonGroup'>
           <Flex gap='small' wrap>
-            <Button className='custom-button' onClick={handleAddRowClick}>
+            <Button className='custom-button' onClick={handleAddRowClick} disabled={readOnlyFlag}>
               행추가
             </Button>
-            <Button className='custom-button' onClick={handleDelete}>
+            <Button className='custom-button' onClick={handleDelete} disabled={readOnlyFlag}>
               행삭제
             </Button>
           </Flex>
@@ -172,7 +175,7 @@ const LmsPop = () => {
         <FlexGrid
           ref={gridRef}
           itemsSource={gridData || []}
-          isReadOnly={false}
+          isReadOnly={readOnlyFlag}
           autoGenerateColumns={false}
           style={CONSTANTS.GRID_STYLES}
           selectionMode='Row'

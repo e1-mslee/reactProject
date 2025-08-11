@@ -59,13 +59,6 @@ public class ApiController {
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/api/deleteTableField")
-    public ResponseEntity<?>  deleteTableField(@RequestBody List<Map<String,Object>> data) {
-        apiService.deleteTableField(data);
-        
-        return ResponseEntity.ok().build();
-    }
-
     @PostMapping("/api/getMainTableInfoData")
     public List<Map<String, Object>> getMainTableInfoData(@RequestBody String tableSeq) {
         return apiService.getMainTableInfoData(tableSeq);
@@ -82,5 +75,10 @@ public class ApiController {
         apiService.saveHeaderList(data);
 
         return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/api/tableValidationCheck")
+    public Map<String,Object> tableValidationCheck(@RequestBody String tableSeq) {
+        return apiService.tableValidationCheck(tableSeq);
     }
 }

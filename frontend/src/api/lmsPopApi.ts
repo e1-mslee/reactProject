@@ -36,6 +36,10 @@ export interface DeleteItem {
   TABLE_SEQ: string;
 }
 
+export interface TableCountInfo {
+  FLAG: boolean;
+}
+
 // LmsPop API 함수들
 export const lmsPopApi = {
   // 공통코드 조회
@@ -97,6 +101,17 @@ export const lmsPopApi = {
       await apiClient.post('/api/deleteTableField', data);
     } catch (error: unknown) {
       console.error('테이블 필드 삭제 실패:', error);
+      throw error;
+    }
+  },
+
+  // 테이블 카운트/읽기전용 여부 조회
+  getTableCount: async (tableSeq: string): Promise<TableCountInfo[]> => {
+    try {
+      const result = await apiClient.post<TableCountInfo[]>('/api/tableValidationCheck', tableSeq);
+      return result;
+    } catch (error: unknown) {
+      console.error('테이블 카운트 조회 실패:', error);
       throw error;
     }
   },

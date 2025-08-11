@@ -1,6 +1,7 @@
 package com.e1.backend.serviceimpl;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -114,6 +115,11 @@ public class ApiServiceImpl implements ApiService {
             String colType = codeMap.getOrDefault(colTypeKey, colTypeKey);
             String primaryKey = String.valueOf(item.get("COL_IDX"));
             String indexKey = String.valueOf(item.get("COL_SCH"));
+            String status = String.valueOf(item.get("STATUS"));
+
+            if(status.equals("DEL")){
+                continue;
+            }
 
             if(primaryKey.equals("1")){
                pkList.append(colName).append(",");
@@ -149,6 +155,7 @@ public class ApiServiceImpl implements ApiService {
         if(!finalQuery.isEmpty()){
              apiMapper.createTable(finalQuery);
         }
+        
 
         for (Map<String, Object> item : items) {
             String status = String.valueOf(item.get("STATUS"));
@@ -156,13 +163,10 @@ public class ApiServiceImpl implements ApiService {
                 apiMapper.insertTableField(item);
             } else if ("UPD".equals(status)) {
                 apiMapper.updateTableField(item);
+            } else if ("DEL".equals(status)) {
+                 apiMapper.deleteTablefield(item);
             }
         }
-    }
-
-    @Override
-    public void deleteTableField(List<Map<String, Object>> data) {
-        apiMapper.deleteTablefield(data);
     }
 
     @Override
@@ -186,6 +190,23 @@ public class ApiServiceImpl implements ApiService {
                 apiMapper.deleteHeaderList(item);
             }
         }
+    }
+
+    @Override
+    public Map<String,Object> tableValidationCheck(String tableSeq) {
+        String existCheck = apiMapper.tableexistCheck(tableSeq);
+        Map<String,Object> resultMap = new HashMap<>();
+        Boolean result = true;
+        log.info(existCheck);
+        if(existCheck != null) {
+            int tableCount = apiMapper.tableCountInfo(existCheck);
+            if(tableCount > 0) {
+                result = false;
+            }
+        }
+
+        resultMap.put("FLAG", result);
+        return resultMap;
     }
     
 }
