@@ -22,4 +22,6 @@ public interface ApiService {
     List<Map<String,Object>> getHeaderList(String tableSeq);
 
     void saveHeaderList(List<Map<String,Object>> data);
+
+    Map<String,Object> tableValidationCheck (String tableSeq);
 }

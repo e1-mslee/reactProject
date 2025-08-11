@@ -1,6 +1,7 @@
 package com.e1.backend.serviceimpl;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -184,6 +185,23 @@ public class ApiServiceImpl implements ApiService {
                 apiMapper.deleteHeaderList(item);
             }
         }
+    }
+
+    @Override
+    public Map<String,Object> tableValidationCheck(String tableSeq) {
+        String existCheck = apiMapper.tableexistCheck(tableSeq);
+        Map<String,Object> resultMap = new HashMap<>();
+        Boolean result = true;
+        log.info(existCheck);
+        if(existCheck != null) {
+            int tableCount = apiMapper.tableCountInfo(existCheck);
+            if(tableCount > 0) {
+                result = false;
+            }
+        }
+
+        resultMap.put("FLAG", result);
+        return resultMap;
     }
     
 }

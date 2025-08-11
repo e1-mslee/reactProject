@@ -190,8 +190,22 @@
 		   and table_name = #{tableName}
 	</select>
 
-
 	<delete id="dropTable" parameterType="string">
 		drop table ${tableName}
 	</delete>
+
+	<select  id="tableCountInfo" parameterType="string">
+		select count(*)
+		  from ${tableName}
+	</select>
+
+	<select id="tableexistCheck" parameterType="string">
+		SELECT table_name 
+		  FROM information_schema.tables 
+		 WHERE table_schema = DATABASE()
+		   and table_name = (select table_name 
+		   					   from std_main 
+		   					  where table_seq = #{tableSeq})
+	</select>
+
 </mapper>

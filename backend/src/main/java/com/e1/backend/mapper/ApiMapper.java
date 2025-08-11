@@ -45,5 +45,9 @@ public interface ApiMapper {
 
     String tableCreateCheck(String tableName);
 
+    String tableexistCheck(String tableSeq);
+
     void dropTable(String tableName);
+
+    int tableCountInfo(String tableName);
 }

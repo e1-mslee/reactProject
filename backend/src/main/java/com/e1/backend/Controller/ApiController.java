@@ -76,4 +76,9 @@ public class ApiController {
 
         return ResponseEntity.ok().build();
     }
+
+    @PostMapping("/api/tableValidationCheck")
+    public Map<String,Object> tableValidationCheck(@RequestBody String tableSeq) {
+        return apiService.tableValidationCheck(tableSeq);
+    }
 }

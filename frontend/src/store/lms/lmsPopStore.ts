@@ -3,7 +3,7 @@ import { CollectionView } from '@mescius/wijmo';
 import { DataMap } from '@mescius/wijmo.grid';
 import { message } from 'antd';
 import lmsPopApi from '@api/lmsPopApi';
-import type { CommCode, GridInfo, GridItem, DeleteItem } from '@api/lmsPopApi';
+import type { CommCode, GridInfo, GridItem, TableCountInfo } from '@api/lmsPopApi';
 
 // 상수 정의
 const CONSTANTS = {
@@ -30,6 +30,7 @@ interface LmsPopStoreState {
   commCodes: CommCode[];
   gridInfo: GridInfo;
   statusMap: DataMap;
+  readOnlyFlag: boolean;
 
   // 액션
   setFlag: (flag: boolean) => void;
@@ -42,7 +43,7 @@ interface LmsPopStoreState {
   fetchCommCodes: () => Promise<void>;
   fetchFieldList: (tableSeq: string) => Promise<void>;
   fetchTableInfo: (tableSeq: string) => Promise<void>;
-
+  fetchTableCountInfo: (tableSeq: string) => Promise<void>;
   // 비즈니스 로직 함수
   handleAddRow: (tableSeq: string) => void;
   saveTableInfo: (tableSeq: string) => Promise<void>;
@@ -78,6 +79,7 @@ export const useLmsPopStore = create<LmsPopStoreState>((set, get) => ({
   flag: false,
   initialGridInfo: null,
   gridData: null,
+  readOnlyFlag: false,
   commCodes: [],
   gridInfo: {
     TABLE_NAME: '',
@@ -130,6 +132,16 @@ export const useLmsPopStore = create<LmsPopStoreState>((set, get) => ({
         initialGridInfo: info,
         flag: !!info.TABLE_ID,
       });
+    } catch (err) {
+      console.error(CONSTANTS.MESSAGES.LOAD_ERROR, err);
+    }
+  },
+
+  fetchTableCountInfo: async (tableSeq: string) => {
+    if (!tableSeq) return;
+    try {
+      const data: TableCountInfo[] = await lmsPopApi.getTableCount(tableSeq);
+      set({ readOnlyFlag: !!data?.[0]?.FLAG });
     } catch (err) {
       console.error(CONSTANTS.MESSAGES.LOAD_ERROR, err);
     }
@@ -272,6 +284,7 @@ export const useLmsPopStore = create<LmsPopStoreState>((set, get) => ({
       flag: false,
       initialGridInfo: null,
       gridData: null,
+      readOnlyFlag: false,
       commCodes: [],
       gridInfo: { TABLE_NAME: '', TABLE_ID: '', TABLE_SEQ: '' },
       statusMap: new DataMap([], 'COM_CD', 'COM_CD_NM'),
