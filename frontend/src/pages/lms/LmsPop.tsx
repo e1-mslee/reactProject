@@ -95,7 +95,7 @@ const LmsPop = () => {
   const handleAddRowClick = useCallback(() => {
     if (!tableSeq) return;
     handleAddRow(tableSeq);
-  }, [handleAddRow, tableSeq, readOnlyFlag]);
+  }, [handleAddRow, tableSeq]);
 
   // 삭제 핸들러
   const handleDelete = useCallback(() => {

@@ -62,6 +62,7 @@ public class ApiServiceImpl implements ApiService {
     }
 
     @Override
+    @Transactional
     public void saveMainTableInfo(List<Map<String,Object>> data) {
 
         for (Map<String, Object> item : data) {
@@ -179,6 +180,7 @@ public class ApiServiceImpl implements ApiService {
     }
 
     @Override
+    @Transactional
     public void saveHeaderList(List<Map<String, Object>> data) {
         for (Map<String, Object> item : data) {
             if ("ADD".equals(item.get("STATUS"))) {

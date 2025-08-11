@@ -159,9 +159,20 @@ export const useLmsStore = create<LmsStoreState>((set, get) => ({
     if (!cv) return;
 
     const selected = cv.items.filter((row) => row.selected);
+
+    // 데이터가 존재하는 테이블은 삭제 금지
+    const hasData = selected.some((row) => Number(row.field_count) > 0);
+    if (hasData) {
+      message.error('데이터가 존재하는 테이블은 삭제할 수 없습니다.');
+      return;
+    }
+
     const seqList: string[] = selected
-      .map((row) => row.TABLE_SEQ)
-      .filter((seq): seq is string => typeof seq === 'string' && seq.length > 0);
+      .map((row) => {
+        const raw = (row as Record<string, unknown>).TABLE_SEQ;
+        return typeof raw === 'number' || typeof raw === 'string' ? String(raw) : '';
+      })
+      .filter((seq) => seq.length > 0);
 
     if (selected.length === 0) {
       message.error(CONSTANTS.MESSAGES.NO_SELECTED_ROWS);
