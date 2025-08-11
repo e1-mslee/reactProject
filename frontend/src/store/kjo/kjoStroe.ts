@@ -127,10 +127,20 @@ const useGridData = create<UdaGridData>((set) => ({
         if(!view) return;
 
         const data = view.items;
-        const selectedRows = data.filter((data) => { return data.selected});
+        const selectedRows = data.filter((d) => { return d.selected});
 
         if(selectedRows.length === 0){
             alert("삭제할 행을 선택해주세요.");
+            return;
+        }
+
+        const useTable = data.filter(d => {
+            if(!d.dataCount) return false;
+            return d.dataCount > 0;
+        });
+
+        if(useTable.length > 0) {
+            alert("사용중인 테이블은 삭제할 수 없습니다.");
             return;
         }
 
@@ -173,18 +183,6 @@ const useGridData = create<UdaGridData>((set) => ({
 
         const url = `/popup/kjo_pop?tableSeq=${encodeURIComponent(tableSeq)}`;
         openPop(url, ()=> {});
-
-        // const popupWidth = 1000;
-        // const popupHeight = 600;
-        //
-        // const left = window.screenX + (window.outerWidth - popupWidth) / 2;
-        // const top = window.screenY + (window.outerHeight - popupHeight) / 2;
-        //
-        // window.open(
-        //     `/popup/kjo_pop?tableSeq=${encodeURIComponent(tableSeq)}`,
-        //     '_blank',
-        //     `width=${popupWidth},height=${popupHeight},left=${left},top=${top},resizable=yes,scrollbars=yes`
-        // );
     }
 }));
 

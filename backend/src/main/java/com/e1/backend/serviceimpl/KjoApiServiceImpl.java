@@ -20,7 +20,18 @@ public class KjoApiServiceImpl implements KjoApiService {
 
     @Override
     public List<Map<String, Object>> selectMainTable(Map<String, Object> data) {
-        return kjoApiMapper.selectMainTable(data);
+        List<Map<String, Object>> listMap = kjoApiMapper.selectMainTable(data);
+
+        for(Map<String, Object> map : listMap){
+            int table = kjoApiMapper.findTable(map);
+
+            if(table > 0) {
+                int dataCount = kjoApiMapper.selectDataCount(map);
+                map.put("dataCount", dataCount);
+            }
+        }
+
+        return listMap;
     }
 
     @Override
@@ -71,8 +82,12 @@ public class KjoApiServiceImpl implements KjoApiService {
     }
 
     @Override
-    public List<Map<String, Object>> selectTableName(Map<String, Object> data) {
-        return kjoApiMapper.selectTableName(data);
+    public Map<String, Object> selectTableName(Map<String, Object> data) {
+        Map<String, Object> listMap = kjoApiMapper.selectTableName(data);
+        int dataCount = kjoApiMapper.selectDataCount(listMap);
+        listMap.put("dataCount", dataCount);
+
+        return listMap;
     }
 
     @Override
@@ -257,39 +272,49 @@ public class KjoApiServiceImpl implements KjoApiService {
         String colNm = map.get("colName").toString();
         String colType = map.get("colType").toString();
         String colSize = map.get("colSize").toString();
-        String colIdx = map.get("colIdx").toString();
+        Boolean colIdx = (Boolean) map.get("colIdx");
 
-        sb.append(colNm).append(" ").append(code.get(colType));
+        /*sb.append(colNm).append(" ").append(code.get(colType));
 
         if(code.get(colType).equalsIgnoreCase("VARCHAR")) {
             sb.append("(").append(colSize).append(")");
         }
+        log.info("colIdx: {}", colIdx);
+        if(colIdx) {
+            primaryKeys.add(colNm);
+        }*/
 
-        if(colIdx.equals("1")) {
-            primaryKeys.add(colIdx);
-        }
-
-        for(int i = 1; i < listMap.size(); i++) {
+        for(int i = 0; i < listMap.size(); i++) {
             map = listMap.get(i);
 
             colNm = map.get("colName").toString();
             colType = map.get("colType").toString();
             colSize = map.get("colSize").toString();
-            colIdx = map.get("colIdx").toString();
+            colIdx = (Boolean) map.get("colIdx");
 
-            sb.append(",\n").append(colNm).append(" ").append(code.get(colType));
+            sb.append(colNm).append(" ").append(code.get(colType));
 
             if(code.get(colType).equalsIgnoreCase("varchar")) {
                 sb.append("(").append(colSize).append(")");
             }
+            sb.append(",\n");
 
-            if(colIdx.equals("1")) {
-                primaryKeys.add(colIdx);
+            if(colIdx) {
+                primaryKeys.add(colNm);
             }
         }
 
+        sb.delete(sb.length() - 2, sb.length());
+
         if(!primaryKeys.isEmpty()) {
-            sb.append(",\n").append("primary key (").append(primaryKeys).append(")");
+            sb.append(",\n").append("primary key (");
+
+            for(String key : primaryKeys) {
+                sb.append(key).append(",");
+            }
+            sb.delete(sb.length()-1, sb.length());
+
+            sb.append(")");
         }
 
         return sb.toString();

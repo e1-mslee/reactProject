@@ -8,6 +8,7 @@ import openPop from "@utils/openPop";
 interface InitData {
     tableName: string
     tableId: string
+    dataCount: number
 }
 
 interface GridData {
@@ -24,7 +25,7 @@ interface GridData {
 interface UseColData {
     gridRef: RefObject<{control: FlexGridType}> | null
     setGridRef: (ref: RefObject<{control: FlexGridType}>) => void
-    initData: InitData[] | null
+    initData: InitData | null
     fetchInitData: (seq: string) => void
     gridData: CollectionView<GridData> | null
     fetchGridData: (seq: string) => void
@@ -43,7 +44,7 @@ const useColData = create<UseColData>((set) => ({
             tableSeq: seq
         };
 
-        api.get<InitData[]>('/kjoApi/tableName', {params: cond})
+        api.get<InitData>('/kjoApi/tableName', {params: cond})
             .then((res) => {
                 set({ initData: res.data });
             }).catch((err) => {
@@ -75,8 +76,8 @@ const useColData = create<UseColData>((set) => ({
         const tableNm = (document.getElementById("tableNm") as HTMLInputElement | null)?.value || '';
         const tableId = (document.getElementById("tableId") as HTMLInputElement | null)?.value || '';
 
-        if(initData == null || initData?.[0]?.tableId == null) {
-            alert("테이블을 먼저 생성해주세요.");
+        if(initData == null || initData?.tableId == null) {
+            alert("테이블을 생성해주세요.");
             return;
         }
 
@@ -87,6 +88,11 @@ const useColData = create<UseColData>((set) => ({
 
         if(!tableId) {
             alert("물리 테이블 명을 입력해주세요.");
+            return;
+        }
+
+        if(initData.dataCount > 0) {
+            alert("사용중인 테이블은 수정할 수 없습니다.");
             return;
         }
 
@@ -113,9 +119,20 @@ const useColData = create<UseColData>((set) => ({
     },
     deleteGridData: () => {
         const gridRef = useColData.getState().gridRef?.current?.control;
+        const initData = useColData.getState().initData;
 
         const data = useColData.getState().gridData?.items;
         const selectedRows = data?.filter((d) => { return d.selected }) ?? [];
+
+        if(initData == null || initData?.tableId == null) {
+            alert("테이블을 생성해주세요.");
+            return;
+        }
+
+        if(initData.dataCount > 0) {
+            alert("사용중인 테이블은 수정할 수 없습니다.");
+            return;
+        }
 
         if(selectedRows?.length === 0) {
             alert("삭제할 행을 선택해주세요.");
@@ -152,7 +169,7 @@ const useColData = create<UseColData>((set) => ({
             return;
         }
 
-        if(added.length === 0 && edited.length === 0 && removed.length === 0 && initData?.[0]?.tableName !== tableNm) {
+        if(added.length === 0 && edited.length === 0 && removed.length === 0 && initData?.tableName !== tableNm) {
             alert("변경사항이 없습니다.");
             return;
         }
@@ -173,7 +190,7 @@ const useColData = create<UseColData>((set) => ({
             return;
         }
 
-        if(initData?.[0]?.tableName !== tableNm || !initData?.[0]?.tableId) {
+        if(initData?.tableName !== tableNm || !initData?.tableId) {
             const cond = {
                 tableSeq: seq,
                 tableNm: tableNm,
@@ -189,7 +206,7 @@ const useColData = create<UseColData>((set) => ({
             });
         }
 
-        if(initData != null && initData?.[0]?.tableId) {
+        if(initData != null && initData?.tableId) {
             if(added.length === 0 && edited.length === 0 && removed.length === 0) return;
 
             const cond = {

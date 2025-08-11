@@ -15,7 +15,7 @@ public interface KjoApiService {
 
     ResponseEntity<?> deleteMainTable(List<Map<String, Object>> data);
 
-    List<Map<String, Object>> selectTableName(Map<String, Object> data);
+    Map<String, Object> selectTableName(Map<String, Object> data);
 
     List<Map<String, Object>> selectFieldTable(Map<String, Object> data);
 

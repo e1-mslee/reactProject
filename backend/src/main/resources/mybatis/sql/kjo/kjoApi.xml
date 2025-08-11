@@ -202,4 +202,15 @@
           from comm_code
          where COM_CD_ID = '00001'
     </select>
+
+    <select id="selectDataCount" resultType="int">
+        select count(*)
+          from ${tableId}
+    </select>
+
+    <select id="findTable" resultType="int">
+        SELECT count(*)
+          FROM INFORMATION_SCHEMA.columns
+         where TABLE_NAME = #{tableId}
+    </select>
 </mapper>

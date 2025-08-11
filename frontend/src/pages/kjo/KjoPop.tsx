@@ -45,10 +45,8 @@ const TableInfoArea = () => {
         tableId: ''
     };
 
-    if(initData != null && initData.length > 0) {
-        if(initData[0] != undefined){
-            data = initData[0];
-        }
+    if(initData) {
+        data = initData;
     }
 
     return (

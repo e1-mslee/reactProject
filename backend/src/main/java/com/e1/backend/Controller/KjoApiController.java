@@ -35,7 +35,7 @@ public class KjoApiController {
     }
 
     @GetMapping("/tableName")
-    public List<Map<String, Object>> selectTableName(@RequestParam Map<String, Object> data) {
+    public Map<String, Object> selectTableName(@RequestParam Map<String, Object> data) {
         return kjoApiService.selectTableName(data);
     }
 
