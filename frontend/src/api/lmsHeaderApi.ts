@@ -25,7 +25,7 @@ export interface SaveHeaderItem extends HeaderItem {
 export const lmsHeaderApi = {
   getHeaderList: async (tableSeq: string): Promise<HeaderItem[]> => {
     try {
-      return await apiClient.post<HeaderItem[]>('/api/getHeaderList', tableSeq);
+      return await apiClient.get<HeaderItem[]>('/api/getHeaderList', { params: { tableSeq } });
     } catch (error: unknown) {
       console.error('헤더 목록 조회 실패:', error);
       throw error;
@@ -34,7 +34,7 @@ export const lmsHeaderApi = {
 
   getTableFieldList: async (tableSeq: string): Promise<TableField[]> => {
     try {
-      return await apiClient.post<TableField[]>('/api/getTableFieldList', tableSeq);
+      return await apiClient.get<TableField[]>('/api/getTableFieldList', { params: { tableSeq } });
     } catch (error: unknown) {
       console.error('필드 목록 조회 실패:', error);
       throw error;

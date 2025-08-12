@@ -16,7 +16,7 @@ const api: AxiosInstance = axios.create(apiConfig);
 
 // 요청 인터셉터
 api.interceptors.request.use(
-  config => {
+  (config) => {
     // 토큰이 있다면 헤더에 추가
     const token = localStorage.getItem('accessToken');
     if (token) {
@@ -39,7 +39,6 @@ api.interceptors.request.use(
 // 응답 인터셉터
 api.interceptors.response.use(
   (response: AxiosResponse) => {
-    // 응답 로깅 (개발 환경에서만)
     if (process.env.NODE_ENV === 'development') {
       console.log('API Response:', response.status, response.config.url, response.data);
     }
@@ -87,19 +86,20 @@ api.interceptors.response.use(
 
 // API 클라이언트 헬퍼 함수들
 export const apiClient: ApiClient = {
-  get: <T = any>(url: string, config?: AxiosRequestConfig): Promise<T> => api.get<T>(url, config).then(res => res.data),
+  get: <T = any>(url: string, config?: AxiosRequestConfig): Promise<T> =>
+    api.get<T>(url, config).then((res) => res.data),
 
   post: <T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> =>
-    api.post<T>(url, data, config).then(res => res.data),
+    api.post<T>(url, data, config).then((res) => res.data),
 
   put: <T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> =>
-    api.put<T>(url, data, config).then(res => res.data),
+    api.put<T>(url, data, config).then((res) => res.data),
 
   delete: <T = any>(url: string, config?: AxiosRequestConfig): Promise<T> =>
-    api.delete<T>(url, config).then(res => res.data),
+    api.delete<T>(url, config).then((res) => res.data),
 
   patch: <T = any>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> =>
-    api.patch<T>(url, data, config).then(res => res.data),
+    api.patch<T>(url, data, config).then((res) => res.data),
 };
 
 export default api;
