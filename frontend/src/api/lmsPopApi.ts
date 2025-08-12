@@ -56,7 +56,7 @@ export const lmsPopApi = {
   // 테이블 필드 목록 조회
   getTableFieldList: async (tableSeq: string): Promise<GridItem[]> => {
     try {
-      const result: GridItem[] = await apiClient.post<GridItem[]>('/api/getTableFieldList', tableSeq);
+      const result: GridItem[] = await apiClient.get<GridItem[]>('/api/getTableFieldList', { params: { tableSeq } });
       return result;
     } catch (error: unknown) {
       console.error('테이블 필드 목록 조회 실패:', error);
@@ -67,7 +67,7 @@ export const lmsPopApi = {
   // 메인 테이블 정보 조회
   getMainTableInfoData: async (tableSeq: string): Promise<GridInfo[]> => {
     try {
-      const result: GridInfo[] = await apiClient.post<GridInfo[]>('/api/getMainTableInfoData', tableSeq);
+      const result: GridInfo[] = await apiClient.get<GridInfo[]>('/api/getMainTableInfoData', { params: { tableSeq } });
       return result;
     } catch (error: unknown) {
       console.error('메인 테이블 정보 조회 실패:', error);
@@ -107,7 +107,7 @@ export const lmsPopApi = {
 
   getTableCount: async (tableSeq: string): Promise<TableCountInfo> => {
     try {
-      const result = await apiClient.post<TableCountInfo>('/api/tableValidationCheck', tableSeq);
+      const result = await apiClient.get<TableCountInfo>('/api/tableValidationCheck', { params: { tableSeq } });
       return result;
     } catch (error: unknown) {
       console.error('테이블 카운트 조회 실패:', error);

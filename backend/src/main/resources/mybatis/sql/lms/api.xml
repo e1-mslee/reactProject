@@ -131,7 +131,23 @@
 		   AND COL_ID = #{COL_ID}
 	</delete>
 
-	<select id="getMainTableInfoData" parameterType="String" resultType="map">
+	<delete id="removeTablefield" parameterType="List">
+		delete from std_field
+		 where TABLE_SEQ in
+		<foreach collection="list" item="item" open="(" separator="," close=")">
+        	#{item}
+    	</foreach>
+	</delete>
+
+	<delete id="removeTableHeader" parameterType="List">
+		delete from std_header
+		 where TABLE_SEQ in
+		<foreach collection="list" item="item" open="(" separator="," close=")">
+        	#{item}
+    	</foreach>
+	</delete>
+
+	<select id="getMainTableInfoData" parameterType="string" resultType="map">
 	    select TABLE_SEQ,
 	 	       TABLE_NAME,
 	 	       TABLE_ID
@@ -139,7 +155,7 @@
 		 where TABLE_SEQ = #{tableSeq}
     </select>
 
-	<select id="getHeaderList" parameterType="String" resultType="map">
+	<select id="getHeaderList" parameterType="string" resultType="map">
 		select HEADER_ID,
 			   TABLE_SEQ,
 			   HEADER_NAME,

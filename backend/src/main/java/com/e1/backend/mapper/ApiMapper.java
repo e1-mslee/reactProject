@@ -50,4 +50,8 @@ public interface ApiMapper {
     void dropTable(String tableName);
 
     int tableCountInfo(String tableName);
+
+    void removeTablefield(List<String> data);
+
+    void removeTableHeader(List<String> data);
 }

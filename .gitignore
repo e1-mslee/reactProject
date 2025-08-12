@@ -16,3 +16,6 @@ Thumbs.db
 
 # === IntelliJ ===
 .idea/
+
+# === Visual Studio Code ===
+.vscode/

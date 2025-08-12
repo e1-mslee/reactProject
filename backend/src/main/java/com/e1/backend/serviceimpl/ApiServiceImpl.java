@@ -57,8 +57,29 @@ public class ApiServiceImpl implements ApiService {
     }
 
     @Override
+    @Transactional
     public void deleteMainTableInfo(List<String> data) {
+        log.info("deleteMainTableInfo data = {}", data);
+
+        if (data == null || data.isEmpty()) {
+            return;
+        }
+
+       for (String tableSeq : data) {
+        String check = apiMapper.tableexistCheck(tableSeq);
+        log.info("tableSeq = {}, check = {}", tableSeq, check);
+            if(check != null) {
+                int tableCount = apiMapper.tableCountInfo(check);
+                if(tableCount > 0) {
+                    continue;
+                }
+                apiMapper.dropTable(check);
+            }
+        }
+
        apiMapper.deleteMainTableInfo(data);
+       apiMapper.removeTablefield(data);
+       apiMapper.removeTableHeader(data);
     }
 
     @Override
