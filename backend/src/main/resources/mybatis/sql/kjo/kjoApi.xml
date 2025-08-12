@@ -169,7 +169,9 @@
                    cast(SORT_SN as char(100)) as sort_sn,
                    0 as dept
              from std_header
-            where TABLE_SEQ = #{tableSeq} and SUPI_HEADER = ''
+            where TABLE_SEQ = #{tableSeq}
+              and (SUPI_HEADER = ''
+                   or SUPI_HEADER is null)
             union all
             select a.TABLE_SEQ,
                    a.HEADER_ID,

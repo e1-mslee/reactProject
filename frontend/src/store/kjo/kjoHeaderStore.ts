@@ -53,7 +53,7 @@ interface GridHeaderData {
 interface UseHeaderData{
     gridRef: RefObject<{control: FlexGridType}> | null
     setGridRef: (ref: RefObject<{control: FlexGridType}>) => void
-    initData: InitData[] | null
+    initData: InitData | null
     fetchInitData: (seq: string) => void
     gridData: CollectionView<GridData> | null
     fetchGridData: (seq: string) => void
@@ -81,7 +81,7 @@ const useHeaderData = create<UseHeaderData>((set) => ({
             tableSeq: seq
         };
 
-        api.get<InitData[]>('/kjoApi/tableName', {params: cond})
+        api.get<InitData>('/kjoApi/tableName', {params: cond})
             .then((res) => {
                 set({ initData: res.data });
             }).catch((err) => {
@@ -162,23 +162,6 @@ const useHeaderData = create<UseHeaderData>((set) => ({
             });
 
             return result;
-
-            /*return data
-                .map(node => {
-                    const filteredChildren = findSelectedRow(node.children || []);
-
-                    if (!node.selected) {
-                        return {
-                            ...node,
-                            children: filteredChildren,
-                        };
-                    } else {
-                        //headerData = headerData?.filter(item => {return item.headerId !== node.headerId});
-                        selectedRows.push(node);
-                    }
-                    return null; // 선택된 항목 제거
-                })
-                .filter(Boolean); // null 제거*/
         }
 
         const newGridData = findSelectedRow(data);
@@ -223,7 +206,7 @@ const useHeaderData = create<UseHeaderData>((set) => ({
             edited: Array.from(edited).map(row => ({ ...row })),
             removed: Array.from(removed).map(row => ({ ...row }))
         }
-        //console.log(cond);
+
         api.post('/kjoApi/headerTable', cond).then(() => {
             alert("저장되었습니다.");
             useHeaderData.getState().fetchGridData(seq);
@@ -261,6 +244,7 @@ const useHeaderData = create<UseHeaderData>((set) => ({
     fieldMatching: () => {
         const view = useHeaderData.getState().gridData;
         const items = useHeaderData.getState().fieldData;
+        const headerData = useHeaderData.getState().headerData || [];
 
         if(!view || !items) return;
 
@@ -269,13 +253,18 @@ const useHeaderData = create<UseHeaderData>((set) => ({
             const newItem = view.addNew();
 
             newItem.selected = false;
+            newItem.tableSeq = Number(item.tableSeq);
             newItem.headerId = "HEAD_00" + sn;
+            newItem.headerName = item.colName;
+            newItem.headerWidth = 50;
             newItem.connField = item.colId;
             newItem.sortSn = sn++;
 
+            headerData.push(<HeaderData>newItem);
+
             view.commitNew();
         }
-
+        set({ headerData: [...headerData] });
         view.refresh()
     },
     collapseGrid: () => {

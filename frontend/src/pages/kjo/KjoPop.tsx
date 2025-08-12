@@ -137,6 +137,14 @@ const ColGridArea = ({commCode}: CommCode) => {
                     s.setCellData(e.row, 'colSize', null);
                     alert("숫자만 입력 가능합니다.");
                 }
+
+                if(value === "1" && Number(size) > 10) {
+                    s.setCellData(e.row, 'colSize', 10);
+                }
+
+                if(value === "2" && Number(size) > 700) {
+                    s.setCellData(e.row, 'colSize', 700);
+                }
             }
         }
 

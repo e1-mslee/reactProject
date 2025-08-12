@@ -68,10 +68,8 @@ const TableInfo = () => {
         tableId: ''
     };
 
-    if(initData != null && initData.length > 0) {
-        if(initData[0] != undefined){
-            data = initData[0];
-        }
+    if(initData) {
+        data = initData;
     }
 
     return (
@@ -222,12 +220,19 @@ const GridArea = () => {
             const editorValue = s.activeEditor?.value;
 
             if(col?.binding === 'supiHeader' && e.panel.cellType === wjGrid.CellType.Cell) {
+                const headerId = col?.dataMap?.getKeyValue("headerId") as string;
                 const supiHeader = col?.dataMap?.getKeyValue(editorValue) as string;
-                const supiRow = s.rows.find(d => (d.dataItem as GridData).headerId === supiHeader);
+                const supiRow = s.rows.find(d => (d.dataItem as GridData).headerId === supiHeader && (d.dataItem as GridData).connField);
 
                 if(supiRow) {
                     e.cancel = true;
                     alert("연결필드가 있는 행은 선택할 수 없습니다.");
+                    return;
+                }
+
+                if(headerId === supiHeader) {
+                    e.cancel = true;
+                    alert("자신을 상위헤더로 선택할 수 없습니다.");
                     return;
                 }
             }
@@ -252,19 +257,6 @@ const GridArea = () => {
             markAsEdited(oriData);
 
             if(col?.binding !== 'selected' || e.panel.cellType !== wjGrid.CellType.Cell) return;
-
-/*            const findSupiRow = (supiHeader: string) => {
-                for(let i = 0; i < e.row; i++) {
-                    const data = s.rows[i]?.dataItem as GridData;
-
-                    if(supiHeader === data.headerId && cellData) {
-                        s.setCellData(i, 'selected', cellData);
-                        if(data.supiHeader !== null || data.supiHeader !== '')
-                            findSupiRow(data.supiHeader);
-                        return;
-                    }
-                }
-            }*/
 
             const findChildRow = (children: GridData[] | null | undefined) => {
                 if(!children || children.length === 0) return;
@@ -294,7 +286,7 @@ const GridArea = () => {
                 itemsSource={gridData || []}
                 initialized={initialGrid}
                 isReadOnly={false}
-                style={{ height: '300px' }}
+                style={{ height: '200px' }}
                 selectionMode="Row"
                 headersVisibility="Column"
                 allowSorting={true}
@@ -407,7 +399,7 @@ const TmpGridArea = () => {
                 ref={tmpGridRef}
                 itemsSource={[]}
                 isReadOnly={true}
-                style={{ height: '200px' }}
+                style={{ height: '100px' }}
                 allowMerging="ColumnHeaders"
                 alternatingRowStep={0}
             >

@@ -84,8 +84,13 @@ public class KjoApiServiceImpl implements KjoApiService {
     @Override
     public Map<String, Object> selectTableName(Map<String, Object> data) {
         Map<String, Object> listMap = kjoApiMapper.selectTableName(data);
-        int dataCount = kjoApiMapper.selectDataCount(listMap);
-        listMap.put("dataCount", dataCount);
+
+        int table = kjoApiMapper.findTable(listMap);
+
+        if(table > 0) {
+            int dataCount = kjoApiMapper.selectDataCount(listMap);
+            listMap.put("dataCount", dataCount);
+        }
 
         return listMap;
     }
@@ -199,7 +204,7 @@ public class KjoApiServiceImpl implements KjoApiService {
 
             if(!map.get("child").toString().equals("0")) continue;
 
-            String supi = map.get("supiHeader").toString();
+            String supi = Objects.toString(map.get("supiHeader"), null);
             int dept = Integer.parseInt(map.get("dept").toString());
 
             map.put("cellSize", 1);
@@ -242,13 +247,15 @@ public class KjoApiServiceImpl implements KjoApiService {
         Map<String, Map<String, Object>> idMap = new HashMap<>();
 
         for(Map<String, Object> map : data) {
+            if(map == null) continue;
             map.put("children", new ArrayList<Map<String, Object>>());
             idMap.put((String) map.get("headerId"), map);
         }
 
         for (Map<String, Object> node : data) {
+            if(node == null) continue;
             node.put("selected", false);
-            String supi = node.get("supiHeader").toString();
+            String supi = Objects.toString(node.get("supiHeader"), null);
             if(supi == null || supi.isEmpty()) {
                 result.add(node);
                 continue;
