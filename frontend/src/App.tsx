@@ -9,6 +9,7 @@ import Footer from '@layout/Footer';
 
 import MainRoutes from '@router/routes/MainRoute';
 import PopupRoutes from '@router/routes/PopupRoute';
+import Login from '@pages/Login';
 
 import './App.css';
 
@@ -22,6 +23,7 @@ const App: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const isPopup = location.pathname.startsWith('/popup');
+  const isLogin = location.pathname.startsWith('/login');
   const [selectedKey, setSelectedKey] = useState<string>('home');
 
   const breadcrumbItems = useMemo(() => {
@@ -36,6 +38,8 @@ const App: React.FC = () => {
   }, [location.pathname]);
 
   if (isPopup) return <PopupRoutes />;
+
+  if (isLogin) return <Login />;
 
   return (
     <Layout style={{ height: '100vh' }}>
