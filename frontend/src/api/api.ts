@@ -8,11 +8,14 @@ const apiConfig: ApiConfig = {
   timeout: 10000, // 10초
   headers: {
     'Content-Type': 'application/json',
-  },
+  }
 };
 
 // axios 인스턴스 생성
 const api: AxiosInstance = axios.create(apiConfig);
+
+// Cookie 전송
+axios.defaults.withCredentials = true;
 
 // 요청 인터셉터
 api.interceptors.request.use(
@@ -20,7 +23,7 @@ api.interceptors.request.use(
     // 토큰이 있다면 헤더에 추가
     const token = localStorage.getItem('accessToken');
     if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+      config.headers.Authorization = token;
     }
 
     // 요청 로깅 (개발 환경에서만)

@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import { Layout } from 'antd';
 import logo from '@assets/Logo.png';
 import { Button } from 'antd';
@@ -5,6 +6,12 @@ import { Button } from 'antd';
 const { Header: AntHeader } = Layout;
 
 const Header: React.FC = () => {
+    const navigate = useNavigate();
+
+    const handleClick = () => {
+        void navigate('/login'); // 이동할 경로
+    };
+
   return (
     <>
       <AntHeader
@@ -24,7 +31,7 @@ const Header: React.FC = () => {
           <img src={logo} alt='Logo' style={{ height: 32, marginRight: 12 }} />
           UDA 시스템 관리(BS 3팀)
         </div>
-        <Button type='primary'>로그인</Button>
+        <Button type='primary' onClick={handleClick}>로그인</Button>
       </AntHeader>
     </>
   );

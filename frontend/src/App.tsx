@@ -1,22 +1,33 @@
+import React from 'react';
 import { useState, useMemo } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { Breadcrumb, Layout } from 'antd';
+import {useNavigate, useLocation, Navigate, Outlet, Routes, Route} from 'react-router-dom';
 
+import { Breadcrumb, Layout } from 'antd';
 import menuItems from '@data/menuItems';
 import Header from '@layout/Header';
 import Sidebar from '@layout/Sidebar';
+
 import Footer from '@layout/Footer';
-
 import MainRoutes from '@router/routes/MainRoute';
-import PopupRoutes from '@router/routes/PopupRoute';
 
+import PopupRoutes from '@router/routes/PopupRoute';
 import './App.css';
+import MainRoute from "@router/routes/MainRoute";
+import Login from "@pages/Login";
+
+
 
 const { Content } = Layout;
 const TITLE_MAP: { [key: string]: string } = {
   lms: 'LMS',
   kjo: 'KJO',
 };
+
+function PrivateRoute() {
+  const isLoggedIn = Boolean(localStorage.getItem('accessToken')); // 로그인 체크 예시
+
+  return isLoggedIn ? <Outlet /> : <Navigate to="/login" replace />;
+}
 
 const App: React.FC = () => {
   const navigate = useNavigate();
@@ -37,26 +48,33 @@ const App: React.FC = () => {
 
   if (isPopup) return <PopupRoutes />;
 
+
   return (
-    <Layout style={{ height: '100vh' }}>
-      <Header />
-      <Layout style={{ flex: 1 }}>
-        <Sidebar selectedKey={selectedKey} setSelectedKey={setSelectedKey} items={menuItems} />
-        <Layout className='layoutContent'>
-          <Breadcrumb
-            items={breadcrumbItems.map((item) => ({
-              title: item.title,
-              href: item.path,
-            }))}
-            style={{ margin: '16px 0' }}
-          />
-          <Content className='contentStyle'>
-            <MainRoutes />
-          </Content>
+      <div>
+        <Routes>
+          <Route path='/login' element={<Login />} />
+        </Routes>
+
+        <Layout style={{ height: '100vh' }}>
+          <Header />
+          <Layout style={{ flex: 1 }}>
+            <Sidebar selectedKey={selectedKey} setSelectedKey={setSelectedKey} items={menuItems} />
+            <Layout className='layoutContent'>
+              <Breadcrumb
+                items={breadcrumbItems.map((item) => ({
+                  title: item.title,
+                  href: item.path,
+                }))}
+                style={{ margin: '16px 0' }}
+              />
+              <Content className='contentStyle'>
+                <MainRoutes />
+              </Content>
+            </Layout>
+          </Layout>
+          <Footer />
         </Layout>
-      </Layout>
-      <Footer />
-    </Layout>
+      </div>
   );
 };
 
