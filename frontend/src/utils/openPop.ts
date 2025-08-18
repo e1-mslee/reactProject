@@ -1,6 +1,7 @@
 declare global {
   interface Window {
     handlePopChange?: () => void;
+    popupRef?: Window | null;
   }
 }
 
@@ -9,9 +10,14 @@ const openPop = (url: string, func: () => void) => {
   const popupHeight = 600;
   const left = window.screenX + (window.outerWidth - popupWidth) / 2;
   const top = window.screenY + (window.outerHeight - popupHeight) / 2;
-  window.open(
+
+  if (window.popupRef && !window.popupRef.closed) {
+    window.popupRef.close();
+  }
+
+  window.popupRef = window.open(
     url,
-    '_blank',
+    '_blank', // 같은 이름을 쓰면 기존 창 재활용됨
     `width=${popupWidth},height=${popupHeight},left=${left},top=${top},resizable=yes,scrollbars=yes`
   );
 
