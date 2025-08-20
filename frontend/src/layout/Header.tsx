@@ -4,6 +4,8 @@ import { Button } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { jwtDecode } from 'jwt-decode';
+import LoginIcon from '@mui/icons-material/Login';
+import LogoutIcon from '@mui/icons-material/Logout';
 
 const { Header: AntHeader } = Layout;
 
@@ -88,9 +90,12 @@ const Header: React.FC = () => {
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           {username && <span style={{ fontWeight: 'normal' }}>{`${username}님 안녕하세요.`}</span>}
-          <Button type='primary' onClick={handleAuth}>
-            {username ? '로그아웃' : '로그인'}
-          </Button>
+          <span onClick={handleAuth}>
+            <span style={{ fontSize: '12px', letterSpacing: '-2px', paddingRight: '5px' }}>
+              {username ? '로그아웃' : '로그인'}
+            </span>
+            {username ? <LogoutIcon /> : <LoginIcon />}
+          </span>
         </div>
       </AntHeader>
     </>
