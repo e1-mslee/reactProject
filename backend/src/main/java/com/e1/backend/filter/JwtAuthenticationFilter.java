@@ -34,7 +34,8 @@ private final TokenProvider tokenProvider;
         if (requestURI.startsWith("/swagger") ||
             requestURI.startsWith("/login") || 
             requestURI.startsWith("/v3") ||
-            requestURI.startsWith("/signup")  ) {
+            requestURI.startsWith("/signup") ||
+            requestURI.startsWith("/refresh")   ) {
             filterChain.doFilter(request, response);
             return;
         }

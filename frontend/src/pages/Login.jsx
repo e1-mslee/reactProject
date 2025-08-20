@@ -59,15 +59,14 @@ const Login = () => {
 
     try {
       setSubmitting(true);
-      const response = await api.post('/login', { username, password });
+      const response = await api.post('/login', { username, password }, { withCredentials: true });
       const data = response?.data || {};
       const headers = response?.headers || {};
       const bearer = headers?.authorization || headers?.Authorization;
       const tokenFromHeader = bearer && bearer.startsWith('Bearer ') ? bearer.slice('Bearer '.length) : undefined;
-      const token = data.accessToken || data.token || tokenFromHeader;
-
-      if (token) {
-        localStorage.setItem('accessToken', token);
+      const accesstoken = data.accessToken;
+      if (accesstoken) {
+        localStorage.setItem('accessToken', accesstoken);
         setErrorMessage('');
         navigate('/home', { replace: true });
       } else {

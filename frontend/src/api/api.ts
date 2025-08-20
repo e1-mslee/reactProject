@@ -11,6 +11,10 @@ const apiConfig: ApiConfig = {
   },
 };
 
+interface RefreshResponse {
+  accessToken: string;
+}
+
 // axios 인스턴스 생성
 const api: AxiosInstance = axios.create(apiConfig);
 
@@ -45,18 +49,40 @@ api.interceptors.response.use(
 
     return response;
   },
-  (error: AxiosError) => {
+  async (error: AxiosError) => {
     // 에러 처리
     if (error.response) {
       // 서버 응답이 있는 경우
       const { status, data } = error.response;
 
-      switch (status) {
-        case 401:
-          // 인증 실패 - 로그인 페이지로 리다이렉트
+      if (status === 401) {
+        try {
+          // refresh 요청 (쿠키 자동 전송)
+          const refreshRes = await axios.post<RefreshResponse>(
+            `${apiConfig.baseURL}/refresh`,
+            {},
+            { withCredentials: true }
+          );
+          const accesstoken = refreshRes.data.accessToken;
+          localStorage.setItem('accessToken', accesstoken);
+
+          if (error.config) {
+            return api.request({
+              ...(error.config as AxiosRequestConfig),
+              headers: {
+                ...error.config.headers,
+                Authorization: `Bearer ${accesstoken}`,
+              },
+            });
+          }
+        } catch (refreshError) {
+          // refresh 실패 → 로그인 페이지로 이동
           localStorage.removeItem('accessToken');
           window.location.href = '/login';
-          break;
+        }
+      }
+
+      switch (status) {
         case 403:
           // 권한 없음
           console.error('권한이 없습니다.');
@@ -69,8 +95,6 @@ api.interceptors.response.use(
           // 서버 오류
           console.error('서버 오류가 발생했습니다.');
           break;
-        default:
-          console.error(`API Error ${status}:`, data);
       }
     } else if (error.request) {
       // 요청은 보냈지만 응답이 없는 경우 (네트워크 오류)

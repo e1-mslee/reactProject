@@ -7,7 +7,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.context.annotation.Lazy;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -26,10 +25,12 @@ public class TokenProvider {
     private final Key secretKey;
 
     private final long tokenValidTime = 30 * 60 * 1000; // 30분
+
+    private final long refreshTokenValidTime = 7 * 24 * 60 * 60 * 1000L;
     
     private final UserDetailsService userDetailsService;
 
-    public TokenProvider(@Lazy UserDetailsService userDetailsService) {
+    public TokenProvider(UserDetailsService userDetailsService) {
         this.secretKey = Keys.secretKeyFor(SignatureAlgorithm.HS256);
         this.userDetailsService = userDetailsService;
     }
@@ -44,6 +45,16 @@ public class TokenProvider {
                 .setIssuedAt(now) // 토큰 발행 시간 정보
                 .setExpiration(new Date(now.getTime() + tokenValidTime)) // 토큰 유효시간 설정
                 .signWith(secretKey, SignatureAlgorithm.HS256)  // Key 객체와 알고리즘을 함께 전달
+                .compact();
+    }
+
+    public String createRefreshToken(String userId) {
+        Date now = new Date();
+        return Jwts.builder()
+                .setSubject(userId)
+                .setIssuedAt(now)
+                .setExpiration(new Date(now.getTime() + refreshTokenValidTime))
+                .signWith(secretKey, SignatureAlgorithm.HS256)
                 .compact();
     }
 
@@ -85,6 +96,24 @@ public class TokenProvider {
             return bearerToken.substring(7).trim();
         }
         return null;
+    }
+
+    public String getUserIdFromRefreshToken(String refreshToken) {
+        return Jwts.parserBuilder()
+                .setSigningKey(secretKey)
+                .build()
+                .parseClaimsJws(refreshToken)
+                .getBody()
+                .getSubject();
+    }
+
+    public String getRoleFromRefreshToken(String refreshToken) {
+        return (String) Jwts.parserBuilder()
+                            .setSigningKey(secretKey)
+                            .build()
+                            .parseClaimsJws(refreshToken)
+                            .getBody()
+                            .get("role");
     }
 
 }
