@@ -31,9 +31,9 @@ private final TokenProvider tokenProvider;
 
         String requestURI = request.getRequestURI();
 
-        // Swagger, v3, 로그인 URL은 필터 제외
         if (requestURI.startsWith("/swagger") ||
             requestURI.startsWith("/login") || 
+            requestURI.startsWith("/v3") ||
             requestURI.startsWith("/signup")  ) {
             filterChain.doFilter(request, response);
             return;

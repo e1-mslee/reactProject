@@ -47,11 +47,10 @@ import com.e1.backend.filter.JwtAuthenticationFilter;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-        // 실무용 CORS 설정
         @Bean
         public CorsFilter corsFilter() {
                 CorsConfiguration config = new CorsConfiguration();
-                config.addAllowedOriginPattern("*"); // 운영에서는 도메인 제한 권장
+                config.addAllowedOriginPattern("*");
                 config.addAllowedHeader("*");
                 config.addAllowedMethod("*");
                 config.setAllowCredentials(true);
