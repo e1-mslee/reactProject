@@ -7,7 +7,7 @@ import Kjo from '@pages/kjo/Kjo';
 const MainRoutes: React.FC = () => {
   return (
     <Routes>
-      <Route path='/' element={<Home />} />
+      <Route path='/home' element={<Home />} />
       <Route path='/lms' element={<Lms />} />
       <Route path='/kjo' element={<Kjo />} />
       <Route path='*' element={<Home />} />

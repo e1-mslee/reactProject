@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { EyeOutlined, EyeInvisibleOutlined } from '@ant-design/icons';
+import { EyeOutlined, EyeInvisibleOutlined, UserOutlined, LockOutlined, GoogleOutlined } from '@ant-design/icons';
 import api from '@api/api';
 import './Login.css';
 
@@ -29,7 +29,7 @@ const Login = () => {
       const token = data.accessToken || data.token || tokenFromHeader;
       if (token) localStorage.setItem('accessToken', token);
       setErrorMessage('');
-      navigate('/');
+      navigate('/home', { replace: true });
     } catch (err) {
       setErrorMessage('로그인에 실패했습니다. 아이디/비밀번호를 확인해주세요.');
     } finally {
@@ -44,7 +44,10 @@ const Login = () => {
           <h1>로그인</h1>
 
           <form onSubmit={handleSubmit} noValidate>
-            <div className='first-input input__block first-input__block floating-group'>
+            <div className='first-input input__block first-input__block floating-group input-with-icon'>
+              <span className='input-icon'>
+                <UserOutlined />
+              </span>
               <input
                 type='text'
                 name='username'
@@ -63,8 +66,11 @@ const Login = () => {
               </label>
             </div>
 
-            <div className='input__block'>
+            <div className='input__block input-with-icon'>
               <div className='input-with-action floating-group'>
+                <span className='input-icon'>
+                  <LockOutlined />
+                </span>
                 <input
                   type={showPassword ? 'text' : 'password'}
                   name='password'
@@ -134,7 +140,7 @@ const Login = () => {
           </div>
 
           <button className='google__btn' type='button'>
-            <i className='fa fa-google'></i>
+            <GoogleOutlined style={{ fontSize: 20 }} />
             Google로 로그인
           </button>
         </div>

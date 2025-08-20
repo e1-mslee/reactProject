@@ -1,82 +1,165 @@
-body {
-  background: linear-gradient(135deg, #f5f7ff 0%, #ffffff 55%, #eef3ff 100%) !important;
-}
-
-.login-page {
-  min-height: 100vh;
+.signin__btn {
+  background: #5b90f0;
+  color: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #f5f7ff 0%, #ffffff 55%, #eef3ff 100%);
-  position: relative;
-  overflow: hidden;
-}
-
-.login-page::before,
-.login-page::after {
-  content: '';
-  position: absolute;
-  pointer-events: none;
-  border-radius: 50%;
-  filter: blur(60px);
-  opacity: 0.35;
-}
-
-.login-page::before {
-  width: 420px;
-  height: 420px;
-  left: -120px;
-  top: -120px;
-  background: radial-gradient(closest-side, #5b90f0, transparent 70%);
-}
-
-.login-page::after {
-  width: 520px;
-  height: 520px;
-  right: -160px;
-  bottom: -160px;
-  background: radial-gradient(closest-side, #e91e63, transparent 70%);
-}
-
-.container {
-  display: block;
-  max-width: 560px;
-  width: 90%;
-  margin: 40px auto;
-}
-
-.auth-card {
-  background: rgba(255, 255, 255, 0.85);
-  border-radius: 12px;
-  box-shadow: 0 8px 24px rgba(15, 19, 42, 0.06);
-  padding: 32px 24px 28px;
-  border: 1px solid rgba(15, 19, 42, 0.06);
-  backdrop-filter: saturate(160%) blur(8px);
-}
-
-.auth-card h1 {
-  color: #0f132a;
-  font-size: 24px;
-  font-weight: 700;
-  letter-spacing: 1px;
-  text-align: center;
-  margin: 0 0 16px 0;
-}
-
-/* removed sign-in/up tabs */
-
-/* triangle pointer removed */
-
-form {
   width: 100%;
   max-width: 560px;
-  margin: 24px auto 10px;
+  height: 56px;
+  border-radius: 8px;
+  margin: 12px auto 0;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: 0 8px 20px rgba(15, 19, 42, 0.24);
+  transition: background 0.2s linear, box-shadow 0.2s linear;
 }
+body {
+  background: linear-gradient(135deg, #f5f7ff 0%, #ffffff 55%, #eef3ff 100%) !important;
 
-.input__block {
-  margin: 20px auto;
-  display: block;
-  position: relative;
+  .login-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #f5f7ff 0%, #ffffff 55%, #eef3ff 100%);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .login-page::before,
+  .login-page::after {
+    content: '';
+    position: absolute;
+    pointer-events: none;
+    border-radius: 50%;
+    filter: blur(60px);
+    opacity: 0.35;
+  }
+
+  .login-page::before {
+    width: 420px;
+    height: 420px;
+    left: -120px;
+    top: -120px;
+    background: radial-gradient(closest-side, #8cb6f7, transparent 70%);
+    animation: blob-move-1 32s ease-in-out infinite alternate;
+  }
+
+  .login-page::after {
+    width: 520px;
+    height: 520px;
+    right: -160px;
+    bottom: -160px;
+    background: radial-gradient(closest-side, #f48ca7, transparent 70%);
+    animation: blob-move-2 36s ease-in-out infinite alternate;
+  }
+  @keyframes blob-move-1 {
+    0% {
+      transform: scale(1) translate(0, 0);
+      filter: blur(60px) brightness(1);
+    }
+    50% {
+      transform: scale(1.08) translate(30px, 20px);
+      filter: blur(70px) brightness(0.98);
+    }
+    100% {
+      transform: scale(1) translate(0, 0);
+      filter: blur(60px) brightness(1);
+    }
+  }
+
+  @keyframes blob-move-2 {
+    0% {
+      transform: scale(1) translate(0, 0);
+      filter: blur(60px) brightness(1);
+    }
+    50% {
+      transform: scale(1.07) translate(-40px, -30px);
+      filter: blur(80px) brightness(0.97);
+    }
+    100% {
+      transform: scale(1) translate(0, 0);
+      filter: blur(60px) brightness(1);
+    }
+  }
+
+  .container {
+    display: block;
+    max-width: 560px;
+    width: 90%;
+    margin: 40px auto;
+  }
+
+  .auth-card {
+    background: rgba(255, 255, 255, 0.85);
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(15, 19, 42, 0.06);
+    padding: 32px 24px 28px;
+    border: 1px solid rgba(15, 19, 42, 0.06);
+    backdrop-filter: saturate(160%) blur(8px);
+    position: relative;
+  }
+
+  /* 카드 상단 액센트 바 */
+  .auth-card::before {
+    content: '';
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+    background: linear-gradient(90deg, #5b90f0 0%, #e91e63 100%);
+    z-index: 2;
+  }
+
+  .auth-card h1 {
+    color: #0f132a;
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-align: center;
+    margin: 0 0 16px 0;
+  }
+
+  /* removed sign-in/up tabs */
+
+  /* triangle pointer removed */
+
+  form {
+    width: 100%;
+    max-width: 560px;
+    margin: 24px auto 10px;
+  }
+
+  .input__block {
+    margin: 20px auto;
+    display: block;
+    position: relative;
+  }
+
+  /* 입력창 왼쪽 아이콘 */
+  .input-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #bfc8db;
+    font-size: 18px;
+    pointer-events: none;
+    z-index: 2;
+  }
+  .input-with-icon .floating-input {
+    padding-left: 38px;
+  }
+  .input-with-icon .floating-label {
+    left: 34px;
+  }
 }
 /* input with action button (password visibility) */
 .input-with-action {
@@ -143,10 +226,6 @@ form {
   font-size: 14px;
 }
 
-.input__block input::placeholder {
-  color: rgba(15, 19, 42, 0.5);
-}
-
 /* keep filled inputs readable even when not focused */
 .input__block input:not(:placeholder-shown) {
   color: rgba(15, 19, 42, 0.95);
@@ -161,7 +240,7 @@ form {
 
 .input__block input:focus,
 .input__block input:active {
-  outline: none;
+  border-color: #bfc8db;
   border: 2px solid #5b90f0;
   color: rgba(15, 19, 42, 1);
   background: #ffffff;
@@ -255,8 +334,8 @@ form {
   position: absolute;
   top: 8px;
   left: 0;
-  background: rgba(15, 19, 42, 0.2);
-  height: 1px;
+  background: #bfc8db;
+  height: 2px;
   width: 45%;
 }
 
@@ -265,8 +344,8 @@ form {
   position: absolute;
   top: 8px;
   right: 0;
-  background: rgba(15, 19, 42, 0.2);
-  height: 1px;
+  background: #bfc8db;
+  height: 2px;
   width: 45%;
 }
 
@@ -298,7 +377,6 @@ form {
   font-size: 20px;
   padding: 0 5px 0 0;
 }
-
 .google__btn:hover {
   box-shadow: 0 0 0 rgba(91, 144, 240, 0);
 }

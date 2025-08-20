@@ -116,6 +116,12 @@ const LmsPop = () => {
         <span style={{ fontSize: '18px', fontWeight: 'bold' }}>필드 속성 정의</span>
         <div style={{ display: 'flex', justifyContent: 'flex-end', margin: '2px 0 2px 0' }}>
           <Flex gap='small' wrap>
+            <Button className='custom-button' onClick={() => console.log('구현중')}>
+              초기화
+            </Button>
+            <Button className='custom-button' onClick={() => console.log('구현중')}>
+              테이블 생성
+            </Button>
             <Button className='custom-button' onClick={openHeaderManage}>
               헤더관리
             </Button>
