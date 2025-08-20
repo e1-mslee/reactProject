@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.e1.backend.auth.TokenProvider;
 import com.e1.backend.dto.UserDto;
+import com.e1.backend.service.CustomUserDetailsService;
 
 import org.springframework.web.bind.annotation.RequestBody;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 public class AuthController {
     private final AuthenticationManager authenticationManager;
     private final TokenProvider tokenProvider;
+    private final CustomUserDetailsService userSerivce;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody UserDto loginRequest) {
@@ -31,5 +33,11 @@ public class AuthController {
                                                  authentication.getAuthorities().iterator().next().getAuthority());
 
         return ResponseEntity.ok(Map.of("token", token));
+    }
+
+    @PostMapping("/signup")
+    public ResponseEntity<?> signup(@RequestBody UserDto loginRequest) {
+        userSerivce.signup(loginRequest);
+        return ResponseEntity.ok(Map.of("message", "회원가입 성공"));
     }
 }

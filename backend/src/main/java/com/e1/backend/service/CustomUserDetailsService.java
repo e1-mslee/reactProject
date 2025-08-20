@@ -6,9 +6,11 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.e1.backend.dto.CustomUserDetails;
+import com.e1.backend.dto.UserDto;
 import com.e1.backend.dto.UserEntity;
 import com.e1.backend.mapper.UserMapper;
 
@@ -19,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 public class CustomUserDetailsService implements UserDetailsService {
     
     private final UserMapper userMapper;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -35,8 +38,15 @@ public class CustomUserDetailsService implements UserDetailsService {
 
         return CustomUserDetails.builder()
                     .USER_ID(user.getUserId())
-                    .USER_PASSWORD("{noop}" + user.getPassword()) // <- {noop} 붙이기
+                    .USER_PASSWORD(user.getPassword()) 
                     .role(List.of(new SimpleGrantedAuthority(authority))) // 변환된 문자열 권한 사용
                     .build();
+    }
+
+    public void signup(UserDto loginRequest) {
+        String encodedPassword = passwordEncoder.encode(loginRequest.getPassword());
+        loginRequest.setPassword(encodedPassword);
+
+        userMapper.signup(loginRequest);
     }
 }

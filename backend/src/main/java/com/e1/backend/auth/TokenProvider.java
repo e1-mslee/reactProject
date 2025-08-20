@@ -7,6 +7,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import io.jsonwebtoken.Claims;
@@ -21,7 +22,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@Component
 public class TokenProvider {
     
     private final Key secretKey;
@@ -30,7 +30,7 @@ public class TokenProvider {
     
     private final UserDetailsService userDetailsService;
 
-    public TokenProvider(UserDetailsService userDetailsService) {
+    public TokenProvider(@Lazy UserDetailsService userDetailsService) {
         this.secretKey = Keys.secretKeyFor(SignatureAlgorithm.HS256);
         this.userDetailsService = userDetailsService;
     }

@@ -33,7 +33,8 @@ private final TokenProvider tokenProvider;
 
         // Swagger, v3, 로그인 URL은 필터 제외
         if (requestURI.startsWith("/swagger") ||
-            requestURI.startsWith("/login")  ) {   //임시로 /api 경로를 제외
+            requestURI.startsWith("/login") || 
+            requestURI.startsWith("/signup")  ) {
             filterChain.doFilter(request, response);
             return;
         }
