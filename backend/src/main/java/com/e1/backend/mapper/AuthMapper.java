@@ -14,4 +14,12 @@ public interface AuthMapper {
 
     UserDto findByUsername(String username);
 
+    int insertUser(Map<String, Object> data);
+
+    String selectRefreshToken(String userId);
+
+    void insertRefreshToken(String userId, String refreshToken);
+
+    void deleteRefreshToken(String userId);
+
 }

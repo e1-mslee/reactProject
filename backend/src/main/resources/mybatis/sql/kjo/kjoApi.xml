@@ -35,10 +35,6 @@
             </foreach>
     </insert>
 
-    <select id="definitionMainTable" parameterType="string">
-            ${query}
-    </select>
-
     <update id="updateMainTable" parameterType="list">
         update std_main
            set TABLE_ID     = #{tableId},
@@ -205,6 +201,11 @@
          where COM_CD_ID = '00001'
     </select>
 
+    <select id="selectMaxTableId" resultType="string">
+        select max(TABLE_ID)
+          from std_main
+    </select>
+
     <select id="selectDataCount" resultType="int">
         select count(*)
           from ${tableId}
@@ -214,5 +215,9 @@
         SELECT count(*)
           FROM INFORMATION_SCHEMA.columns
          where TABLE_NAME = #{tableId}
+    </select>
+
+    <select id="definitionMainTable" parameterType="string">
+        ${query}
     </select>
 </mapper>

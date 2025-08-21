@@ -3,14 +3,28 @@ import { Layout } from 'antd';
 import logo from '@assets/Logo.png';
 import { Button } from 'antd';
 
+import AccountCustomSlotProps from '@component/Account';
+
 const { Header: AntHeader } = Layout;
 
 const Header: React.FC = () => {
+/*     const { userInfo } = useAccountData();
     const navigate = useNavigate();
+    const isLoggedIn = Boolean(localStorage.getItem('accessToken')); // 로그인 체크 예시
 
-    const handleClick = () => {
+    const loginHandle = () => {
+        console.log("login");
         void navigate('/login'); // 이동할 경로
     };
+
+    const logoutHandle = () => {
+        signOut(userInfo.userId)
+            .then(res => {
+                void navigate('/login');
+            }).catch(e => {
+            alert("로그아웃 실패");
+        });
+    } */
 
   return (
     <>
@@ -31,7 +45,7 @@ const Header: React.FC = () => {
           <img src={logo} alt='Logo' style={{ height: 32, marginRight: 12 }} />
           UDA 시스템 관리(BS 3팀)
         </div>
-        <Button type='primary' onClick={handleClick}>로그인</Button>
+        <AccountCustomSlotProps />
       </AntHeader>
     </>
   );

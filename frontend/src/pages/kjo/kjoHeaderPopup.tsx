@@ -34,10 +34,18 @@ const TmpAreaToggle = () => {
         const tmpArea = document.getElementById("TmpArea") as HTMLInputElement | null;
 
         if(tmpArea) tmpArea.style.display = 'none';
+
+        const gridArea = document.getElementById("gridArea") as HTMLInputElement | null;
+
+                if(gridArea) gridArea.style.height = '70%';
     } else {
         const tmpArea = document.getElementById("TmpArea") as HTMLInputElement | null;
 
         if(tmpArea) tmpArea.style.display = 'block';
+
+        const gridArea = document.getElementById("gridArea") as HTMLInputElement | null;
+
+        if(gridArea) gridArea.style.height = '50%';
     }
 }
 
@@ -220,7 +228,7 @@ const GridArea = () => {
             const editorValue = s.activeEditor?.value;
 
             if(col?.binding === 'supiHeader' && e.panel.cellType === wjGrid.CellType.Cell) {
-                const headerId = col?.dataMap?.getKeyValue("headerId") as string;
+                const headerId = s.getCellData(e.row, "headerId") as string;
                 const supiHeader = col?.dataMap?.getKeyValue(editorValue) as string;
                 const supiRow = s.rows.find(d => (d.dataItem as GridData).headerId === supiHeader && (d.dataItem as GridData).connField);
 
@@ -280,13 +288,13 @@ const GridArea = () => {
     });
 
     return (
-        <div className={"grid_area"}>
+        <div id={"gridArea"} className={"grid_area"}>
             <FlexGrid
                 ref = {gridRef}
                 itemsSource={gridData || []}
                 initialized={initialGrid}
                 isReadOnly={false}
-                style={{ height: '200px' }}
+                style={{ height: '100%' }}
                 selectionMode="Row"
                 headersVisibility="Column"
                 allowSorting={true}
@@ -431,14 +439,16 @@ const KjoHeaderPopup = () =>{
     }, []);
 
     return (
-        <div>
+        <div style={{ height: "100%" }}>
             <Header />
             <TableInfo />
             <GridHeader />
-            <GridArea />
-            <div id={"TmpArea"} style={{display: "none"}}>
-                <TmpGridHeader />
-                <TmpGridArea />
+            <div style={{ display: "flex", flexDirection: "column", gap: "50px", height: "100%"}}>
+                <GridArea />
+                <div id={"TmpArea"} style={{display: "none"}}>
+                    <TmpGridHeader />
+                    <TmpGridArea />
+                </div>
             </div>
 
         </div>

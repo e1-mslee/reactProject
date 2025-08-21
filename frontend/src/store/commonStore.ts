@@ -14,19 +14,24 @@ interface ICode {
 interface IUseCommonData {
     commCode: ICode[] | null;
     fetchAllData: () => void;
+    filterCode: (codeId: string) => ICode[];
 }
 
 const useCommonData = create<IUseCommonData>((set) => ({
     commCode: null,
     fetchAllData: () => {
-        Promise.all([
-            api.get<ICode[]>('/api/commCode')
-        ]).then(([code]) => {
-            set({ commCode: code.data });
-        }).catch((err) => {
+        api.get<ICode[]>('/api/commCode').then( res => {
+            set({ commCode: res.data });
+        }).catch( err => {
             console.log(err);
-            alert("화면 로딩에 실패했습니다.");
         });
+    },
+    filterCode: (codeId) => {
+        const code = useCommonData.getState().commCode as ICode[];
+
+        if(!code) return [];
+
+        return code.filter((data) => data.COM_CD_ID === codeId );
     }
 }));
 

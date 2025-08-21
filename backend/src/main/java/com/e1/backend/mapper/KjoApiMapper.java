@@ -42,6 +42,8 @@ public interface KjoApiMapper {
 
     List<Map<String, Object>> selectColTypeCode();
 
+    String selectMaxTableId();
+
     int selectDataCount(Map<String, Object> data);
 
     int findTable(Map<String, Object> data);

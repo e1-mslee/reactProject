@@ -22,13 +22,14 @@ api.interceptors.request.use(
   (config) => {
     // 토큰이 있다면 헤더에 추가
     const token = localStorage.getItem('accessToken');
+
     if (token) {
-      config.headers.Authorization = token;
+      config.headers.Authorization = `Bearer ${token}`;
     }
 
     // 요청 로깅 (개발 환경에서만)
     if (process.env.NODE_ENV === 'development') {
-      console.log('API Request:', config.method?.toUpperCase(), config.url, config.data);
+      //console.log('API Request:', config.method?.toUpperCase(), config.url, config.data);
     }
 
     return config;
@@ -43,12 +44,12 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response: AxiosResponse) => {
     if (process.env.NODE_ENV === 'development') {
-      console.log('API Response:', response.status, response.config.url, response.data);
+      //console.log('API Response:', response.status, response.config.url, response.data);
     }
 
     return response;
   },
-  (error: AxiosError) => {
+  async (error: AxiosError) => {
     // 에러 처리
     if (error.response) {
       // 서버 응답이 있는 경우
@@ -57,9 +58,31 @@ api.interceptors.response.use(
       switch (status) {
         case 401:
           // 인증 실패 - 로그인 페이지로 리다이렉트
-          localStorage.removeItem('accessToken');
-          window.location.href = '/login';
-          break;
+            const originalRequest = error.config;
+
+            if (originalRequest.url?.includes("/login") || originalRequest.url?.includes("/refresh")) {
+                localStorage.removeItem("accessToken");
+                return Promise.reject(error);
+            }
+
+            if (!originalRequest._retry) {
+              originalRequest._retry = true;
+
+              try {
+                const res = await api.post("/refresh", {}, { withCredentials: true });
+
+                const newToken = res.data.accessToken;
+
+                localStorage.setItem("accessToken", newToken);
+                originalRequest.headers.Authorization = `Bearer ${newToken}`;
+
+                return api(originalRequest);
+              } catch (refreshError) {
+                localStorage.removeItem("accessToken");
+                window.location.href = "/login";
+              }
+            }
+            break;
         case 403:
           // 권한 없음
           console.error('권한이 없습니다.');

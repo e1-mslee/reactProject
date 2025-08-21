@@ -155,13 +155,13 @@ const GridArea = () => {
     });
 
     return (
-        <div>
+        <div style={{ height: "70%" }}>
             <FlexGrid
                 ref={gridRef}
                 itemsSource={gridData ?? []}
                 initialized={flexInitialized}
                 isReadOnly={false}
-                style={{ height: '500px' }}
+                style={{ height: '100%' }}
                 selectionMode="Row"
                 headersVisibility="Column"
                 allowSorting={true}
@@ -191,7 +191,7 @@ const Kjo = () =>{
     }, []);
 
     return (
-        <div>
+        <div style={{ height: "100%" }}>
             <HeaderLine/>
             <SearchArea/>
             <GridArea/>

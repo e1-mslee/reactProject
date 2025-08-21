@@ -1,9 +1,9 @@
 import React from 'react';
 import {Routes, Route, useLocation, Outlet, Navigate} from 'react-router-dom';
 import Home from '@pages/Home';
+
 import Lms from '@pages/lms/Lms';
 import Kjo from '@pages/kjo/Kjo';
-import Login from '@pages/Login';
 
 const MainRoutes: React.FC = () => {
     function PrivateRoute() {
@@ -16,9 +16,9 @@ const MainRoutes: React.FC = () => {
     <Routes>
         <Route element={<PrivateRoute />}>
             <Route path='/' element={<Home />} />
+            <Route path='/home' element={<Home />} />
             <Route path='/lms' element={<Lms />} />
             <Route path='/kjo' element={<Kjo />} />
-            <Route path='*' element={<Home />} />
         </Route>
     </Routes>
   );

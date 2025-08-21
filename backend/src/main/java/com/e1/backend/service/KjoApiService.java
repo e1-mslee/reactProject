@@ -28,4 +28,8 @@ public interface KjoApiService {
     List<Map<String, Object>> selectHeaderId(Map<String, Object> data);
 
     List<Map<String, Object>> selectGridHeaderTable(Map<String, Object> data);
+
+    ResponseEntity<?> createTable(Map<String, Object> data);
+
+    ResponseEntity<?> initTable(Map<String, Object> data);
 }

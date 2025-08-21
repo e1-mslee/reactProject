@@ -4,7 +4,6 @@ import {
     FormControlLabel,
     Link,
 } from '@mui/material';
-import { DialogsProvider, useDialogs } from '@toolpad/core/useDialogs';
 
 import type {AuthResponse, AuthProvider } from '@toolpad/core/SignInPage';
 import { SignInPage } from '@toolpad/core/SignInPage';
@@ -12,7 +11,8 @@ import {AppProvider} from '@toolpad/core/AppProvider';
 import {useTheme} from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
 
-import { useAuth } from '@/auth/useAUth';
+import useAuth from '@/auth/useAuth';
+import useAccountData from "@/store/kjo/accountStore";
 
 const providers = [{ id: 'credentials', name: 'Id and Password' }];
 
@@ -22,7 +22,7 @@ function Title() {
 
 function SignUpLink() {
     return (
-        <Link href="/Home" variant="body2">
+        <Link href="/signup" variant="body2">
             Sign up
         </Link>
     );
@@ -68,8 +68,8 @@ function RememberMeCheckbox() {
 }
 
 const Login = () => {
-    const dialogs = useDialogs();
-    const { signIn } = useAuth();
+    const { setUserInfo } = useAccountData();
+    const { login } = useAuth();
     const navigate = useNavigate();
     const theme = useTheme();
 
@@ -82,12 +82,14 @@ const Login = () => {
             return;
         }
         if (typeof id === "string" && typeof password === "string") {
-            signIn(id, password)
+            login(id, password)
                 .then(res => {
+                    setUserInfo(res);
                     void navigate('/home');
                 }).catch(e => {
-                alert("로그인 실패 \nId와 Password를 확인해주세요");
-            });
+                    console.log(e)
+                    alert("로그인 실패 \nId와 Password를 확인해주세요");
+                });
         }
     };
 

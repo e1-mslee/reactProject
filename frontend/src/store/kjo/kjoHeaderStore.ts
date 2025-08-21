@@ -188,18 +188,24 @@ const useHeaderData = create<UseHeaderData>((set) => ({
     },
     saveGridData: (seq) => {
         const view = useHeaderData.getState().gridData;
+        const initData = useHeaderData.getState().initData;
+        const tableId = initData?.tableId || "";
 
-        if(!confirm("저장하시겠습니까?")) return;
+        if(tableId === "") {
+            alert("테이블이 생성된 후에는 수정할 수 없습니다.");
+            return;
+        }
 
         const added = view?.itemsAdded || [];
         const edited = view?.itemsEdited || [];
         const removed = view?.itemsRemoved || [];
 
-
         if(added.length === 0 && edited.length === 0 && removed.length === 0) {
             alert("변경사항이 없습니다.");
             return;
         }
+
+        if(!confirm("저장하시겠습니까?")) return;
 
         const cond = {
             added: Array.from(added).map(row => ({ ...row })),
@@ -218,6 +224,7 @@ const useHeaderData = create<UseHeaderData>((set) => ({
     fieldData: null,
     fetchFieldData: (seq) => {
         const cond = {
+
             tableSeq: seq
         }
 

@@ -14,8 +14,7 @@ import PopupRoutes from '@router/routes/PopupRoute';
 import './App.css';
 import MainRoute from "@router/routes/MainRoute";
 import Login from "@pages/Login";
-
-
+import Signup from "@pages/Signup";
 
 const { Content } = Layout;
 const TITLE_MAP: { [key: string]: string } = {
@@ -48,13 +47,12 @@ const App: React.FC = () => {
 
   if (isPopup) return <PopupRoutes />;
 
+  // 로그인, 회원가입 페이지는 레이아웃 없이 렌더링
+  if (location.pathname === '/login') return <Login />;
+  if (location.pathname === '/signup') return <Signup />;
 
   return (
       <div>
-        <Routes>
-          <Route path='/login' element={<Login />} />
-        </Routes>
-
         <Layout style={{ height: '100vh' }}>
           <Header />
           <Layout style={{ flex: 1 }}>

@@ -27,7 +27,6 @@ import java.util.Collections;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final AuthenticationConfiguration authenticationConfiguration;
     private final JwtUtil jwtUtil;
     
     @Bean
@@ -56,13 +55,14 @@ public class SecurityConfig {
 
         // 기본 Form 기반 인증 필터들 disable
         http.formLogin(AbstractHttpConfigurer::disable);
+        http.logout(AbstractHttpConfigurer::disable);
 
         // 기본 Basic 인증 필터 disable
         http.httpBasic(AbstractHttpConfigurer::disable);
 
         // 인가
         http.authorizeHttpRequests(auth -> auth
-                .requestMatchers("/login", "/", "/register").permitAll()
+                .requestMatchers("/login", "/signup", "/refresh", "/logout").permitAll()
                 .anyRequest().authenticated());
 
         // 예외 처리
@@ -80,20 +80,20 @@ public class SecurityConfig {
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
         //필터 추가 LoginFilter()는 인자를 받음 (AuthenticationManager() 메소드에 authenticationConfiguration 객체를 넣어야 함) 따라서 등록 필요
-        http.addFilterBefore(new JwtFilter(jwtUtil), LoginFilter.class);
+        http.addFilterBefore(new JwtFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);
 
-        LoginFilter loginFilter = new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil);
-        loginFilter.setFilterProcessesUrl("/login"); // 로그인 요청만 처리
+        //LoginFilter loginFilter = new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil);
+        //loginFilter.setFilterProcessesUrl("/login"); // 로그인 요청만 처리
 
-        http.addFilterAt(loginFilter, UsernamePasswordAuthenticationFilter.class);
+        //http.addFilterAt(loginFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
-    /*@Bean
+    @Bean
     public BCryptPasswordEncoder bCryptPasswordEncoder() {
         return new BCryptPasswordEncoder();
-    }*/
+    }
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception { return configuration.getAuthenticationManager(); }

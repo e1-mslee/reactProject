@@ -33,7 +33,8 @@
       "@store/*": ["src/store/*"],
       "@hooks/*": ["src/hooks/*"],
       "@router/*": ["src/router/*"],
-      "@layout/*": ["src/layout/*"]
+      "@layout/*": ["src/layout/*"],
+      "@auth/*": ["src/auth/*"]
     }
   },
   "include": ["src", "vite-env.d.ts"]

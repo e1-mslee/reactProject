@@ -21,4 +21,33 @@
         from user_info
         where ID = #{username}
     </select>
+
+    <insert id="insertUser" parameterType="map">
+        insert into user_info
+            (ID, PASSWORD, NAME, EMAIL, ROLE)
+        values
+            (#{id}, #{password}, #{name}, #{email}, #{role})
+    </insert>
+
+    <select id="selectRefreshToken" parameterType="string">
+        select REFRESH_TOKEN
+          from REFRESH_TOKEN_STORE
+         where USER_ID = #{userId}
+    </select>
+
+    <insert id="insertRefreshToken" parameterType="string">
+        insert into REFRESH_TOKEN_STORE
+            (USER_ID, REFRESH_TOKEN, CREATE_DATE)
+        values
+            (#{userId}, #{refreshToken}, now())
+        ON DUPLICATE KEY UPDATE
+            REFRESH_TOKEN = values(REFRESH_TOKEN),
+            CREATE_DATE = now()
+
+    </insert>
+
+    <delete id="deleteRefreshToken" parameterType="string">
+        delete from REFRESH_TOKEN_STORE
+         where USER_ID = #{userId}
+    </delete>
 </mapper>

@@ -73,20 +73,6 @@ const useGridData = create<UdaGridData>((set) => ({
         if(!view) return;
 
         let maxTableId: string = '';
-        const items = view.items;
-
-        if(items.length === 0) {
-            maxTableId = "uda_db_001";
-        } else {
-            const tableIds: number[] = view.items.map(d => Number(d.tableId?.split("_")[2]));
-
-            let max = 0;
-            tableIds.forEach(n => {
-                max = Math.max(max, n+1);
-            });
-
-            maxTableId = "uda_db_" + String(max).padStart(3, '0');
-        }
 
         const newItem = view.addNew();
 
@@ -134,7 +120,7 @@ const useGridData = create<UdaGridData>((set) => ({
             return;
         }
 
-        const useTable = data.filter(d => {
+        const useTable = selectedRows.filter(d => {
             if(!d.dataCount) return false;
             return d.dataCount > 0;
         });
@@ -180,8 +166,8 @@ const useGridData = create<UdaGridData>((set) => ({
             return;
         }
 
-
         const url = `/popup/kjo_pop?tableSeq=${encodeURIComponent(tableSeq)}`;
+
         openPop(url, ()=> {});
     }
 }));

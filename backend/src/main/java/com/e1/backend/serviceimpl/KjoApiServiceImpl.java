@@ -40,19 +40,6 @@ public class KjoApiServiceImpl implements KjoApiService {
 
         kjoApiMapper.insertMainTable(data);
 
-        /*
-        List<Map<String, Object>> insertData = data.stream().filter(map -> map.get("tableSeq") == null || map.get("tableSeq").equals("")).toList();
-        List<Map<String, Object>> updateData = data.stream().filter(map -> map.get("tableSeq") != null && !map.get("tableSeq").equals("")).toList();
-
-        if(!insertData.isEmpty())
-            kjoApiMapper.insertMainTable(insertData);
-
-        if(!updateData.isEmpty()) {
-            for(Map<String, Object> map : updateData) {
-                kjoApiMapper.updateMainTable(map);
-            }
-        }*/
-
         return ResponseEntity.ok().build();
     }
 
@@ -70,12 +57,16 @@ public class KjoApiServiceImpl implements KjoApiService {
 
         String query = "";
         for(Map<String, Object> map : data) {
+            String tableId = map.get("tableId").toString();
+
             kjoApiMapper.deleteFieldTable(map);
 
             kjoApiMapper.deleteHeaderTable(map);
 
-            query = "drop table if exists " + map.get("tableId").toString();
-            kjoApiMapper.definitionMainTable(query);
+            if(!tableId.isEmpty()){
+                query = "drop table if exists " + tableId;
+                kjoApiMapper.definitionMainTable(query);
+            }
         }
 
         return ResponseEntity.ok().build();
@@ -103,15 +94,6 @@ public class KjoApiServiceImpl implements KjoApiService {
     @Override
     @Transactional
     public ResponseEntity<?> saveFieldTable(Map<String, Object> data) {
-        List<Map<String, Object>> codeList = kjoApiMapper.selectColTypeCode();
-
-        Map<String, String> code =  new HashMap<>();
-
-        for(Map<String, Object> map : codeList){
-            code.put((String) map.get("code"), (String) map.get("value"));
-        }
-
-        List<Map<String, Object>> items = (List<Map<String, Object>>) data.get("items");
 
         List<Map<String, Object>> added = (List<Map<String, Object>>) data.get("added");
         List<Map<String, Object>> edited = (List<Map<String, Object>>) data.get("edited");
@@ -131,23 +113,6 @@ public class KjoApiServiceImpl implements KjoApiService {
                 kjoApiMapper.deleteFieldTable(map);
             }
         }
-
-        String query = "drop table if exists " + data.get("tableId").toString();
-        kjoApiMapper.definitionMainTable(query);
-
-        if(!items.isEmpty()) {
-            query = "create table " + data.get("tableId").toString() + " (\n";
-            List<String> primaryKeys = new ArrayList<>();
-
-            List<Map<String, Object>> queryMap = Stream.of(edited, added)
-                    .flatMap(Collection::stream)
-                    .collect(Collectors.toList());
-
-            query += makeQueryTmp(queryMap, primaryKeys, code);
-            query += "\n)";
-        }
-
-        kjoApiMapper.definitionMainTable(query);
 
         return ResponseEntity.ok().build();
     }
@@ -271,33 +236,56 @@ public class KjoApiServiceImpl implements KjoApiService {
         return result;
     }
 
-    private String makeQueryTmp(List<Map<String, Object>> listMap, List<String> primaryKeys, Map<String, String> code) {
+    @Override
+    @Transactional
+    public ResponseEntity<?> createTable(Map<String, Object> data) {
+        List<Map<String, Object>> maps = kjoApiMapper.selectFieldTable(data);
+        List<Map<String, Object>> codeList = kjoApiMapper.selectColTypeCode();
+        String maxTableId = kjoApiMapper.selectMaxTableId();
+
+        if(maxTableId.isEmpty()) {
+            maxTableId = "uda_db_001";
+        } else {
+            String idSeq = maxTableId.split("_")[2];
+            int seq = Integer.parseInt(idSeq) + 1;
+            String formatSeq = String.format("%03d", seq);
+            maxTableId = "uda_db_" + formatSeq;
+        }
+
+        Map<String, String> code =  new HashMap<>();
+
+        for(Map<String, Object> map : codeList){
+            code.put((String) map.get("code"), (String) map.get("value"));
+        }
+
+        data.put("tableId", maxTableId);
+
+        kjoApiMapper.updateMainTable(data);
+
+        String query;
+
+        if(!maps.isEmpty()) {
+            query = "create table " + maxTableId + " (\n";
+
+            query += makeQueryTmp(maps, code);
+            query += "\n)";
+            kjoApiMapper.definitionMainTable(query);
+        }
+
+        return ResponseEntity.ok().build();
+    }
+
+    private String makeQueryTmp(List<Map<String, Object>> listMap, Map<String, String> code) {
+        List<String> primaryKeys = new ArrayList<>();
         StringBuilder sb = new StringBuilder();
 
-        Map<String, Object> map = listMap.get(0);
-
-        String colNm = map.get("colName").toString();
-        String colType = map.get("colType").toString();
-        String colSize = map.get("colSize").toString();
-        Boolean colIdx = (Boolean) map.get("colIdx");
-
-        /*sb.append(colNm).append(" ").append(code.get(colType));
-
-        if(code.get(colType).equalsIgnoreCase("VARCHAR")) {
-            sb.append("(").append(colSize).append(")");
-        }
-        log.info("colIdx: {}", colIdx);
-        if(colIdx) {
-            primaryKeys.add(colNm);
-        }*/
-
         for(int i = 0; i < listMap.size(); i++) {
-            map = listMap.get(i);
+            Map<String, Object> map = listMap.get(i);
 
-            colNm = map.get("colName").toString();
-            colType = map.get("colType").toString();
-            colSize = map.get("colSize").toString();
-            colIdx = (Boolean) map.get("colIdx");
+            String colNm = map.get("colName").toString();
+            String colType = map.get("colType").toString();
+            String colSize = map.get("colSize").toString();
+            boolean colIdx = (map.get("colIdx") instanceof Long) && ((Long)map.get("colIdx")) == 1L; ;
 
             sb.append(colNm).append(" ").append(code.get(colType));
 
@@ -325,5 +313,12 @@ public class KjoApiServiceImpl implements KjoApiService {
         }
 
         return sb.toString();
+    }
+
+    @Override
+    public ResponseEntity<?> initTable(Map<String, Object> data) {
+        String query = "drop table " + data.get("tableId").toString() + "\n";
+        kjoApiMapper.definitionMainTable(query);
+        return ResponseEntity.ok().build();
     }
 }

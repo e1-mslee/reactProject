@@ -33,6 +33,8 @@ interface UseColData {
     deleteGridData: () => void
     saveColData: (seq: string) => void
     headerPopup: (seq: string) => void
+    createTable: (seq: string) => void
+    initTable: () => void
 }
 
 const useColData = create<UseColData>((set) => ({
@@ -76,18 +78,8 @@ const useColData = create<UseColData>((set) => ({
         const tableNm = (document.getElementById("tableNm") as HTMLInputElement | null)?.value || '';
         const tableId = (document.getElementById("tableId") as HTMLInputElement | null)?.value || '';
 
-        if(initData == null || initData?.tableId == null) {
-            alert("테이블을 생성해주세요.");
-            return;
-        }
-
         if(!tableNm) {
             alert("논리 테이블 명을 입력해주세요.");
-            return;
-        }
-
-        if(!tableId) {
-            alert("물리 테이블 명을 입력해주세요.");
             return;
         }
 
@@ -157,15 +149,13 @@ const useColData = create<UseColData>((set) => ({
         const edited = view?.itemsEdited || [];
         const removed = view?.itemsRemoved || [];
 
-        if(!confirm("저장하시겠습니까?")) return;
-
-        if(tableNm == null || tableNm === "") {
-            alert("논리 테이블 명을 입력해주세요.");
+        if(tableId === "") {
+            alert("테이블이 생성된 후에는 수정할 수 없습니다.");
             return;
         }
 
-        if(tableId == null || tableId === "") {
-            alert("물리 테이블 명을 입력해주세요.");
+        if(tableNm == null || tableNm === "") {
+            alert("논리 테이블 명을 입력해주세요.");
             return;
         }
 
@@ -190,7 +180,9 @@ const useColData = create<UseColData>((set) => ({
             return;
         }
 
-        if(initData?.tableName !== tableNm || !initData?.tableId) {
+        if(!confirm("저장하시겠습니까?")) return;
+
+        if(initData?.tableName !== tableNm) {
             const cond = {
                 tableSeq: seq,
                 tableNm: tableNm,
@@ -206,31 +198,81 @@ const useColData = create<UseColData>((set) => ({
             });
         }
 
-        if(initData != null && initData?.tableId) {
-            if(added.length === 0 && edited.length === 0 && removed.length === 0) return;
+        if(added.length === 0 && edited.length === 0 && removed.length === 0) return;
 
-            const cond = {
-                tableId: tableId,
-                items: Array.from(items).map(row => ({ ...row })),
-                added: Array.from(added).map(row => ({ ...row })),
-                edited: Array.from(edited).map(row => ({ ...row })),
-                removed: Array.from(removed).map(row => ({ ...row }))
-            }
-
-            api.post('/kjoApi/fieldTable', cond)
-                .then(() => {
-                useColData.getState().fetchGridData(seq);
-            }).catch((err) => {
-                console.error(err);
-            });
+        const cond = {
+            tableId: tableId,
+            items: Array.from(items).map(row => ({ ...row })),
+            added: Array.from(added).map(row => ({ ...row })),
+            edited: Array.from(edited).map(row => ({ ...row })),
+            removed: Array.from(removed).map(row => ({ ...row }))
         }
 
+        api.post('/kjoApi/fieldTable', cond)
+            .then(() => {
+            useColData.getState().fetchGridData(seq);
+        }).catch((err) => {
+            console.error(err);
+        });
 
     },
     headerPopup : (seq) => {
         const url = `/popup/kjo_header_pop?tableSeq=${encodeURIComponent(seq)}`;
 
         openPop(url, () => {});
+    },
+    createTable: (seq) => {
+        const view = useColData.getState().gridData;
+        const items = view?.items || [];
+
+        const tableNm = (document.getElementById("tableNm") as HTMLInputElement || null)?.value || '';
+        const tableId = (document.getElementById("tableId") as HTMLInputElement || null)?.value || '';
+
+        if(tableId) {
+            alert("물리 테이블이 존재합니다.");
+            return;
+        }
+
+        if(items.length == 0) {
+            alert("필드 속성이 없습니다.");
+            return;
+        }
+
+        const cond = {
+            tableSeq: seq,
+            tableId: tableId,
+            tableNm: tableNm
+        }
+
+        api.post('/kjoApi/createTable', cond)
+        .then(() => {
+            alert("테이블이 생성되었습니다.");
+            useColData.getState().fetchInitData(seq);
+        }).catch((err) => {
+            console.error(err);
+        });
+    },
+    initTable: (seq) => {
+        const data = useColData.getState().initData;
+        const tableId = data?.tableId || '';
+
+        if(tableId === '') {
+            alert("테이블이 존재하지 않습니다.");
+            return;
+        }
+
+        if(!confirm("테이블을 초기화 하시겠습니까?")) return;
+
+        const cond = {
+            tableId: tableId
+        }
+
+        api.post('/kjoApi/initTable', cond)
+        .then(() => {
+            alert("테이블이 초기화 되었습니다.");
+        }).catch((err) => {
+            console.error(err);
+        });
     }
 }));
 

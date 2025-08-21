@@ -2,6 +2,7 @@ package com.e1.backend.Controller;
 
 import com.e1.backend.service.KjoApiService;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -79,6 +80,18 @@ public class KjoApiController {
     @Operation(summary = "테이블 헤더 명(미리보기) 조회", description = "테이블 헤더 명(미리보기) 조회")
     public List<Map<String, Object>> selectGridHeaderTable(@RequestParam Map<String, Object> data) {
         return kjoApiService.selectGridHeaderTable(data);
+    }
+
+    @PostMapping("/createTable")
+    @Operation(summary = "테이블 생성", description = "물리 테이블 생성")
+    public ResponseEntity<?> createTable(@RequestBody Map<String, Object> data) {
+        return kjoApiService.createTable(data);
+    }
+
+    @PostMapping("/initTable")
+    @Operation(summary = "테이블 초기화", description = "테이블 데이터 초기화")
+    public ResponseEntity<?> initTable(@RequestBody Map<String, Object> data) {
+        return kjoApiService.initTable(data);
     }
 
 }

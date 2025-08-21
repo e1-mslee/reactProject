@@ -20,12 +20,19 @@ const params = new URLSearchParams(window.location.search);
 const tableSeq = params.get('tableSeq') || "";
 
 const Header = () => {
-    const { saveColData, headerPopup } = useColData();
+    const { initData, saveColData, headerPopup, createTable, initTable } = useColData();
+    let tableId = "";
+
+    if(initData) {
+        tableId = initData.tableId;
+    }
 
     return (
         <div className={"header_line"}>
             <div className={"content_title"}>테이블 정의</div>
             <div className={"button_box"}>
+                { tableId === "" && ( <BaseButton txt={"테이블 생성"} onClick={() => createTable(tableSeq)}/> )}
+                { tableId !== "" && ( <BaseButton txt={"초기화"} onClick={() => initTable(tableSeq)}/> )}
                 <BaseButton txt={"헤더관리"} onClick={() => headerPopup(tableSeq)}/>
                 <BaseButton txt={"저장"} onClick={() => saveColData(tableSeq)}/>
             </div>
@@ -164,7 +171,6 @@ const ColGridArea = ({commCode}: CommCode) => {
             if(gridData) setTotalCnt(gridData.items?.length ?? 0);
         }
 
-
         gridData.collectionChanged.addHandler(onCollectionChanged);
 
         return () => {
@@ -190,7 +196,7 @@ const ColGridArea = ({commCode}: CommCode) => {
                 itemsSource={gridData || []}
                 initialized={flexInitialized}
                 isReadOnly={false}
-                style={{ height: '300px' }}
+                style={{ height: 'calc(100% - 32px)' }}
                 selectionMode="Row"
                 headersVisibility="Column"
                 allowSorting={true}
@@ -211,7 +217,7 @@ const ColGridArea = ({commCode}: CommCode) => {
 }
 
 const KjoPop = () =>{
-    const { commCode, fetchAllData } = useCommonData();
+    const { commCode, fetchAllData, filterCode } = useCommonData();
     const { fetchInitData, fetchGridData } = useColData();
 
     useRemoveWijmoLink();
@@ -224,11 +230,11 @@ const KjoPop = () =>{
     }, []);
 
     return (
-        <div>
+        <div style={{ height: "100%" }}>
             <Header />
             <TableInfoArea />
             <ColGridHeader />
-            <ColGridArea commCode={commCode}/>
+            <ColGridArea commCode={filterCode("00001")}/>
         </div>
     );
 }

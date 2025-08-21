@@ -125,6 +125,7 @@ input:disabled {
 }
 
 .grid_area {
+    height: 70%;
     margin: 0 20px;
 }
 
