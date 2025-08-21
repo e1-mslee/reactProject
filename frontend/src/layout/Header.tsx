@@ -190,7 +190,7 @@ const Header: React.FC = () => {
           {username && (
             <Dropdown menu={{ items: userMenu }} placement='bottomRight'>
               <span style={{ cursor: 'pointer', fontWeight: 'bold', fontSize: '14px' }}>
-                {username}님 <ArrowDropDownIcon style={{ verticalAlign: 'middle' }} />
+                안녕하세요. {username}님 <ArrowDropDownIcon style={{ verticalAlign: 'middle' }} />
               </span>
             </Dropdown>
           )}

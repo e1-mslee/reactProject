@@ -15,6 +15,7 @@ import com.e1.backend.auth.TokenProvider;
 import com.e1.backend.dto.UserDto;
 import com.e1.backend.service.CustomUserDetailsService;
 
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -33,6 +34,7 @@ public class AuthController {
     private final CustomUserDetailsService userSerivce;
 
     @PostMapping("/login")
+    @Operation(summary = "로그인 인증", description = "로그인 인증을 수행하고 JWT 토큰을 반환합니다.")
     public ResponseEntity<?> login(@RequestBody UserDto loginRequest, HttpServletResponse response ) {
         Authentication authentication = authenticationManager.authenticate(
             new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword())
@@ -63,6 +65,7 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
+    @Operation(summary = "로그아웃  기능", description = "로그아웃 기능을 수행하고 쿠키를 삭제합니다.")
     public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response ) {
 
         String token = tokenProvider.resolveToken(request);
@@ -88,6 +91,7 @@ public class AuthController {
     }
 
     @PostMapping("/userDelete")
+    @Operation(summary = "유저탈퇴", description = "유저탈퇴 기능을 수행하고 쿠키를 삭제합니다.")
     public ResponseEntity<?> userDelete(
         HttpServletRequest request,
         HttpServletResponse response ) {
@@ -119,12 +123,14 @@ public class AuthController {
 
 
     @PostMapping("/signup")
+    @Operation(summary = "회원가입", description = "회원가입을 수행합니다.")
     public ResponseEntity<?> signup(@RequestBody UserDto loginRequest) {
         userSerivce.signup(loginRequest);
         return ResponseEntity.ok(Map.of("message", "회원가입 성공"));
     }
 
     @PostMapping("/passwordChange")
+    @Operation(summary = "비밀번호 변경", description = "비밀번호를 변경합니다.")
     public ResponseEntity<?> passwordChange(HttpServletRequest request,@RequestBody Map<String, String> body) {
         
         String token = tokenProvider.resolveToken(request);
@@ -150,6 +156,7 @@ public class AuthController {
     }
 
     @PostMapping("/refresh")
+    @Operation(summary = "refresh 토큰 확인", description = "refresh 토큰을 확인하고 새로운 access token을 반환합니다.")
     public ResponseEntity<?> refreshTocken(HttpServletRequest request) {
         Cookie[] cookies = request.getCookies();
         String refreshToken = null;

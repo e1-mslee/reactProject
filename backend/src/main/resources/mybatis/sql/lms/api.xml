@@ -12,6 +12,7 @@
 			   CODE_OPTION_VALUE,			   
 			   SORT_SN
 		  from comm_code 
+		 where COM_CD_ID = '00001'
 	  order by SORT_SN
     </select>
 
