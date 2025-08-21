@@ -57,6 +57,8 @@ public class SecurityConfig {
 
                 // CORS 설정
                 http.cors();
+                
+                http.logout(logout -> logout.disable());
 
                 // 기본 Form 기반 인증 필터들 disable
                 http.formLogin(AbstractHttpConfigurer::disable);

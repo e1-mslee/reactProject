@@ -2,6 +2,7 @@ package com.e1.backend.mapper;
 
 import java.util.Optional;
 
+import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
@@ -23,4 +24,8 @@ public interface UserMapper {
     """)
     void signup(UserDto loginRequest);
 
+    @Delete("""
+        DELETE FROM user_info WHERE id = #{userId}
+    """)
+    void deleteUser(String userId);
 }

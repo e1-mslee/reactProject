@@ -8,6 +8,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.e1.backend.dto.CustomUserDetails;
 import com.e1.backend.dto.UserDto;
@@ -43,10 +44,16 @@ public class CustomUserDetailsService implements UserDetailsService {
                     .build();
     }
 
+    @Transactional
     public void signup(UserDto loginRequest) {
         String encodedPassword = passwordEncoder.encode(loginRequest.getPassword());
         loginRequest.setPassword(encodedPassword);
 
         userMapper.signup(loginRequest);
+    }
+
+    @Transactional
+    public void deleteUser(String userId) {
+        userMapper.deleteUser(userId);
     }
 }

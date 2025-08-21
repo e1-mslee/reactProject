@@ -1,11 +1,15 @@
 import { Layout } from 'antd';
 import logo from '@assets/Logo.png';
-import { Button } from 'antd';
+import { Button, Modal } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { jwtDecode } from 'jwt-decode';
 import LoginIcon from '@mui/icons-material/Login';
 import LogoutIcon from '@mui/icons-material/Logout';
+import api from '@api/api';
+import { Dropdown, Menu } from 'antd';
+import { SettingOutlined, LogoutOutlined, UserDeleteOutlined, UserOutlined } from '@ant-design/icons';
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 
 const { Header: AntHeader } = Layout;
 
@@ -29,6 +33,33 @@ const isValidJwtPayload = (payload: unknown): payload is JwtPayload => {
 const Header: React.FC = () => {
   const navigate = useNavigate();
   const [username, setUsername] = useState<string | null>(null);
+  const userMenu = [
+    {
+      key: 'edit',
+      label: <span>개인정보 변경</span>,
+      icon: <UserOutlined />,
+    },
+    {
+      key: 'password',
+      label: <span>비밀번호 변경</span>,
+      icon: <SettingOutlined />,
+    },
+    {
+      key: 'delete',
+      danger: true,
+      label: <span onClick={() => void userDelete()}>회원탈퇴</span>,
+      icon: <UserDeleteOutlined />,
+    },
+    {
+      type: 'divider' as const,
+    },
+    {
+      key: 'logout',
+      danger: true,
+      label: <span onClick={() => void handleAuth()}>로그아웃</span>,
+      icon: <LogoutOutlined />,
+    },
+  ];
 
   useEffect(() => {
     const token = localStorage.getItem('accessToken');
@@ -57,16 +88,40 @@ const Header: React.FC = () => {
     }
   }, []);
 
-  const handleAuth = () => {
+  const handleAuth = async () => {
     if (username) {
-      // 로그아웃
-      localStorage.removeItem('accessToken');
-      setUsername(null);
-      window.location.reload();
+      try {
+        await api.post('/logout', {}, { withCredentials: true });
+      } catch (err) {
+        console.error('로그아웃 실패:', err);
+      } finally {
+        localStorage.removeItem('accessToken');
+        setUsername(null);
+        window.location.reload();
+      }
     } else {
-      // 로그인 페이지 이동
       void navigate('/login');
     }
+  };
+
+  // 삭제 핸들러
+  const userDelete = () => {
+    Modal.confirm({
+      title: '알림',
+      content: '회원탈퇴 하시겠습니까?',
+      style: { top: 200 },
+      async onOk() {
+        try {
+          await api.post('/userDelete', {}, { withCredentials: true });
+        } catch (err) {
+          console.error('탈퇴 실패:', err);
+        } finally {
+          localStorage.removeItem('accessToken');
+          setUsername(null);
+          window.location.reload();
+        }
+      },
+    });
   };
 
   return (
@@ -89,8 +144,14 @@ const Header: React.FC = () => {
           UDA 시스템 관리(BS 3팀)
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          {username && <span style={{ fontWeight: 'normal' }}>{`${username}님 안녕하세요.`}</span>}
-          <span onClick={handleAuth}>
+          {username && (
+            <Dropdown menu={{ items: userMenu }} placement='bottomRight'>
+              <span style={{ cursor: 'pointer', fontWeight: 'bold', fontSize: '14px' }}>
+                {username}님 <ArrowDropDownIcon style={{ verticalAlign: 'middle' }} />
+              </span>
+            </Dropdown>
+          )}
+          <span onClick={() => void handleAuth()}>
             <span style={{ fontSize: '12px', letterSpacing: '-2px', paddingRight: '5px' }}>
               {username ? '로그아웃' : '로그인'}
             </span>
