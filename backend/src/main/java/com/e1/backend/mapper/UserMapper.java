@@ -5,7 +5,9 @@ import java.util.Optional;
 import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Update;
 
 import com.e1.backend.dto.UserDto;
 import com.e1.backend.dto.UserEntity;
@@ -28,4 +30,15 @@ public interface UserMapper {
         DELETE FROM user_info WHERE id = #{userId}
     """)
     void deleteUser(String userId);
+
+    @Select("""
+        SELECT password FROM user_info WHERE id = #{userId}
+    """)
+    String findPasswordByUserId(String userId);
+
+    @Update("""
+        UPDATE user_info SET password = #{encodedPassword} WHERE id = #{userId}
+    """)
+    void updatePassword(@Param("userId") String userId,
+                        @Param("encodedPassword") String encodedPassword);
 }

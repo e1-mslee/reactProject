@@ -20,7 +20,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -48,12 +47,14 @@ public class AuthController {
         // Refresh Token을 HttpOnly 쿠키에 저장
         ResponseCookie cookie = ResponseCookie.from("refreshToken", refreshToken)
                 .httpOnly(true)       // JS 접근 불가
-                .secure(true)         // HTTPS에서만 전송
-                .path("/")            // 모든 경로에서 전송
-                .maxAge(7 * 24 * 60 * 60) // 7일
+                .secure(true)           // HTTPS에서만 전송
+                .path("/")                // 모든 경로에서 전송
+                .maxAge(7 * 24 * 60 * 60)      // 7일
                 .sameSite("Strict")   // CSRF 방지
                 .build();
         response.addHeader("Set-Cookie", cookie.toString());
+
+        userSerivce.saveRefreshToken(loginRequest.getUsername(), refreshToken);
 
         // Access Token만 JSON으로 응답
         return ResponseEntity.ok(Map.of(
@@ -62,7 +63,14 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<?> logout(HttpServletResponse response ) {
+    public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response ) {
+
+        String token = tokenProvider.resolveToken(request);
+        if (token == null || !tokenProvider.validateToken(token)) {
+            return ResponseEntity.status(HttpServletResponse.SC_UNAUTHORIZED).build();
+        }
+
+        String userId = tokenProvider.getUserPk(token);
 
         ResponseCookie cookie = ResponseCookie.from("refreshToken", "")
         .httpOnly(true)
@@ -73,29 +81,26 @@ public class AuthController {
         .build();
 
         response.addHeader("Set-Cookie", cookie.toString());
+        
+        userSerivce.deleteToken(userId);
 
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/userDelete")
     public ResponseEntity<?> userDelete(
-        @RequestHeader("Authorization") String authorizationHeader,
+        HttpServletRequest request,
         HttpServletResponse response ) {
 
-        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
-            return ResponseEntity.status(HttpServletResponse.SC_UNAUTHORIZED).build();
-        }
-        String token = authorizationHeader.substring(7);
-
-        String payload;
-        try {
-            payload = tokenProvider.getUserPk(token); // 토큰에서 username 등 정보 가져오기
-        } catch (Exception e) {
+        String token = tokenProvider.resolveToken(request);
+        if (token == null || !tokenProvider.validateToken(token)) {
             return ResponseEntity.status(HttpServletResponse.SC_UNAUTHORIZED).build();
         }
 
-        log.info("회원탈퇴 요청: {}", payload);
-        userSerivce.deleteUser(payload); // 회원탈퇴 서비스 호출
+        String userId = tokenProvider.getUserPk(token);
+
+        log.info("회원탈퇴 요청: {}", userId);
+        userSerivce.deleteUser(userId); // 회원탈퇴 서비스 호출
 
         ResponseCookie cookie = ResponseCookie.from("refreshToken", "")
         .httpOnly(true)
@@ -106,6 +111,8 @@ public class AuthController {
         .build();
 
         response.addHeader("Set-Cookie", cookie.toString());
+
+        userSerivce.deleteToken(userId);
 
         return ResponseEntity.ok().build();
     }
@@ -115,6 +122,31 @@ public class AuthController {
     public ResponseEntity<?> signup(@RequestBody UserDto loginRequest) {
         userSerivce.signup(loginRequest);
         return ResponseEntity.ok(Map.of("message", "회원가입 성공"));
+    }
+
+    @PostMapping("/passwordChange")
+    public ResponseEntity<?> passwordChange(HttpServletRequest request,@RequestBody Map<String, String> body) {
+        
+        String token = tokenProvider.resolveToken(request);
+        if (token == null || !tokenProvider.validateToken(token)) {
+            return ResponseEntity.status(HttpServletResponse.SC_UNAUTHORIZED).build();
+        }
+
+        String userId = tokenProvider.getUserPk(token);
+        
+        String oldPassword = body.get("oldPassword");
+        String newPassword = body.get("newPassword");
+
+        boolean valid = userSerivce.checkPassword(userId, oldPassword);
+
+        if (!valid) {
+            return ResponseEntity.badRequest().body(Map.of("message", "현재 비밀번호가 일치하지 않습니다."));
+        }
+
+        userSerivce.changePassword(userId, newPassword);
+
+
+        return ResponseEntity.ok(Map.of("message", "패스워드 변경 성공"));
     }
 
     @PostMapping("/refresh")
@@ -131,12 +163,14 @@ public class AuthController {
             }
         }
 
-        if (refreshToken == null || !tokenProvider.validateToken(refreshToken)) {
+        String userId = tokenProvider.getUserPk(refreshToken);
+        boolean isValid = userSerivce.isValidToken(userId, refreshToken);
+
+        if (isValid) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                              .body(Map.of("message", "Refresh Token이 유효하지 않습니다."));
-    }
+        }
 
-        String userId = tokenProvider.getUserPk(refreshToken);
         String role = tokenProvider.getRoleFromRefreshToken(refreshToken);
         String newAccessToken = tokenProvider.createToken(userId, role);
 
