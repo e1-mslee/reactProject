@@ -30,10 +30,9 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public void signup(Map<String, Object> data) {
-        log.info("data = {}", data);
         String encodedPassword = passwordEncoder.encode(data.get("password").toString());
         data.put("password", encodedPassword);
-        int result = authMapper.insertUser(data);
+        authMapper.insertUser(data);
     }
 
     public UserDto findByUsername(String userName) {

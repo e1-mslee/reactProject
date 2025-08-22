@@ -1,7 +1,6 @@
 package com.e1.backend.Controller;
 
 import com.e1.backend.Dto.LoginRequest;
-import com.e1.backend.Dto.TokenResponse;
 import com.e1.backend.Dto.UserDto;
 import com.e1.backend.service.AuthService;
 import com.e1.backend.serviceimpl.RefreshTokenService;
@@ -18,12 +17,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.time.Duration;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -39,18 +36,18 @@ public class AuthController {
     private final RefreshTokenService refreshTokenService;
 
     @PostMapping("/login")
-    public ResponseEntity<Map<String, Object>> login(@RequestBody LoginRequest req, HttpServletResponse res) {
+    public ResponseEntity<Map<String, Object>> login(@RequestBody LoginRequest req) {
         Authentication authentication = authManager.authenticate(
                 new UsernamePasswordAuthenticationToken(req.getUsername(), req.getPassword())
         );
 
-        String username = authentication.getName();
+        String userId = authentication.getName();
         String role = authentication.getAuthorities().iterator().next().getAuthority();
 
-        String accessToken = jwtUtil.createAccessToken(username, role);
-        String refreshToken = jwtUtil.createRefreshToken(username, role);
+        String accessToken = jwtUtil.createAccessToken(userId, role);
+        String refreshToken = jwtUtil.createRefreshToken(userId, role);
 
-        refreshTokenService.store(username, refreshToken);
+        refreshTokenService.store(userId, refreshToken);
 
         ResponseCookie cookie = ResponseCookie.from("refreshToken", refreshToken)
                 .httpOnly(true)
@@ -59,7 +56,7 @@ public class AuthController {
                 .maxAge(7 * 24 * 60 * 60) // 7일
                 .build();
 
-        UserDto user = authService.findByUsername(req.getUsername());
+        UserDto user = authService.findByUsername(userId);
 
         Map<String, Object> result = new HashMap<>();
 
@@ -76,7 +73,7 @@ public class AuthController {
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<?> refresh(HttpServletRequest request) {
+    public ResponseEntity<?> refresh(HttpServletRequest request, HttpServletResponse response) {
         String refreshToken = Arrays.stream(Optional.ofNullable(request.getCookies()).orElse(new Cookie[]{}))
                 .filter(c -> c.getName().equals("refreshToken"))
                 .findFirst()
@@ -93,7 +90,6 @@ public class AuthController {
         if (!refreshTokenService.validate(userId, refreshToken)) {
             System.out.println("Refresh token not found");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-            //throw new RuntimeException("Refresh token not found");
         }
 
         String newAccessToken = jwtUtil.createAccessToken(userId, role);

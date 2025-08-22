@@ -48,9 +48,9 @@ public class JwtUtil {
         }
     }
 
-    public String createAccessToken(String username, String role) {
+    public String createAccessToken(String userId, String role) {
         return Jwts.builder()
-                .claim("userName", username)
+                .claim("userName", userId)
                 .claim("role", role)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + expiration))

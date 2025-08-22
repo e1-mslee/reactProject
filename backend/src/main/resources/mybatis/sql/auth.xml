@@ -29,20 +29,22 @@
             (#{id}, #{password}, #{name}, #{email}, #{role})
     </insert>
 
-    <select id="selectRefreshToken" parameterType="string">
-        select REFRESH_TOKEN
+    <select id="selectRefreshToken" parameterType="map">
+        select USER_ID          as userId,
+               REFRESH_TOKEN    as refreshToken,
+               EXPIRY_DATE      as expiryDate
           from REFRESH_TOKEN_STORE
          where USER_ID = #{userId}
     </select>
 
     <insert id="insertRefreshToken" parameterType="string">
         insert into REFRESH_TOKEN_STORE
-            (USER_ID, REFRESH_TOKEN, CREATE_DATE)
+            (USER_ID, REFRESH_TOKEN, EXPIRY_DATE)
         values
-            (#{userId}, #{refreshToken}, now())
+            (#{userId}, #{refreshToken}, #{expiry})
         ON DUPLICATE KEY UPDATE
             REFRESH_TOKEN = values(REFRESH_TOKEN),
-            CREATE_DATE = now()
+            EXPIRY_DATE = values(EXPIRY_DATE)
 
     </insert>
 
