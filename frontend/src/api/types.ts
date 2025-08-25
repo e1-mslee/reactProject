@@ -14,6 +14,7 @@ export interface ApiConfig {
   baseURL: string;
   timeout: number;
   headers: Record<string, string>;
+  withCredentials: boolean; // 쿠키 인증을 위한 설정
 }
 
 // 타입 안전한 API 응답 타입

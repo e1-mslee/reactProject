@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -93,4 +94,26 @@ public class ApiController {
     public Map<String,Object> tableValidationCheck(@RequestParam String tableSeq) {
         return apiService.tableValidationCheck(tableSeq);
     }
+
+    @GetMapping("/api/fetchDocDown/{tableSeq}")
+    @Operation(summary = "문서양식 다운로드", description = "지정된 tableSeq의 문서양식을 다운로드한다.")
+    public ResponseEntity<byte[]> fetchDocDown(@PathVariable String tableSeq) {
+        try {
+            // 1. 서비스에서 엑셀 생성
+            byte[] excelFile = apiService.generateExcel(tableSeq);
+
+            String fileName = "document_form_" + tableSeq + ".xlsx";
+
+            return ResponseEntity.ok()
+                    .header("Content-Disposition", "attachment; filename=\"" + fileName + "\"")
+                    .header("Content-Type", 
+                            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                    .body(excelFile);
+
+        } catch (Exception e) {
+            log.error("엑셀 생성 실패: {}", e.getMessage(), e);
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
 }

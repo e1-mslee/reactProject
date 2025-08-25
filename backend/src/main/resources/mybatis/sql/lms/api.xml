@@ -37,17 +37,23 @@
     </select>
 
     <select id="selectMainTableInfoList" resultType="map">
-		select m.TABLE_SEQ,
-			   m.TABLE_ID,
-			   m.TABLE_NAME,
-			   m.TABLE_ID,
-			   m.VBG_CRE_DTM,
-			   m.VBG_CRE_USER,
-			   '0' as 'field_count',
-			   false as 'selected'
-		from std_main m
+		SELECT m.TABLE_SEQ,
+				m.TABLE_ID,
+				m.TABLE_NAME,
+				m.TABLE_ID,
+				m.VBG_CRE_DTM,
+				m.VBG_CRE_USER,
+				CASE 
+				WHEN EXISTS ( SELECT 1 
+								FROM std_header h
+							   WHERE h.table_seq = m.table_seq) THEN '다운'
+				ELSE ' '
+				END AS doc_form,
+				'0' AS field_count,
+				false AS selected
+			FROM std_main m
 		<where>
-			VBG_CRE_DTM BETWEEN #{startDate} AND #{endDate}
+			m.VBG_CRE_DTM BETWEEN #{startDate} AND #{endDate}
 		</where>
     </select>
 

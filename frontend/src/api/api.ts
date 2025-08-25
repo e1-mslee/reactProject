@@ -9,6 +9,7 @@ const apiConfig: ApiConfig = {
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true,
 };
 
 interface RefreshResponse {

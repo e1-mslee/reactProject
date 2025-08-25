@@ -1,12 +1,14 @@
 import '@mescius/wijmo.styles/wijmo.css';
+import '@mescius/wijmo.cultures/wijmo.culture.ko';
+import { FlexGrid, FlexGridColumn, FlexGridCellTemplate } from '@mescius/wijmo.react.grid';
+import { FlexGrid as FlexGridType } from '@mescius/wijmo.grid';
+import * as wjcGridXlsx from '@mescius/wijmo.grid.xlsx';
+import * as wjGrid from '@mescius/wijmo.grid';
+
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './Lms.css';
-import '@mescius/wijmo.cultures/wijmo.culture.ko';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import { FlexGrid, FlexGridColumn, FlexGridCellTemplate } from '@mescius/wijmo.react.grid';
-import * as wjcGridXlsx from '@mescius/wijmo.grid.xlsx';
-import { FlexGrid as FlexGridType } from '@mescius/wijmo.grid';
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Button, Flex, Modal, message } from 'antd';
 import openPop from '@utils/openPop';
@@ -43,6 +45,7 @@ interface TableInfo {
   VBG_CRE_USER: string;
   VBG_CRE_DTM: string;
   selected?: boolean;
+  doc_form: string;
 }
 
 interface CellContext {
@@ -61,7 +64,7 @@ const Lms = () => {
   });
   const [endDate, setEndDate] = useState(new Date());
 
-  const { data, cv, fetchGridData, handleAddRow, saveTable, deleteData } = useLmsStore();
+  const { data, cv, fetchGridData, handleAddRow, saveTable, deleteData, fetchDodDown } = useLmsStore();
 
   const gridRef = useRef<{ control: FlexGridType } | null>(null);
 
@@ -138,6 +141,13 @@ const Lms = () => {
     void fetchGridData(startDate, endDate);
   }, [fetchGridData, startDate, endDate]);
 
+  const handleDocDown = useCallback(
+    (tableSeq: string) => {
+      void fetchDodDown(tableSeq);
+    },
+    [fetchDodDown]
+  );
+
   // 엑셀 내보내기
   const exportToExcel = useCallback(() => {
     if (!gridRef.current) return;
@@ -164,16 +174,26 @@ const Lms = () => {
   );
 
   const tableNameTemplate = useCallback(
-    (ctx: CellContext) => (
-      <span
-        onClick={() => handleTableNameClick(ctx.item.TABLE_SEQ)}
-        style={{ cursor: ctx.item.TABLE_SEQ ? 'pointer' : 'default' }}
-      >
-        {ctx.item.TABLE_NAME}
-      </span>
-    ),
+    (ctx: CellContext) => <span onClick={() => handleTableNameClick(ctx.item.TABLE_SEQ)}>{ctx.item.TABLE_NAME}</span>,
     [handleTableNameClick]
   );
+
+  const flexInitialized = (grid: wjGrid.FlexGrid) => {
+    grid.addEventListener(grid.hostElement, 'click', (ev: MouseEvent) => {
+      const ht = grid.hitTest(ev);
+      if (ht.cellType !== wjGrid.CellType.Cell) return;
+
+      const tableSeq = grid.getCellData(ht.row, 'TABLE_SEQ', false) as string;
+
+      if (!tableSeq) return;
+
+      const col = grid.columns[ht.col];
+      if (col?.binding === 'doc_form') {
+        console.log('문서양식 클릭', tableSeq);
+        handleDocDown(tableSeq);
+      }
+    });
+  };
 
   return (
     <div>
@@ -230,6 +250,7 @@ const Lms = () => {
         <FlexGrid
           ref={gridRef}
           itemsSource={cv || []}
+          initialized={flexInitialized}
           isReadOnly={false}
           autoGenerateColumns={false}
           style={CONSTANTS.GRID_STYLES}
@@ -247,6 +268,14 @@ const Lms = () => {
             <FlexGridCellTemplate cellType='Cell' template={tableNameTemplate} />
           </FlexGridColumn>
           <FlexGridColumn binding='TABLE_ID' header='물리 테이블명' width={CONSTANTS.COLUMN_WIDTHS.TABLE_ID} />
+          <FlexGridColumn
+            binding='doc_form'
+            header='문서양식'
+            width='0.3*'
+            align='center'
+            cssClass='blue-column'
+            isReadOnly={true}
+          />
           <FlexGridColumn
             binding='field_count'
             header='데이터 수'

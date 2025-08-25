@@ -43,6 +43,7 @@ interface LmsStoreState {
   saveTable: (startDate: Date, endDate: Date) => Promise<void>;
   deleteData: (startDate: Date, endDate: Date) => Promise<void>;
   reset: () => void;
+  fetchDodDown: (tableSeq: string) => Promise<void>;
 }
 
 // 날짜 포맷팅 함수
@@ -102,6 +103,16 @@ export const useLmsStore = create<LmsStoreState>((set, get) => ({
       });
     } catch (err) {
       console.error(CONSTANTS.MESSAGES.LOAD_ERROR, err);
+    }
+  },
+
+  fetchDodDown: async (tableSeq) => {
+    try {
+      if (!tableSeq) return;
+      await lmsApi.fetchDocDown(tableSeq);
+    } catch (err) {
+      console.error('문서양식 다운로드 오류:', err);
+      message.error('문서양식 다운로드 중 오류가 발생했습니다.');
     }
   },
 

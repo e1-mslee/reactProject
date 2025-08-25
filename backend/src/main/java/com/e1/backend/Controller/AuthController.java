@@ -160,7 +160,7 @@ public class AuthController {
     public ResponseEntity<?> refreshTocken(HttpServletRequest request) {
         Cookie[] cookies = request.getCookies();
         String refreshToken = null;
-
+        System.out.println("Refresh Token 확인 요청");
         if (cookies != null) {
             for (Cookie cookie : cookies) {
                 if ("refreshToken".equals(cookie.getName())) {
@@ -168,6 +168,12 @@ public class AuthController {
                     break;
                 }
             }
+        }
+
+        // refreshToken이 없는 경우
+        if (refreshToken == null || refreshToken.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                                .body(Map.of("message", "Refresh Token이 없습니다."));
         }
 
         String userId = tokenProvider.getUserPk(refreshToken);

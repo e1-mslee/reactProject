@@ -24,4 +24,6 @@ public interface ApiService {
     void saveHeaderList(List<Map<String,Object>> data);
 
     Map<String,Object> tableValidationCheck (String tableSeq);
+
+    public byte[] generateExcel (String tableSeq)  throws Exception ;
 }

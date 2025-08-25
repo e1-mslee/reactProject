@@ -1,10 +1,19 @@
 package com.e1.backend.serviceimpl;
 
+import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.ss.util.RegionUtil;
+import org.apache.poi.xssf.usermodel.XSSFColor;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -230,5 +239,132 @@ public class ApiServiceImpl implements ApiService {
         resultMap.put("FLAG", result);
         return resultMap;
     }
-    
+
+    private CellStyle createHeaderCellStyle(Workbook workbook) {
+        CellStyle headerStyle = workbook.createCellStyle();
+        Font headerFont = workbook.createFont();
+        headerFont.setFontName("맑은 고딕");
+        headerFont.setFontHeightInPoints((short)9);
+        headerFont.setBold(true);
+        headerStyle.setFont(headerFont);
+        headerStyle.setAlignment(HorizontalAlignment.CENTER);
+        headerStyle.setVerticalAlignment(VerticalAlignment.CENTER); 
+        headerStyle.setFillForegroundColor(new XSSFColor(new byte[] {(byte) 233,(byte) 233,(byte) 233}, null));
+        headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        headerStyle.setBorderBottom(BorderStyle.THIN);
+        headerStyle.setBorderTop(BorderStyle.THIN);
+        headerStyle.setBorderLeft(BorderStyle.THIN);    
+        headerStyle.setBorderRight(BorderStyle.THIN);
+        return headerStyle;
+    }
+
+    @Override
+    public byte[] generateExcel(String tableSeq) throws Exception {
+        List<Map<String, Object>> headerList = apiMapper.getHeaderList(tableSeq);
+
+        Map<String, List<Map<String, Object>>> parentToChild = new HashMap<>();
+        List<Map<String, Object>> rootHeaders = new ArrayList<>();
+        for (Map<String, Object> header : headerList) {
+            String supiHeader = String.valueOf(header.get("SUPI_HEADER"));
+            if (supiHeader == null || supiHeader.isEmpty() || supiHeader.equals("null")) {
+                rootHeaders.add(header);
+            } else {
+                parentToChild.computeIfAbsent(supiHeader, k -> new ArrayList<>()).add(header);
+            }
+        }
+        log.info("parentToChild: {}", parentToChild);
+        
+        int maxDepth = 0;
+        for (Map<String,Object> root : rootHeaders) {
+            maxDepth = Math.max(maxDepth, getMaxDepth(parentToChild, root));
+        }
+
+        try (Workbook workbook = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            Sheet sheet = workbook.createSheet("문서양식");
+            createHeaderRows(sheet, workbook, parentToChild, rootHeaders, 0, 0, maxDepth);
+            workbook.write(out);
+            return out.toByteArray();
+        }
+    }
+
+    private int createHeaderRows(Sheet sheet, Workbook workbook,
+                             Map<String, List<Map<String, Object>>> parentToChild,
+                             List<Map<String, Object>> headers,
+                             int rowIndex,
+                             int colIndex,
+                             int maxDepth) {
+
+        Row row = sheet.getRow(rowIndex);
+        if (row == null) row = sheet.createRow(rowIndex);
+
+        int currentCol = colIndex;
+
+        for (Map<String, Object> header : headers) {
+            String headerId = String.valueOf(header.get("HEADER_ID"));
+            String headerName = String.valueOf(header.get("HEADER_NAME"));
+            String headerWidth = String.valueOf(header.get("HEADER_WIDTH"));
+
+            List<Map<String, Object>> children = parentToChild.get(headerId);
+
+            if (children != null && !children.isEmpty()) {
+                int childStartCol = currentCol;
+                currentCol = createHeaderRows(sheet, workbook, parentToChild, children, rowIndex + 1, currentCol, maxDepth);
+                int childEndCol = currentCol - 1;
+
+                // 부모 셀 생성
+                Cell parentCell = row.createCell(childStartCol);
+                parentCell.setCellValue(headerName);
+                parentCell.setCellStyle(createHeaderCellStyle(workbook));
+
+                // 최소 2셀 이상일 때 가로 병합
+                if (childEndCol > childStartCol) {
+                    CellRangeAddress region = new CellRangeAddress(rowIndex, rowIndex, childStartCol, childEndCol);
+                    sheet.addMergedRegion(region);
+                    setRegionBorder(region, sheet);
+                }
+
+            } else {
+                // 단일 셀
+                Cell cell = row.createCell(currentCol);
+                cell.setCellValue(headerName);
+                cell.setCellStyle(createHeaderCellStyle(workbook));
+
+                int mergeRows = maxDepth - rowIndex;
+                if (mergeRows > 1) {
+                    CellRangeAddress region = new CellRangeAddress(rowIndex, rowIndex + mergeRows - 1, currentCol, currentCol);
+                    sheet.addMergedRegion(region);
+                    setRegionBorder(region, sheet);
+                }
+
+                // 컬럼 너비 적용
+                try {
+                    int width = Integer.parseInt(headerWidth);
+                    sheet.setColumnWidth(currentCol, width * 64);
+                } catch (NumberFormatException e) {
+                    sheet.setColumnWidth(currentCol, 15 * 64);
+                }
+
+                currentCol++;
+            }
+        }
+
+        return currentCol;
+    }
+
+    private int getMaxDepth(Map<String, List<Map<String,Object>>> parentToChild, Map<String,Object> header){
+        List<Map<String,Object>> children = parentToChild.get(String.valueOf(header.get("HEADER_ID")));
+        if(children == null || children.isEmpty()) return 1;
+        int max = 0;
+        for(Map<String,Object> child : children){
+            max = Math.max(max, getMaxDepth(parentToChild, child));
+        }
+        return max + 1;
+    }
+
+    private void setRegionBorder(CellRangeAddress region, Sheet sheet) {
+        RegionUtil.setBorderTop(BorderStyle.THIN, region, sheet);
+        RegionUtil.setBorderBottom(BorderStyle.THIN, region, sheet);
+        RegionUtil.setBorderLeft(BorderStyle.THIN, region, sheet);
+        RegionUtil.setBorderRight(BorderStyle.THIN, region, sheet);
+    }
 }

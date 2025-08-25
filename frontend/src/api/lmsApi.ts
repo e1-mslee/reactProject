@@ -48,6 +48,32 @@ export const lmsApi = {
       throw error;
     }
   },
+
+  fetchDocDown: async (tableSeq: string): Promise<void> => {
+    try {
+      const response: Blob = await apiClient.get(`/api/fetchDocDown/${tableSeq}`, {
+        responseType: 'blob',
+      });
+
+      const blob = new Blob([response], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      });
+
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `document_form_${tableSeq}.xlsx`); // 파일명 설정
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode?.removeChild(link);
+
+      // 메모리 해제
+      window.URL.revokeObjectURL(url);
+    } catch (error: unknown) {
+      console.error('문서양식 다운로드 실패:', error);
+      throw error;
+    }
+  },
 };
 
 export default lmsApi;

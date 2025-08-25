@@ -195,7 +195,7 @@ const Header: React.FC = () => {
             </Dropdown>
           )}
           <span onClick={() => void handleAuth()}>
-            <span style={{ fontSize: '12px', letterSpacing: '-2px', paddingRight: '5px' }}>
+            <span style={{ fontSize: '12px', letterSpacing: '-2px', paddingRight: '5px', cursor: 'pointer' }}>
               {username ? '로그아웃' : '로그인'}
             </span>
             {username ? <LogoutIcon /> : <LoginIcon />}
