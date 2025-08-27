@@ -4,12 +4,14 @@ import LmsPop from '@pages/lms/LmsPop';
 import LmsHeader from '@pages/lms/LmsHeader';
 import KjoPop from '@pages/kjo/KjoPop';
 import KjoHeaderPopup from '@pages/kjo/kjoHeaderPopup';
+import LmsDoc from '@pages/lms/LmsDoc';
 
 const PopupRoutes: React.FC = () => {
   return (
     <Routes>
       <Route path='/popup/lms_pop' element={<LmsPop />} />
       <Route path='/popup/lms_Header' element={<LmsHeader />} />
+      <Route path='/popup/lms_Doc' element={<LmsDoc />} />
       <Route path='/popup/kjo_pop' element={<KjoPop />} />
       <Route path='/popup/kjo_header_pop' element={<KjoHeaderPopup />} />
     </Routes>

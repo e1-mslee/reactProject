@@ -1,6 +1,6 @@
 import '@mescius/wijmo.styles/wijmo.css';
 import '@mescius/wijmo.cultures/wijmo.culture.ko';
-import { FlexGrid, FlexGridColumn, FlexGridCellTemplate } from '@mescius/wijmo.react.grid';
+import { FlexGrid, FlexGridColumn } from '@mescius/wijmo.react.grid';
 import { FlexGrid as FlexGridType } from '@mescius/wijmo.grid';
 import * as wjcGridXlsx from '@mescius/wijmo.grid.xlsx';
 import * as wjGrid from '@mescius/wijmo.grid';
@@ -14,6 +14,7 @@ import { Button, Flex, Modal, message } from 'antd';
 import openPop from '@utils/openPop';
 import { useLmsStore } from '@/store/lms/lmsStore';
 import { useRemoveWijmoLink } from '@hooks/useRemoveWijmoLink';
+import { isEmpty } from '@mescius/wijmo';
 
 // 상수 정의
 const CONSTANTS = {
@@ -48,10 +49,6 @@ interface TableInfo {
   doc_form: string;
 }
 
-interface CellContext {
-  item: TableInfo;
-}
-
 const Lms = () => {
   // Wijmo 링크 제거
   useRemoveWijmoLink();
@@ -75,9 +72,9 @@ const Lms = () => {
 
   // 팝업 열기 함수 메모이제이션
   const openPopupWithRefresh = useCallback(
-    (tableSeq: string) => {
+    (tableSeq: string, pageName: string) => {
       if (!tableSeq) return;
-      const url = `/popup/lms_pop?tableSeq=${encodeURIComponent(tableSeq)}`;
+      const url = `/popup/${pageName}?tableSeq=${encodeURIComponent(tableSeq)}`;
       openPop(url, () => void fetchGridData(startDate, endDate));
     },
     [fetchGridData, startDate, endDate]
@@ -99,14 +96,14 @@ const Lms = () => {
 
     const tableSeq = selectedRows[0]?.TABLE_SEQ;
     if (tableSeq) {
-      openPopupWithRefresh(tableSeq);
+      openPopupWithRefresh(tableSeq, 'lms_pop');
     }
   }, [cv, openPopupWithRefresh]);
 
   // 테이블명 클릭 핸들러
   const handleTableNameClick = useCallback(
     (tableSeq: string) => {
-      openPopupWithRefresh(tableSeq);
+      openPopupWithRefresh(tableSeq, 'lms_pop');
     },
     [openPopupWithRefresh]
   );
@@ -173,11 +170,6 @@ const Lms = () => {
     [handleSearch, handleAddRow, modifyTableColumn, handleSave, handleDelete, exportToExcel]
   );
 
-  const tableNameTemplate = useCallback(
-    (ctx: CellContext) => <span onClick={() => handleTableNameClick(ctx.item.TABLE_SEQ)}>{ctx.item.TABLE_NAME}</span>,
-    [handleTableNameClick]
-  );
-
   const flexInitialized = (grid: wjGrid.FlexGrid) => {
     grid.addEventListener(grid.hostElement, 'click', (ev: MouseEvent) => {
       const ht = grid.hitTest(ev);
@@ -189,8 +181,19 @@ const Lms = () => {
 
       const col = grid.columns[ht.col];
       if (col?.binding === 'doc_form') {
+        const value = grid.getCellData(ht.row, 'doc_form', false) as string;
+        if (value !== '다운') {
+          message.warning('헤더관리에서 헤더를 추가해주세요.');
+          return true;
+        }
         console.log('문서양식 클릭', tableSeq);
         handleDocDown(tableSeq);
+      } else if (col?.binding === 'TABLE_ID') {
+        console.log('물리 테이블명 클릭', tableSeq);
+        openPopupWithRefresh(tableSeq, 'lms_Doc');
+      } else if (col?.binding === 'TABLE_NAME') {
+        console.log('논리 테이블명 클릭', tableSeq);
+        openPopupWithRefresh(tableSeq, 'lms_pop');
       }
     });
   };
@@ -264,10 +267,13 @@ const Lms = () => {
             header='논리 테이블명'
             width={CONSTANTS.COLUMN_WIDTHS.TABLE_NAME}
             cssClass='blue-column'
-          >
-            <FlexGridCellTemplate cellType='Cell' template={tableNameTemplate} />
-          </FlexGridColumn>
-          <FlexGridColumn binding='TABLE_ID' header='물리 테이블명' width={CONSTANTS.COLUMN_WIDTHS.TABLE_ID} />
+          />
+          <FlexGridColumn
+            binding='TABLE_ID'
+            header='물리 테이블명'
+            width={CONSTANTS.COLUMN_WIDTHS.TABLE_ID}
+            cssClass='blue-column'
+          />
           <FlexGridColumn
             binding='doc_form'
             header='문서양식'

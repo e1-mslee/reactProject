@@ -21,6 +21,7 @@ interface LmsHeaderStoreState {
   tableNm: string | null;
 
   gridData: TrackableCollectionView<HeaderItem> | null;
+  treeData: HeaderItem[];
   headerConfig: HeaderItem[];
   tableField: TableField[];
   supiHeaderMap: DataMap | null;
@@ -54,6 +55,7 @@ export const useLmsHeaderStore = create<LmsHeaderStoreState>((set, get) => ({
   gridData: null,
   headerConfig: [],
   tableField: [],
+  treeData: [],
   supiHeaderMap: null,
   statusMap: new DataMap([], 'COL_ID', 'COL_NAME'),
   isCollapsedAll: false,
@@ -73,6 +75,7 @@ export const useLmsHeaderStore = create<LmsHeaderStoreState>((set, get) => ({
           trackChanges: true,
         }) as TrackableCollectionView<HeaderItem>,
         headerConfig: res,
+        treeData: treeData,
         supiHeaderMap: new DataMap(
           [{ value: '', name: '\u00A0' }, ...res.map((i) => ({ value: i.HEADER_ID, name: i.HEADER_NAME }))],
           'value',

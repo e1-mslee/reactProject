@@ -16,12 +16,6 @@ import { Button, Flex, message } from 'antd';
 import * as wjGrid from '@mescius/wijmo.grid';
 import { useRemoveWijmoLink } from '@hooks/useRemoveWijmoLink';
 
-// 미리보기 렌더링용 트리 타입
-interface HeaderTreeItem extends Omit<HeaderItem, 'deps'> {
-  children: HeaderTreeItem[];
-}
-
-// Wijmo CollectionView는 런타임에 변경 추적 배열을 노출하므로 타입 보강이 필요하다
 type TrackableCollectionView<T> = CollectionView<T> & {
   itemsAdded: T[];
   itemsEdited: T[];
@@ -43,7 +37,7 @@ const LmsHeader: React.FC = () => {
     gridData,
     supiHeaderMap,
     statusMap,
-    headerConfig,
+    treeData,
     isCollapsedAll,
     reviewFlag,
     showExportButton,
@@ -56,7 +50,6 @@ const LmsHeader: React.FC = () => {
     deleteRows: deleteRowsInStore,
     save,
     exportFields,
-    buildTreeForPreview,
   } = useLmsHeaderStore();
 
   const findSelectedItems = (items: HeaderItem[]): HeaderItem[] => {
@@ -73,19 +66,6 @@ const LmsHeader: React.FC = () => {
 
     return result;
   };
-
-  function findParent(items: HeaderItem[], targetItem: HeaderItem): HeaderItem | null {
-    for (const item of items) {
-      if (item.deps && item.deps.includes(targetItem)) {
-        return item;
-      }
-      if (item.deps && item.deps.length > 0) {
-        const parent = findParent(item.deps, targetItem);
-        if (parent) return parent;
-      }
-    }
-    return null;
-  }
 
   const deleteRows = (): void => {
     const grid = gridRef.current?.control;
@@ -197,33 +177,6 @@ const LmsHeader: React.FC = () => {
     }
   }
 
-  const getNextHeaderId = (): string => {
-    if (!gridData || !gridData.items) return 'HEAD_001';
-
-    let max = 0;
-
-    const walk = (items: HeaderItem[]): void => {
-      items.forEach((item: HeaderItem) => {
-        const match = /^HEAD_(\d+)$/.exec(item.HEADER_ID);
-        if (match) {
-          const num = parseInt(match[1] as string, 10);
-          if (num > max) max = num;
-        }
-        if (Array.isArray(item.deps)) {
-          walk(item.deps);
-        }
-      });
-    };
-
-    const itemsForWalk = gridData.items.filter(
-      (it): it is HeaderItem => typeof (it as HeaderItem).HEADER_ID === 'string'
-    );
-    walk(itemsForWalk);
-
-    const nextNum = max + 1;
-    return `HEAD_${String(nextNum).padStart(3, '0')}`;
-  };
-
   const onPreviewGridInitialized = useEvent((grid: wjGrid.FlexGrid): void => {
     grid.formatItem.addHandler(function (s: wjGrid.FlexGrid, e: wjGrid.FormatItemEventArgs) {
       if (e.panel === s.columnHeaders && e.range.rowSpan > 1) {
@@ -233,176 +186,84 @@ const LmsHeader: React.FC = () => {
     });
   });
 
-  const buildTree2 = (flatList: HeaderItem[]): HeaderTreeItem[] => {
-    const map: { [key: string]: HeaderTreeItem } = {};
-    const roots: HeaderTreeItem[] = [];
-
-    flatList.forEach((item) => {
-      item.selected = Boolean(item.selected);
-      map[item.HEADER_ID] = { ...item, children: [] };
-    });
-
-    flatList.forEach((item) => {
-      const currentItem = map[item.HEADER_ID];
-      if (!currentItem) {
-        return;
-      }
-      const parent = item.SUPI_HEADER ? map[item.SUPI_HEADER] : undefined;
-      if (parent) {
-        parent.children.push(currentItem);
-      } else {
-        roots.push(currentItem);
-      }
-    });
-    return roots;
-  };
-
   useEffect(() => {
     const grid = previewGridRef.current?.control;
-    if (!grid || !headerConfig || headerConfig.length === 0) {
+    if (!grid || !treeData || treeData.length === 0) {
       return;
     }
-
-    const treeHeaders = buildTreeForPreview(headerConfig) as unknown as HeaderTreeItem[];
-
-    const allLeafNodes: HeaderTreeItem[] = [];
-    const collectAllLeafNodes = (nodes: HeaderTreeItem[]): void => {
-      nodes.forEach((node: HeaderTreeItem) => {
-        if (node.children.length === 0) {
-          allLeafNodes.push(node);
-        } else {
-          collectAllLeafNodes(node.children);
-        }
-      });
-    };
-    collectAllLeafNodes(treeHeaders);
-
-    allLeafNodes.sort((a, b) => (a.SORT_SN || 0) - (b.SORT_SN || 0));
 
     grid.columns.clear();
+
+    const maxDepth = (nodes: HeaderItem[]): number =>
+      nodes.length === 0 ? 0 : 1 + Math.max(...nodes.map((n) => maxDepth(n.deps || [])));
+    const depth = maxDepth(treeData);
+
+    grid.columnHeaders.rows.clear();
+    for (let i = 0; i < depth; i++) {
+      grid.columnHeaders.rows.push(new wjGrid.Row());
+    }
+
+    buildColumns(grid, treeData, 0, { value: 0 }, depth);
+
+    // 병합 허용
+    grid.allowMerging = wjGrid.AllowMerging.ColumnHeaders;
+    grid.columnHeaders.rows.forEach((r) => (r.allowMerging = true));
+  }, [treeData]);
+
+  const buildColumns = (
+    grid: wjGrid.FlexGrid,
+    nodes: HeaderItem[],
+    row: number,
+    colIndex: { value: number },
+    maxDepth: number
+  ) => {
     const panel = grid.columnHeaders;
-    while (panel.rows.length > 0) {
-      panel.rows.removeAt(0);
-    }
 
-    let maxDepth = 0;
-    const calculateDepth = (nodes: HeaderTreeItem[], currentDepth: number): void => {
-      if (nodes.length === 0) {
-        if (currentDepth > maxDepth) {
-          maxDepth = currentDepth;
-        }
-        return;
+    nodes.forEach((node) => {
+      const hasChildren = node.deps && node.deps.length > 0;
+      const col = new wjGrid.Column();
+      col.allowMerging = true;
+      col.header = node.HEADER_NAME;
+      col.width = node.HEADER_WIDTH || 100;
+      if (node.CONN_FIELD) {
+        col.binding = node.CONN_FIELD;
       }
-      nodes.forEach((node) => {
-        calculateDepth(node.children, currentDepth + 1);
-      });
-    };
-    calculateDepth(treeHeaders, 0);
 
-    if (maxDepth === 0 && allLeafNodes.length > 0) {
-      maxDepth = 1;
-    } else if (maxDepth === 0 && allLeafNodes.length === 0) {
-      grid.invalidate();
-      return;
-    }
+      // 최하위 노드일 때만 컬럼 추가
+      if (!hasChildren) {
+        grid.columns.push(col);
+        const colIdx = grid.columns.length - 1;
 
-    for (let i = 0; i < maxDepth; i++) {
-      const extraRow = new wjGrid.Row();
-      extraRow.allowMerging = true;
-      panel.rows.push(extraRow);
-    }
+        panel.setCellData(row, colIdx, node.HEADER_NAME);
 
-    if (allLeafNodes.length === 0) {
-      grid.invalidate();
-      return;
-    }
+        for (let r = row + 1; r < maxDepth; r++) {
+          panel.setCellData(r, colIdx, node.HEADER_NAME);
+        }
 
-    const leafNodeBindingMap = new Map<string, string>();
-    allLeafNodes.forEach((node, index) => {
-      const connField = (node.CONN_FIELD ?? '').trim();
-      const binding = connField !== '' ? connField : `__dummy_col_${node.HEADER_ID}_${index}`;
-      leafNodeBindingMap.set(node.HEADER_ID, binding);
+        colIndex.value++;
+      } else {
+        // 그룹 헤더 (자식들이 있으므로 병합 필요)
+        const startCol = colIndex.value;
+        buildColumns(grid, node.deps, row + 1, colIndex, maxDepth);
 
-      const col = new wjGrid.Column({
-        binding: binding,
-        header: node.HEADER_NAME,
-        width: node.HEADER_WIDTH && node.HEADER_WIDTH > 0 ? node.HEADER_WIDTH : '*',
-        isReadOnly: true,
-        allowMerging: true,
-      });
-      grid.columns.push(col);
+        const endCol = colIndex.value - 1;
+        // 가로 병합용 텍스트 세팅
+        for (let c = startCol; c <= endCol; c++) {
+          panel.setCellData(row, c, node.HEADER_NAME);
+        }
+
+        if (endCol < startCol) {
+          // 실제 컬럼은 안 만들었지만 세로 병합용으로 아래까지 채우기
+          grid.columns.push(col);
+          const colIdx = grid.columns.length - 1;
+          for (let r = row; r < maxDepth; r++) {
+            panel.setCellData(r, colIdx, node.HEADER_NAME);
+          }
+          colIndex.value++;
+        }
+      }
     });
-
-    const getColumnSpan = (node: HeaderTreeItem): { start: number; end: number } => {
-      const coveredLeafBindings: string[] = [];
-      const getCoveredLeaves = (n: HeaderTreeItem): void => {
-        if (n.children && n.children.length > 0) {
-          n.children.forEach((child) => getCoveredLeaves(child));
-        } else {
-          const binding = leafNodeBindingMap.get(n.HEADER_ID);
-          if (binding) {
-            coveredLeafBindings.push(binding);
-          }
-        }
-      };
-      getCoveredLeaves(node);
-
-      const validBindings = coveredLeafBindings.filter((b) => b);
-
-      if (validBindings.length === 0) {
-        return { start: -1, end: -1 };
-      }
-
-      const indices = validBindings
-        .map((binding) => grid.columns.findIndex((col) => col.binding === binding))
-        .filter((idx) => idx !== -1)
-        .sort((a, b) => a - b);
-
-      if (indices.length === 0) return { start: -1, end: -1 };
-
-      const firstIndex = indices[0]!;
-      const lastIndex = indices[indices.length - 1]!;
-      return { start: firstIndex, end: lastIndex };
-    };
-
-    const setHeaderCells = (nodes: HeaderTreeItem[], currentHeaderRowIndex: number): void => {
-      nodes.forEach((node) => {
-        const span = getColumnSpan(node);
-        const start = span.start;
-        const end = span.end;
-
-        if (start !== -1 && end !== -1) {
-          for (let colIdx = start; colIdx <= end; colIdx++) {
-            panel.setCellData(currentHeaderRowIndex, colIdx, node.HEADER_NAME);
-          }
-
-          if (node.children && node.children.length > 0) {
-            setHeaderCells(node.children, currentHeaderRowIndex + 1);
-          } else {
-            for (let rowIdx = currentHeaderRowIndex + 1; rowIdx < maxDepth; rowIdx++) {
-              for (let k = start; k <= end; k++) {
-                panel.setCellData(rowIdx, k, node.HEADER_NAME);
-              }
-            }
-          }
-        } else {
-          console.warn(
-            `[setHeaderCells] Node "${node.HEADER_NAME}" (ID: ${node.HEADER_ID}) has no valid column span. It will not be rendered as a column or part of merged header.`
-          );
-        }
-      });
-    };
-
-    for (let r = 0; r < maxDepth; r++) {
-      for (let c = 0; c < grid.columns.length; c++) {
-        panel.setCellData(r, c, null);
-      }
-    }
-
-    setHeaderCells(treeHeaders, 0);
-
-    grid.invalidate();
-  }, [headerConfig, buildTreeForPreview]);
+  };
 
   const exportFieldList = (): void => exportFields();
 

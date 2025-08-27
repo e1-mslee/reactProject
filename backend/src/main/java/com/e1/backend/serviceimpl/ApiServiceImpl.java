@@ -273,7 +273,7 @@ public class ApiServiceImpl implements ApiService {
             }
         }
         log.info("parentToChild: {}", parentToChild);
-        
+
         int maxDepth = 0;
         for (Map<String,Object> root : rootHeaders) {
             maxDepth = Math.max(maxDepth, getMaxDepth(parentToChild, root));
@@ -323,8 +323,7 @@ public class ApiServiceImpl implements ApiService {
                     setRegionBorder(region, sheet);
                 }
 
-            } else {
-                // 단일 셀
+            } else { // 단일 셀
                 Cell cell = row.createCell(currentCol);
                 cell.setCellValue(headerName);
                 cell.setCellStyle(createHeaderCellStyle(workbook));
