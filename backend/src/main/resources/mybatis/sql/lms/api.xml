@@ -233,4 +233,19 @@
 		   					  where table_seq = #{tableSeq})
 	</select>
 
+	<select id="tableDataList" parameterType="string" resultType="map">
+		select * from ${tableName}
+	</select>
+
+	<select id="changeFiledNm" parameterType="string" resultType="map">
+		select f.COL_NAME as COL_NAME,
+			   s.HEADER_NAME as HEADER_NAME
+		  from std_header s
+	      join std_field f
+			on f.TABLE_SEQ = s.TABLE_SEQ 
+		   and f.COL_ID = s.CONN_FIELD 
+		 where s.table_seq = #{tableSeq}
+	</select>
+
+
 </mapper>

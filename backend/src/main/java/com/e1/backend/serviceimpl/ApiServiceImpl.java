@@ -366,4 +366,35 @@ public class ApiServiceImpl implements ApiService {
         RegionUtil.setBorderLeft(BorderStyle.THIN, region, sheet);
         RegionUtil.setBorderRight(BorderStyle.THIN, region, sheet);
     }
+
+    @Override
+    public List<Map<String, Object>> getTableDataList(String tableSeq) {
+        List<Map<String, Object>> result = new ArrayList<>();
+        List<Map<String, Object>> columnList = apiMapper.changeFiledNm(tableSeq);
+        //log.info("columnList = {}",columnList);
+
+        String chackFlag = apiMapper.tableCreateCheck(tableSeq);
+        
+        if(chackFlag != null && !chackFlag.isEmpty()) {
+            result = apiMapper.tableDataList(chackFlag);
+            //log.info("result = {}",result);
+
+            // 컬럼명 매핑 적용
+            for (Map<String, Object> row : result) {
+                for (Map<String, Object> col : columnList) {
+                    String dbCol = (String) col.get("COL_NAME");      // 원래 DB 컬럼명
+                    String alias = (String) col.get("HEADER_NAME");   // 바꿀 이름
+                    if (row.containsKey(dbCol)) {
+                        Object val = row.remove(dbCol);
+                        row.put(alias, val);
+                    }
+                }
+            }
+            
+        }
+
+        //log.info("mapped result = {}", result);
+
+        return result;
+    }
 }

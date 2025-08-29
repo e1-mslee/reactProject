@@ -116,4 +116,10 @@ public class ApiController {
         }
     }
 
+    @GetMapping("/api/getTableDataList")
+    @Operation(summary = "테이블 데이터 리스트", description = "테이블 데이터 리스트 가져오기")
+    public List<Map<String,Object>> getTableDataList(@RequestParam String tableSeq) {
+        return apiService.getTableDataList(tableSeq);
+    }
+
 }

@@ -54,4 +54,9 @@ public interface ApiMapper {
     void removeTablefield(List<String> data);
 
     void removeTableHeader(List<String> data);
+
+    List<Map<String, Object>> tableDataList(String tableName);
+
+    List<Map<String, Object>> changeFiledNm(String tableSeq);
+
 }

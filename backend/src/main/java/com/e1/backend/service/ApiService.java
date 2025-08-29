@@ -26,4 +26,6 @@ public interface ApiService {
     Map<String,Object> tableValidationCheck (String tableSeq);
 
     public byte[] generateExcel (String tableSeq)  throws Exception ;
+
+    List<Map<String,Object>> getTableDataList(String tableSeq);
 }

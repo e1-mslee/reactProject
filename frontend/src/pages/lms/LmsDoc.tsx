@@ -6,11 +6,13 @@ import 'react-datepicker/dist/react-datepicker.css';
 import { FlexGrid, FlexGridColumn } from '@mescius/wijmo.react.grid';
 import { FlexGrid as FlexGridType } from '@mescius/wijmo.grid';
 import * as wjGrid from '@mescius/wijmo.grid';
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, useState } from 'react';
 import { Button, Flex, Modal } from 'antd';
 import { useRemoveWijmoLink } from '@hooks/useRemoveWijmoLink';
 import { useLmsDocStore } from '@store/lms/lmsDocStore';
 import useEvent from 'react-use-event-hook';
+import { Height } from '@mui/icons-material';
+import { CollectionView } from '@mescius/wijmo';
 
 interface HeaderItem {
   selected: boolean;
@@ -33,12 +35,24 @@ const LmsDoc = () => {
   const tableSeq = params.get('tableSeq') || '';
   const gridRef = useRef<{ control: FlexGridType } | null>(null);
 
-  const { treeData, setParams, gridData, fetchHeaderList } = useLmsDocStore();
+  const { treeData, tableData, setParams, fetchHeaderList, fetchTableDataList } = useLmsDocStore();
+
+  const [cv, setCv] = useState<CollectionView<any> | null>(null);
 
   useEffect(() => {
     setParams(tableSeq);
     void fetchHeaderList();
-  }, [fetchHeaderList, setParams, tableSeq]);
+    void fetchTableDataList();
+  }, [fetchTableDataList, fetchHeaderList, setParams, tableSeq]);
+
+  useEffect(() => {
+    if (tableData && tableData.length > 0) {
+      const view = new CollectionView<any>(tableData);
+      setCv(view);
+    } else {
+      setCv(null);
+    }
+  }, [tableData]);
 
   useEffect(() => {
     const grid = gridRef.current?.control;
@@ -54,7 +68,7 @@ const LmsDoc = () => {
     for (let i = 0; i < depth; i++) {
       grid.columnHeaders.rows.push(new wjGrid.Row());
     }
-
+    console.log('tableData', tableData);
     buildColumns(grid, treeData, 0, { value: 0 }, depth);
 
     // 병합 허용
@@ -90,8 +104,8 @@ const LmsDoc = () => {
       col.allowMerging = true;
       col.header = node.HEADER_NAME;
       col.width = node.HEADER_WIDTH || 100;
-      if (node.CONN_FIELD) {
-        col.binding = node.CONN_FIELD;
+      if (node.HEADER_NAME) {
+        col.binding = node.HEADER_NAME;
       }
 
       // 최하위 노드일 때만 컬럼 추가
@@ -118,7 +132,6 @@ const LmsDoc = () => {
         }
 
         if (endCol < startCol) {
-          // 실제 컬럼은 안 만들었지만 세로 병합용으로 아래까지 채우기
           grid.columns.push(col);
           const colIdx = grid.columns.length - 1;
           for (let r = row; r < maxDepth; r++) {
@@ -151,14 +164,16 @@ const LmsDoc = () => {
           </Flex>
         </div>
       </div>
-      <div style={{ margin: '2px' }}>
+      <div className='flexgrid-container' style={{ height: '500px' }}>
         <FlexGrid
           ref={gridRef}
           allowMerging='ColumnHeaders'
           initialized={onPreviewGridInitialized}
           allowSorting={false}
+          style={{ height: '100%' }}
           allowDragging='None'
-          itemsSource={[]}
+          itemsSource={cv ?? []}
+          headersVisibility='Column'
           autoGenerateColumns={false}
           alternatingRowStep={0}
         />
