@@ -1,6 +1,7 @@
 package com.e1.backend.serviceimpl;
 
 import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -17,6 +18,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.e1.backend.mapper.ApiMapper;
 import com.e1.backend.service.ApiService;
@@ -393,8 +395,154 @@ public class ApiServiceImpl implements ApiService {
             
         }
 
-        //log.info("mapped result = {}", result);
-
         return result;
+    }
+
+    @Override
+    @Transactional
+    public void excelUpload(MultipartFile file, String tableSeq) {
+        List<Map<String, Object>> headerList = apiMapper.getHeaderList(tableSeq);
+
+        Map<String, List<Map<String, Object>>> parentToChild = new HashMap<>();
+        List<Map<String, Object>> rootHeaders = new ArrayList<>();
+        for (Map<String, Object> header : headerList) {
+            String supiHeader = String.valueOf(header.get("SUPI_HEADER"));
+            if (supiHeader == null || supiHeader.isEmpty() || supiHeader.equals("null")) {
+                rootHeaders.add(header);
+            } else {
+                parentToChild.computeIfAbsent(supiHeader, k -> new ArrayList<>()).add(header);
+            }
+        }
+
+        log.info("parentToChild = {}", parentToChild);
+
+        int maxDepth = 0;
+        for (Map<String,Object> root : rootHeaders) {
+            maxDepth = Math.max(maxDepth, getMaxDepth(parentToChild, root));
+        }
+
+        log.info("maxDepth= {}",maxDepth);
+
+
+        try (
+            InputStream is = file.getInputStream();
+            Workbook workbook = WorkbookFactory.create(is)
+        ) {
+            Sheet sheet = workbook.getSheetAt(0);
+
+            List<List<String>> headerRows = new ArrayList<>();
+            for (int r = 0; r < maxDepth; r++) {
+                List<String> rowHeaders = new ArrayList<>();
+                for (int c = 0; c < sheet.getRow(r).getLastCellNum(); c++) {
+                    String value = getMergedCellValue(sheet, r, c);
+                    rowHeaders.add(value);
+                }
+                headerRows.add(rowHeaders);
+            }
+
+            List<String> lowestHeaders = headerRows.get(maxDepth - 1);
+
+            List<Map<String, Object>> rowDataList = new ArrayList<>();
+            for (int r = maxDepth; r <= sheet.getLastRowNum(); r++) {
+                Row row = sheet.getRow(r);
+                if (row == null) continue;
+
+                Map<String, Object> rowData = new HashMap<>();
+                for (int c = 0; c < lowestHeaders.size(); c++) {
+                    Cell cell = row.getCell(c);
+
+                    Object value = getCellStringValue(cell);
+                    rowData.put(lowestHeaders.get(c), value);
+                }
+                rowDataList.add(rowData);
+            }
+
+            log.info("rowDataList = {}",rowDataList);
+            log.info("lowestHeaders = {}",lowestHeaders);
+
+            if(rowDataList.size()>0){
+                String chackFlag = apiMapper.tableCreateCheck(tableSeq);
+                if(chackFlag != null && !chackFlag.isEmpty()) {
+                    apiMapper.deleteDataTable(chackFlag);
+                    batchInsertDynamicData(tableSeq, chackFlag, lowestHeaders, rowDataList);
+                }
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException("엑셀 업로드 실패", e);
+        }
+    }
+
+    public void batchInsertDynamicData(String tableSeq, String tableName, List<String> lowestHeaders, List<Map<String, Object>> rowDataList) {
+        if (rowDataList.isEmpty()) return;
+        List<Map<String, Object>> columnList = apiMapper.changeFiledNm(tableSeq);
+
+        Map<String, String> headerToCol = new HashMap<>();
+        for (Map<String, Object> colMap : columnList) {
+            String headerName = String.valueOf(colMap.get("HEADER_NAME"));
+            String colName = String.valueOf(colMap.get("COL_NAME"));
+            headerToCol.put(headerName, colName);
+        }
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("INSERT INTO ").append(tableName).append(" (");
+
+        for (int i = 0; i < lowestHeaders.size(); i++) {
+            if (i > 0) sb.append(", ");
+            String header = lowestHeaders.get(i);
+            String colName = headerToCol.get(header);
+            sb.append(colName);
+        }
+
+        sb.append(") VALUES ");
+
+        for (int r = 0; r < rowDataList.size(); r++) {
+            if (r > 0) sb.append(", ");
+            sb.append("(");
+            Map<String,Object> row = rowDataList.get(r);
+            for (int c = 0; c < lowestHeaders.size(); c++) {
+                if (c > 0) sb.append(", ");
+                Object val = row.get(lowestHeaders.get(c));
+                if (val == null) sb.append("NULL");
+                else sb.append("'").append(val.toString().replace("'", "''")).append("'");
+            }
+            sb.append(")");
+        }
+
+        apiMapper.insertDataTable(sb.toString());
+    }
+
+    private String getMergedCellValue(Sheet sheet, int rowIndex, int colIndex) {
+        for (CellRangeAddress range : sheet.getMergedRegions()) {
+            if (range.isInRange(rowIndex, colIndex)) {
+                // 병합된 셀의 첫 번째 셀 좌표
+                Row firstRow = sheet.getRow(range.getFirstRow());
+                if (firstRow != null) {
+                    Cell firstCell = firstRow.getCell(range.getFirstColumn());
+                    return getCellStringValue(firstCell);
+                }
+            }
+        }
+
+        // 병합 영역이 아닌 일반 셀
+        Row row = sheet.getRow(rowIndex);
+        if (row != null) {
+            Cell cell = row.getCell(colIndex);
+            return getCellStringValue(cell);
+        }
+        return "";
+    }
+
+    private String getCellStringValue(Cell cell) {
+        if (cell == null) return "";
+        return switch (cell.getCellType()) {
+            case STRING -> cell.getStringCellValue();
+            case NUMERIC -> DateUtil.isCellDateFormatted(cell) ?
+                            cell.getDateCellValue().toString() :
+                            String.valueOf(cell.getNumericCellValue());
+            case BOOLEAN -> String.valueOf(cell.getBooleanCellValue());
+            case FORMULA -> cell.getCellFormula();
+            default -> "";
+        };
     }
 }

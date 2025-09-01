@@ -1,5 +1,6 @@
 package com.e1.backend.auth;
 
+import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
 
@@ -22,6 +23,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class TokenProvider {
     
+    private static final String SECRET_KEY = "mySuperSecretKey1234567890!@#$%^&*()_+";
+
     private final Key secretKey;
 
     private final long tokenValidTime = 30 * 60 * 1000; // 30분
@@ -31,7 +34,7 @@ public class TokenProvider {
     private final UserDetailsService userDetailsService;
 
     public TokenProvider(UserDetailsService userDetailsService) {
-        this.secretKey = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+         this.secretKey = Keys.hmacShaKeyFor(SECRET_KEY.getBytes(StandardCharsets.UTF_8));
         this.userDetailsService = userDetailsService;
     }
 

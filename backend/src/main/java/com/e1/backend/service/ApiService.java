@@ -4,6 +4,9 @@ package com.e1.backend.service;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartRequest;
+
 public interface ApiService {
     List<Map<String, Object>> getAllCode();
 
@@ -28,4 +31,7 @@ public interface ApiService {
     public byte[] generateExcel (String tableSeq)  throws Exception ;
 
     List<Map<String,Object>> getTableDataList(String tableSeq);
+
+    void excelUpload(MultipartFile file, String tableSeq);
+
 }

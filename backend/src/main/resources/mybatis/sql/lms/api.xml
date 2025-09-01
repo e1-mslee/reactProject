@@ -247,5 +247,12 @@
 		 where s.table_seq = #{tableSeq}
 	</select>
 
+	<delete id="deleteDataTable" parameterType="string">
+		delete from ${tableName}
+	</delete>
+
+	<insert id="insertDataTable" parameterType="string">
+		${sql}
+	</insert>
 
 </mapper>

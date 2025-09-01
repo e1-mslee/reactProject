@@ -59,4 +59,8 @@ public interface ApiMapper {
 
     List<Map<String, Object>> changeFiledNm(String tableSeq);
 
+    void deleteDataTable(String tableName);
+
+    void insertDataTable(String sql);
+
 }

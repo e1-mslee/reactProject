@@ -10,10 +10,14 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartRequest;
 
 import com.e1.backend.service.ApiService;
 
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -120,6 +124,17 @@ public class ApiController {
     @Operation(summary = "테이블 데이터 리스트", description = "테이블 데이터 리스트 가져오기")
     public List<Map<String,Object>> getTableDataList(@RequestParam String tableSeq) {
         return apiService.getTableDataList(tableSeq);
+    }
+
+    @PostMapping("/api/excelUpload")
+    @Operation(summary = "엑셀 업로드", description = "엑셀 업로드")
+    public ResponseEntity<?> excelUpload(@RequestParam("file") MultipartFile file,
+                                         @RequestParam("tableSeq") String tableSeq ) {
+
+        apiService.excelUpload(file,tableSeq);                                    
+
+        return ResponseEntity.ok().build();
+
     }
 
 }

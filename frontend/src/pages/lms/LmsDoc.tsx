@@ -11,8 +11,8 @@ import { Button, Flex, Modal } from 'antd';
 import { useRemoveWijmoLink } from '@hooks/useRemoveWijmoLink';
 import { useLmsDocStore } from '@store/lms/lmsDocStore';
 import useEvent from 'react-use-event-hook';
-import { Height } from '@mui/icons-material';
 import { CollectionView } from '@mescius/wijmo';
+import api from '@api/api';
 
 interface HeaderItem {
   selected: boolean;
@@ -34,6 +34,7 @@ const LmsDoc = () => {
   const params = new URLSearchParams(window.location.search);
   const tableSeq = params.get('tableSeq') || '';
   const gridRef = useRef<{ control: FlexGridType } | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const { treeData, tableData, setParams, fetchHeaderList, fetchTableDataList } = useLmsDocStore();
 
@@ -53,6 +54,36 @@ const LmsDoc = () => {
       setCv(null);
     }
   }, [tableData]);
+
+  const excelUpload = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('tableSeq', tableSeq); // 어떤 테이블에 올릴 건지 같이 보내기
+
+    try {
+      await api.post('/api/excelUpload', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      console.log('업로드 성공');
+      // 업로드 후 테이블 데이터 새로 가져오기
+      await fetchTableDataList();
+    } catch (err) {
+      console.error('업로드 에러', err);
+    } finally {
+      // 같은 파일 다시 선택할 수 있도록 리셋
+      e.target.value = '';
+    }
+  };
 
   useEffect(() => {
     const grid = gridRef.current?.control;
@@ -149,7 +180,7 @@ const LmsDoc = () => {
         <span style={{ fontSize: '18px', fontWeight: 'bold' }}>데이터 보기</span>
         <div style={{ display: 'flex', justifyContent: 'flex-end', margin: '2px 0 2px 0' }}>
           <Flex gap='small' wrap>
-            <Button className='custom-button' onClick={() => console.log('구현중')}>
+            <Button className='custom-button' onClick={() => excelUpload()}>
               엑셀 업로드
             </Button>
             <Button className='custom-button' onClick={() => console.log('구현중')}>
@@ -178,6 +209,15 @@ const LmsDoc = () => {
           alternatingRowStep={0}
         />
       </div>
+      <input
+        type='file'
+        accept='.xlsx, .xls'
+        style={{ display: 'none' }}
+        ref={fileInputRef}
+        onChange={(e) => {
+          void handleFileChange(e);
+        }}
+      />
     </div>
   );
 };
