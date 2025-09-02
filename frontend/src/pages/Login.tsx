@@ -10,6 +10,7 @@ import {
 } from '@ant-design/icons';
 import api from '@api/api';
 import './Login.css';
+import type { FormEvent, KeyboardEvent, ChangeEvent } from 'react';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -50,7 +51,7 @@ const Login = () => {
   };
 
   // 로그인 처리
-  const handleLogin = async (e) => {
+  const handleLogin = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!username || !password) {
       setErrorMessage('아이디와 비밀번호를 입력하세요.');
@@ -59,16 +60,23 @@ const Login = () => {
 
     try {
       setSubmitting(true);
-      const response = await api.post('/login', { username, password }, { withCredentials: true });
+      const response = await api.post<{ accessToken?: string }>(
+        '/login',
+        { username, password },
+        { withCredentials: true }
+      );
       const data = response?.data || {};
-      const headers = response?.headers || {};
+      const headers = response?.headers as Record<string, string>;
       const bearer = headers?.authorization || headers?.Authorization;
-      const tokenFromHeader = bearer && bearer.startsWith('Bearer ') ? bearer.slice('Bearer '.length) : undefined;
+      const tokenFromHeader =
+        bearer && typeof bearer === 'string' && bearer.startsWith('Bearer ')
+          ? bearer.slice('Bearer '.length)
+          : undefined;
       const accesstoken = data.accessToken;
       if (accesstoken) {
         localStorage.setItem('accessToken', accesstoken);
         setErrorMessage('');
-        navigate('/home', { replace: true });
+        void navigate('/home', { replace: true });
       } else {
         setErrorMessage('로그인에 실패했습니다. 토큰을 받을 수 없습니다.');
       }
@@ -80,7 +88,7 @@ const Login = () => {
   };
 
   // 회원가입 처리
-  const handleSignUp = async (e) => {
+  const handleSignUp = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     // 유효성 검사
@@ -111,7 +119,11 @@ const Login = () => {
         setErrorMessage('회원가입이 완료되었습니다. 로그인해주세요.');
       }
     } catch (err) {
-      const errorMsg = err.response?.data?.message || '회원가입에 실패했습니다.';
+      let errorMsg = '회원가입에 실패했습니다.';
+      if (err && typeof err === 'object' && 'response' in err) {
+        const errorObj = err as { response?: { data?: { message?: string } } };
+        errorMsg = errorObj.response?.data?.message || errorMsg;
+      }
       setErrorMessage(errorMsg);
     } finally {
       setSubmitting(false);
@@ -124,7 +136,7 @@ const Login = () => {
         <div className='auth-card'>
           <h1>{isSignUp ? '회원가입' : '로그인'}</h1>
 
-          <form onSubmit={isSignUp ? handleSignUp : handleLogin} noValidate>
+          <form onSubmit={(e) => void (isSignUp ? handleSignUp(e) : handleLogin(e))} noValidate>
             {/* 아이디 필드 */}
             <div className='first-input input__block first-input__block floating-group input-with-icon'>
               <span className='input-icon'>
@@ -137,7 +149,7 @@ const Login = () => {
                 className={`input floating-input${errorMessage ? ' error' : ''}`}
                 id='username'
                 value={username}
-                onChange={(e) => {
+                onChange={(e: ChangeEvent<HTMLInputElement>) => {
                   setUsername(e.target.value);
                   if (errorMessage) setErrorMessage('');
                 }}
@@ -161,7 +173,7 @@ const Login = () => {
                   className={`input floating-input${errorMessage ? ' error' : ''}`}
                   id='email'
                   value={email}
-                  onChange={(e) => {
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => {
                     setEmail(e.target.value);
                     if (errorMessage) setErrorMessage('');
                   }}
@@ -185,7 +197,7 @@ const Login = () => {
                   className='input floating-input'
                   id='name'
                   value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => setName(e.target.value)}
                   autoComplete='name'
                 />
                 <label className='floating-label' htmlFor='name'>
@@ -207,12 +219,11 @@ const Login = () => {
                   className={`input floating-input${errorMessage ? ' error' : ''}`}
                   id='password'
                   value={password}
-                  onChange={(e) => {
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => {
                     setPassword(e.target.value);
                     if (errorMessage) setErrorMessage('');
                   }}
-                  onKeyUp={(e) => {
-                    // @ts-ignore - getModifierState exists at runtime
+                  onKeyUp={(e: KeyboardEvent<HTMLInputElement>) => {
                     const isCaps = e.getModifierState && e.getModifierState('CapsLock');
                     setCapsLockOn(!!isCaps);
                   }}
@@ -227,7 +238,7 @@ const Login = () => {
                   tabIndex={0}
                   aria-label={showPassword ? '비밀번호 숨기기' : '비밀번호 보기'}
                   onClick={() => setShowPassword((v) => !v)}
-                  onKeyDown={(e) => {
+                  onKeyDown={(e: KeyboardEvent<HTMLSpanElement>) => {
                     if (e.key === 'Enter' || e.key === ' ') {
                       e.preventDefault();
                       setShowPassword((v) => !v);
@@ -253,7 +264,7 @@ const Login = () => {
                     className={`input floating-input${errorMessage ? ' error' : ''}`}
                     id='confirmPassword'
                     value={confirmPassword}
-                    onChange={(e) => {
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => {
                       setConfirmPassword(e.target.value);
                       if (errorMessage) setErrorMessage('');
                     }}
@@ -268,7 +279,7 @@ const Login = () => {
                     tabIndex={0}
                     aria-label={showConfirmPassword ? '비밀번호 숨기기' : '비밀번호 보기'}
                     onClick={() => setShowConfirmPassword((v) => !v)}
-                    onKeyDown={(e) => {
+                    onKeyDown={(e: KeyboardEvent<HTMLSpanElement>) => {
                       if (e.key === 'Enter' || e.key === ' ') {
                         e.preventDefault();
                         setShowConfirmPassword((v) => !v);

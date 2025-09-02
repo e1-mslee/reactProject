@@ -1,14 +1,14 @@
 /* App.css */
 @font-face {
   font-family: 'NotoSansCjKKr';
-  src: url('@assets/font/NotoSansCJKkr-Regular.otf') format('opentype');
+  src: url('/font/NotoSansCJKkr-Regular.otf') format('opentype');
   font-weight: normal;
   font-style: normal;
 }
 
 @font-face {
   font-family: 'RobotoRegular';
-  src: url('@assets/font/Roboto-Regular.ttf') format('opentype');
+  src: url('/font/Roboto-Regular.ttf') format('opentype');
   font-weight: normal;
   font-style: normal;
 }
