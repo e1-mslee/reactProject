@@ -10,6 +10,7 @@ import Footer from '@layout/Footer';
 import MainRoutes from '@router/routes/MainRoute';
 import PopupRoutes from '@router/routes/PopupRoute';
 import Login from '@pages/Login';
+import AuthApi from '@api/Auth';
 
 import './App.css';
 
@@ -40,11 +41,15 @@ const App: React.FC = () => {
       return;
     }
 
-    // 로그인 페이지나 팝업이 아니면서 토큰이 없는 경우 로그인으로 리다이렉트
-    if (!isLogin && !isPopup && !token) {
-      void navigate('/login', { replace: true });
-    }
+    // 로그인 페이지나 팝업이 아니면서 토큰이 없는 경우 로그인 또는 refresh 시도
+    // 이 부분을 제거합니다. 인터셉터가 401에서 refresh를 처리하도록 신뢰합니다.
   }, [location.pathname, navigate, isRoot, isLogin, isPopup]);
+
+  // 경로에 따라 selectedKey 동기화
+  useEffect(() => {
+    const pathSnippets = location.pathname.split('/').filter(Boolean);
+    setSelectedKey(pathSnippets[0] || 'home');
+  }, [location.pathname]);
 
   const breadcrumbItems = useMemo(() => {
     const pathSnippets = location.pathname.split('/').filter(Boolean);

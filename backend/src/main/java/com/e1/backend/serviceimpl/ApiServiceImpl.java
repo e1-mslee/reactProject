@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 
@@ -544,5 +545,63 @@ public class ApiServiceImpl implements ApiService {
             case FORMULA -> cell.getCellFormula();
             default -> "";
         };
+    }
+
+    @Override
+    @Transactional
+    public void addTableData(List<Map<String,Object>> data,String tableSeq) {
+        log.info("addTableDataimpl data = {}", data);
+        log.info("addTableDataimpl tableSeq= {}", tableSeq);
+
+
+        String chackFlag = apiMapper.tableCreateCheck(tableSeq);
+        List<Map<String, Object>> columnList = apiMapper.changeFiledNm(tableSeq);
+
+        if(chackFlag != null && !chackFlag.isEmpty()) {    
+
+            StringBuilder sb = new StringBuilder();
+            sb.append("INSERT INTO ").append(chackFlag).append(" (");
+
+            for( Map<String,Object> item : data) {
+                for (Map<String, Object> col : columnList) {
+                    String dbCol = (String) col.get("COL_NAME");      // 원래 DB 컬럼명
+                    String alias = (String) col.get("HEADER_NAME");   // 바꿀 이름
+                    if (item.containsKey(alias)) {
+                        Object val = item.remove(alias);
+                        item.put(dbCol, val);
+                    }
+                }
+                item.remove("selected");
+            }
+            log.info("chage data = {}",data);
+            Set<String> keys = data.get(0).keySet();
+            int i = 0;
+            for (String col : keys) {
+                if (i++ > 0) sb.append(", ");
+                sb.append(col);
+            }
+            sb.append(") VALUES ");
+
+            for (int r = 0; r < data.size(); r++) {
+                if (r > 0) sb.append(", ");
+                sb.append("(");
+                Map<String, Object> row = data.get(r);
+                int c = 0;
+                for (String col : keys) {
+                    if (c++ > 0) sb.append(", ");
+                    Object val = row.get(col);
+                    if (val == null) {
+                        sb.append("NULL");
+                    } else {
+                        sb.append("'").append(val.toString().replace("'", "''")).append("'");
+                    }
+                }
+                sb.append(")");
+            }
+
+            String sql = sb.toString();
+            apiMapper.addTableData(sql);
+            log.info("sql = {}",sql);
+        }
     }
 }

@@ -7,7 +7,7 @@ import { FlexGrid, FlexGridColumn } from '@mescius/wijmo.react.grid';
 import { FlexGrid as FlexGridType } from '@mescius/wijmo.grid';
 import * as wjGrid from '@mescius/wijmo.grid';
 import { useEffect, useRef, useCallback, useState } from 'react';
-import { Button, Flex, Modal } from 'antd';
+import { Button, Flex, Modal, message } from 'antd';
 import { useRemoveWijmoLink } from '@hooks/useRemoveWijmoLink';
 import { useLmsDocStore } from '@store/lms/lmsDocStore';
 import useEvent from 'react-use-event-hook';
@@ -38,7 +38,7 @@ const LmsDoc = () => {
 
   const { treeData, tableData, setParams, fetchHeaderList, fetchTableDataList } = useLmsDocStore();
 
-  const [cv, setCv] = useState<CollectionView<any> | null>(null);
+  const [cv, setCv] = useState<CollectionView<HeaderItem> | null>(null);
 
   useEffect(() => {
     setParams(tableSeq);
@@ -48,7 +48,7 @@ const LmsDoc = () => {
 
   useEffect(() => {
     if (tableData && tableData.length > 0) {
-      const view = new CollectionView<any>(tableData);
+      const view = new CollectionView<any>(tableData, { trackChanges: true });
       setCv(view);
     } else {
       setCv(null);
@@ -75,12 +75,10 @@ const LmsDoc = () => {
       });
 
       console.log('업로드 성공');
-      // 업로드 후 테이블 데이터 새로 가져오기
       await fetchTableDataList();
     } catch (err) {
       console.error('업로드 에러', err);
     } finally {
-      // 같은 파일 다시 선택할 수 있도록 리셋
       e.target.value = '';
     }
   };
@@ -174,6 +172,53 @@ const LmsDoc = () => {
     });
   };
 
+  const addRow = () => {
+    if (!cv || !treeData) return;
+
+    const lowestHeaders: string[] = [];
+    const traverse = (nodes: HeaderItem[]) => {
+      nodes.forEach((node) => {
+        if (!node.deps || node.deps.length === 0) {
+          lowestHeaders.push(node.HEADER_NAME);
+        } else {
+          traverse(node.deps);
+        }
+      });
+    };
+    traverse(treeData);
+
+    // 새 row 객체 생성
+    const newRow: Record<string, any> = { selected: false };
+    lowestHeaders.forEach((h) => {
+      newRow[h] = ''; // 초기값 빈 문자열
+    });
+
+    cv.addNew(newRow);
+    cv.commitNew();
+  };
+
+  const saveTable = async () => {
+    if (!cv) return;
+    console.log('cv', cv);
+    const addedItems = cv.itemsAdded || [];
+
+    if (addedItems.length === 0) {
+      message.error('저장할 내용이 없습니다.');
+      return;
+    }
+
+    try {
+      await api.post('/api/addTableData', {
+        tableSeq,
+        rows: Array.from(addedItems),
+      });
+    } catch (err) {
+      console.error('추가 에러', err);
+    }
+
+    console.log('addedItems', addedItems);
+  };
+
   return (
     <div style={{ padding: '10px', background: 'white' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '10px' }}>
@@ -183,15 +228,18 @@ const LmsDoc = () => {
             <Button className='custom-button' onClick={() => excelUpload()}>
               엑셀 업로드
             </Button>
-            <Button className='custom-button' onClick={() => console.log('구현중')}>
+            <Button className='custom-button' onClick={addRow}>
               추가
             </Button>
-            <Button className='custom-button' onClick={() => console.log('구현중')}>
+            <Button className='custom-button' onClick={() => void saveTable()}>
+              저장
+            </Button>
+            {/* <Button className='custom-button' onClick={() => console.log('구현중')}>
               수정
             </Button>
             <Button className='custom-button' onClick={() => console.log('구현중')}>
               삭제
-            </Button>
+            </Button> */}
           </Flex>
         </div>
       </div>

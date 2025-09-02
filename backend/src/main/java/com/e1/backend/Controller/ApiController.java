@@ -11,13 +11,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.multipart.MultipartRequest;
 
 import com.e1.backend.service.ApiService;
 
 import io.swagger.v3.oas.annotations.Operation;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -132,6 +129,19 @@ public class ApiController {
                                          @RequestParam("tableSeq") String tableSeq ) {
 
         apiService.excelUpload(file,tableSeq);                                    
+
+        return ResponseEntity.ok().build();
+
+    }
+
+    @PostMapping("/api/addTableData")
+    @Operation(summary = "테이블 데이터 추가", description = "테이블 데이터 추가")
+    public ResponseEntity<?> addTableData(@RequestBody Map<String, Object> payload) {
+
+        String tableSeq = (String) payload.get("tableSeq");
+        List<Map<String, Object>> rows = (List<Map<String, Object>>) payload.get("rows");
+
+        apiService.addTableData(rows,tableSeq);                                    
 
         return ResponseEntity.ok().build();
 

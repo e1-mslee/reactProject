@@ -179,9 +179,9 @@ public class AuthController {
         String userId = tokenProvider.getUserPk(refreshToken);
         boolean isValid = userSerivce.isValidToken(userId, refreshToken);
 
-        if (isValid) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                             .body(Map.of("message", "Refresh Token이 유효하지 않습니다."));
+        if (!isValid) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                                 .body(Map.of("message", "Refresh Token이 유효하지 않습니다."));
         }
 
         String role = tokenProvider.getRoleFromRefreshToken(refreshToken);

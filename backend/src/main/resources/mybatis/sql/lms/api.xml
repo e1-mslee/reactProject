@@ -255,4 +255,8 @@
 		${sql}
 	</insert>
 
+	<insert id="addTableData" parameterType="string">
+		${sql}
+	</insert>
+
 </mapper>

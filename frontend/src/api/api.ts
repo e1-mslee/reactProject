@@ -19,6 +19,15 @@ interface RefreshResponse {
 // axios 인스턴스 생성
 const api: AxiosInstance = axios.create(apiConfig);
 
+let isRefreshing = false;
+let refreshSubscribers: ((token: string) => void)[] = [];
+
+// refresh 완료 후 대기중인 요청 처리
+function onRefreshed(token: string) {
+  refreshSubscribers.forEach((cb) => cb(token));
+  refreshSubscribers = [];
+}
+
 // 요청 인터셉터
 api.interceptors.request.use(
   (config) => {
@@ -35,10 +44,7 @@ api.interceptors.request.use(
 
     return config;
   },
-  (error: AxiosError) => {
-    console.error('Request Error:', error);
-    return Promise.reject(error);
-  }
+  (error: AxiosError) => Promise.reject(error)
 );
 
 // 응답 인터셉터
@@ -51,36 +57,73 @@ api.interceptors.response.use(
     return response;
   },
   async (error: AxiosError) => {
+    const originalRequest = error.config as AxiosRequestConfig & { _retry?: boolean };
     // 에러 처리
     if (error.response) {
       // 서버 응답이 있는 경우
-      const { status, data } = error.response;
+      const { status } = error.response;
 
-      if (status === 401) {
-        try {
-          // refresh 요청 (쿠키 자동 전송)
-          const refreshRes = await axios.post<RefreshResponse>(
-            `${apiConfig.baseURL}/refresh`,
-            {},
-            { withCredentials: true }
-          );
-          const accesstoken = refreshRes.data.accessToken;
-          localStorage.setItem('accessToken', accesstoken);
+      // ✅ refresh 자체가 실패한 경우 → 무한루프 방지
+      if (originalRequest.url?.includes('/refresh')) {
+        localStorage.removeItem('accessToken');
+        window.location.href = '/login';
+        return Promise.reject(error);
+      }
 
-          if (error.config) {
-            return api.request({
-              ...(error.config as AxiosRequestConfig),
+      if (status === 401 && !originalRequest._retry) {
+        originalRequest._retry = true;
+
+        if (!isRefreshing) {
+          isRefreshing = true;
+          try {
+            const refreshRes = await axios.post<RefreshResponse>(
+              `${apiConfig.baseURL}/refresh`,
+              {},
+              { withCredentials: true }
+            );
+
+            const newToken = refreshRes.data.accessToken;
+            localStorage.setItem('accessToken', newToken);
+
+            isRefreshing = false;
+            onRefreshed(newToken);
+
+            // 실패했던 요청 재시도
+            return api({
+              ...originalRequest,
               headers: {
-                ...error.config.headers,
-                Authorization: `Bearer ${accesstoken}`,
+                ...originalRequest.headers,
+                Authorization: `Bearer ${newToken}`,
               },
             });
+          } catch (refreshError: unknown) {
+            isRefreshing = false;
+            localStorage.removeItem('accessToken');
+            window.location.href = '/login';
+
+            if (axios.isAxiosError(refreshError)) {
+              console.error('Refresh token failed:', refreshError.response?.data);
+            } else if (refreshError instanceof Error) {
+              console.error('Unexpected refresh error:', refreshError.message);
+            }
+            return Promise.reject(error instanceof Error ? error : new Error(String(error)));
           }
-        } catch (refreshError) {
-          // refresh 실패 → 로그인 페이지로 이동
-          localStorage.removeItem('accessToken');
-          window.location.href = '/login';
         }
+
+        // ✅ refresh 진행 중 → 큐에 요청을 넣고 기다림
+        return new Promise((resolve) => {
+          refreshSubscribers.push((token: string) => {
+            resolve(
+              api({
+                ...originalRequest,
+                headers: {
+                  ...originalRequest.headers,
+                  Authorization: `Bearer ${token}`,
+                },
+              })
+            );
+          });
+        });
       }
 
       switch (status) {

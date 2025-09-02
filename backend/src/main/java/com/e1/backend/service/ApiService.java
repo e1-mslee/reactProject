@@ -34,4 +34,6 @@ public interface ApiService {
 
     void excelUpload(MultipartFile file, String tableSeq);
 
+    void addTableData(List<Map<String,Object>> data,String tableSeq);
+
 }

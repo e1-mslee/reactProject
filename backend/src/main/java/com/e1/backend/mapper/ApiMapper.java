@@ -63,4 +63,6 @@ public interface ApiMapper {
 
     void insertDataTable(String sql);
 
+    void addTableData(String sql);
+
 }
