@@ -1,13 +1,13 @@
-# SpringBoot & React Project
+# SpringBoot & React Project & typeScript
 
 ## 🖥️ 프로젝트 소개
 E1정보기술 BS 3팀 UDA 시스템 관리 프로젝트 입니다. 
 <br>
-Springboot 와 react & typescript를 통해 개발하였으며 server에 jenkins 서버를 설치하여 docker compose를 통해 무중단 배포를 하였습니다
+Springboot 와 react & typescript를 통해 개발을 진행하였고 ubuntu server에 jenkins 서버를 설치하여 docker compose를 통해 배포를 하였습니다
 <br>
 
 ## 🕰️ 개발 기간
-* 25.08.01 ~ 
+* 25.07.16 ~ 
 
 ## ⚙️ 개발 환경
 - `node v22.17.1`
@@ -16,6 +16,7 @@ Springboot 와 react & typescript를 통해 개발하였으며 server에 jenkins
 - `spring boot v3.4.7`
 - - `openjdk 17`
 - `jenkins v2.516.1`
+- `redis v8.2.1`
 - `docker v27.5.1`
 - - `docker compose v2.35.1`
 - **IDE** : Visual Studio Code
@@ -69,7 +70,7 @@ $ git clone https://github.com/e1-mslee/reactProject.git
 ```
 
 ## 📁 프로젝트 구조
-```sh
+```
 bs3_study
 ├─ backend
 │  ├─ .mvn
@@ -86,18 +87,30 @@ bs3_study
 │     │  │  └─ com
 │     │  │     └─ e1
 │     │  │        └─ backend
+│     │  │           ├─ auth
+│     │  │           │  └─ TokenProvider.java
 │     │  │           ├─ BackendApplication.java
 │     │  │           ├─ config
+│     │  │           │  ├─ RedisConfig.java
 │     │  │           │  ├─ SecurityConfig.java
 │     │  │           │  └─ WebConfig.java
 │     │  │           ├─ Controller
 │     │  │           │  ├─ ApiController.java
+│     │  │           │  ├─ AuthController.java
 │     │  │           │  └─ KjoApiController.java
+│     │  │           ├─ dto
+│     │  │           │  ├─ CustomUserDetails.java
+│     │  │           │  ├─ UserDto.java
+│     │  │           │  └─ UserEntity.java
+│     │  │           ├─ filter
+│     │  │           │  └─ JwtAuthenticationFilter.java
 │     │  │           ├─ mapper
 │     │  │           │  ├─ ApiMapper.java
-│     │  │           │  └─ KjoApiMapper.java
+│     │  │           │  ├─ KjoApiMapper.java
+│     │  │           │  └─ UserMapper.java
 │     │  │           ├─ service
 │     │  │           │  ├─ ApiService.java
+│     │  │           │  ├─ CustomUserDetailsService.java
 │     │  │           │  └─ KjoApiService.java
 │     │  │           └─ serviceimpl
 │     │  │              ├─ ApiServiceImpl.java
@@ -124,57 +137,88 @@ bs3_study
 │  ├─ .dockerignore
 │  ├─ .env
 │  ├─ .env.production
+│  ├─ default.conf
 │  ├─ Dockerfile
 │  ├─ eslint.config.js
 │  ├─ index.html
 │  ├─ package-lock.json
 │  ├─ package.json
 │  ├─ public
-│  │  └─ favicon.ico
+│  │  ├─ favicon.ico
+│  │  └─ font
+│  │     ├─ NotoSansCJKkr-Black.otf
+│  │     ├─ NotoSansCJKkr-Bold.otf
+│  │     ├─ NotoSansCJKkr-DemiLight.otf
+│  │     ├─ NotoSansCJKkr-Light.otf
+│  │     ├─ NotoSansCJKkr-Medium.otf
+│  │     ├─ NotoSansCJKkr-Regular.otf
+│  │     ├─ NotoSansCJKkr-Thin.otf
+│  │     ├─ NotoSansMonoCJKkr-Bold.otf
+│  │     ├─ NotoSansMonoCJKkr-Regular.otf
+│  │     └─ Roboto-Regular.ttf
 │  ├─ README.md
 │  ├─ src
 │  │  ├─ .prettierignore
 │  │  ├─ .prettierrc.yml
 │  │  ├─ api
 │  │  │  ├─ api.ts
+│  │  │  ├─ Auth.ts
 │  │  │  ├─ lmsApi.ts
+│  │  │  ├─ lmsDocApi.ts
+│  │  │  ├─ lmsHeaderApi.ts
+│  │  │  ├─ lmsPopApi.ts
 │  │  │  └─ types.ts
 │  │  ├─ App.css
 │  │  ├─ App.tsx
 │  │  ├─ assets
 │  │  │  └─ Logo.png
 │  │  ├─ components
-│  │  │  ├─ BaseButton.jsx
-│  │  │  └─ layout
-│  │  │     ├─ Footer.tsx
-│  │  │     ├─ Header.tsx
-│  │  │     └─ Sidebar.tsx
+│  │  │  └─ BaseButton.jsx
 │  │  ├─ data
 │  │  │  ├─ data.ts
 │  │  │  └─ menuItems.tsx
 │  │  ├─ hooks
-│  │  │  └─ useRemoveWijmoLink.js
+│  │  │  └─ useRemoveWijmoLink.ts
 │  │  ├─ index.css
+│  │  ├─ layout
+│  │  │  ├─ Footer.tsx
+│  │  │  ├─ Header.tsx
+│  │  │  └─ Sidebar.tsx
 │  │  ├─ main.tsx
 │  │  ├─ pages
 │  │  │  ├─ Home.tsx
-│  │  │  ├─ kjo.css
-│  │  │  ├─ Kjo.jsx
-│  │  │  ├─ kjoHeaderPopup.tsx
-│  │  │  ├─ KjoPop.tsx
-│  │  │  ├─ Lms.css
-│  │  │  ├─ Lms.jsx
-│  │  │  ├─ LmsHeader.jsx
-│  │  │  ├─ LmsPop.jsx
+│  │  │  ├─ kjo
+│  │  │  │  ├─ kjo.css
+│  │  │  │  ├─ Kjo.tsx
+│  │  │  │  ├─ kjoHeaderPopup.tsx
+│  │  │  │  └─ KjoPop.tsx
+│  │  │  ├─ lms
+│  │  │  │  ├─ Lms.css
+│  │  │  │  ├─ Lms.tsx
+│  │  │  │  ├─ LmsDoc.tsx
+│  │  │  │  ├─ LmsHeader.tsx
+│  │  │  │  └─ LmsPop.tsx
+│  │  │  ├─ Login.css
+│  │  │  ├─ Login.tsx
 │  │  │  └─ Notfound.tsx
+│  │  ├─ router
+│  │  │  └─ routes
+│  │  │     ├─ MainRoute.tsx
+│  │  │     └─ PopupRoute.tsx
 │  │  ├─ store
-│  │  │  ├─ commonStore.js
-│  │  │  ├─ kjoHeaderStore.ts
-│  │  │  ├─ kjoPopupStore.ts
-│  │  │  ├─ kjoStroe.ts
-│  │  │  └─ lmsStore.js
+│  │  │  ├─ commonStore.ts
+│  │  │  ├─ kjo
+│  │  │  │  ├─ kjoHeaderStore.ts
+│  │  │  │  ├─ kjoPopupStore.ts
+│  │  │  │  └─ kjoStroe.ts
+│  │  │  └─ lms
+│  │  │     ├─ lmsDocStore.ts
+│  │  │     ├─ lmsHeaderStore.ts
+│  │  │     ├─ lmsPopStore.ts
+│  │  │     └─ lmsStore.ts
 │  │  └─ utils
-│  │     └─ openPop.ts
+│  │     ├─ openPop.ts
+│  │     └─ tableUtils.ts
 │  ├─ tsconfig.json
 │  ├─ vite-env.d.ts
 │  └─ vite.config.js
@@ -182,8 +226,6 @@ bs3_study
 ├─ README.md
 ├─ table.sql
 └─ UDA 시스템관리.pptx
-
-```
 
 ```
 
@@ -206,7 +248,8 @@ $ npm run dev
 
 
 ### 인증 시스템
-#### jwt을 통해 access tocken과 refresh tocken을 통해 인증 
+#### jwt을 통해 access tocken과 refresh tocken을 통해 인증(redis 서버를 통한 동기화)
+
 ---
 
 ##### 이후 자세한 실행 내용은 React_Springboot 개발환경_메뉴얼_이민수.pptx 참조
