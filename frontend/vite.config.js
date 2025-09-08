@@ -7,6 +7,10 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
   plugins: [react()],
+  server: {
+    host: "0.0.0.0", // 외부 접속 허용
+    port: 5173, // 기본 포트
+  },
   base: "/",
   resolve: {
     alias: {

@@ -6,6 +6,7 @@ import 'react-datepicker/dist/react-datepicker.css';
 import { FlexGrid, FlexGridColumn } from '@mescius/wijmo.react.grid';
 import { FlexGrid as FlexGridType } from '@mescius/wijmo.grid';
 import * as wjGrid from '@mescius/wijmo.grid';
+
 import { useEffect, useRef, useCallback, useState } from 'react';
 import { Button, Flex, Modal, message } from 'antd';
 import { useRemoveWijmoLink } from '@hooks/useRemoveWijmoLink';
@@ -48,7 +49,10 @@ const LmsDoc = () => {
 
   useEffect(() => {
     if (tableData && tableData.length > 0) {
-      const view = new CollectionView<any>(tableData, { trackChanges: true });
+      const view = new CollectionView(
+        (tableData as HeaderItem[]).map((row) => ({ ...row, selected: false })),
+        { trackChanges: true }
+      );
       setCv(view);
     } else {
       setCv(null);
@@ -88,7 +92,6 @@ const LmsDoc = () => {
     if (!grid || !treeData || treeData.length === 0) return;
 
     grid.columns.clear();
-
     const maxDepth = (nodes: HeaderItem[]): number =>
       nodes.length === 0 ? 0 : 1 + Math.max(...nodes.map((n) => maxDepth(n.deps || [])));
     const depth = maxDepth(treeData);
@@ -98,7 +101,11 @@ const LmsDoc = () => {
       grid.columnHeaders.rows.push(new wjGrid.Row());
     }
     console.log('tableData', tableData);
-    buildColumns(grid, treeData, 0, { value: 0 }, depth);
+    // 체크박스 컬럼 추가
+    addCheckBoxColumn(grid, depth);
+
+    // 실제 데이터 컬럼 빌드 (체크박스 컬럼 뒤로)
+    buildColumns(grid, treeData, 0, { value: 1 }, depth); // colIndex 1부터 시작
 
     // 병합 허용
     grid.allowMerging = wjGrid.AllowMerging.ColumnHeaders;
@@ -117,6 +124,23 @@ const LmsDoc = () => {
       }
     });
   });
+
+  const addCheckBoxColumn = (grid: wjGrid.FlexGrid, treeDepth: number) => {
+    const col = new wjGrid.Column();
+    col.binding = 'selected';
+    col.header = '';
+    col.width = 40;
+    col.isReadOnly = false;
+    col.dataType = 3;
+
+    // 컬럼 앞쪽에 삽입
+    grid.columns.insert(0, col);
+
+    // 헤더 병합 (전체 rowSpan)
+    for (let r = 0; r < treeDepth; r++) {
+      grid.columnHeaders.setCellData(r, 0, ''); // 빈값
+    }
+  };
 
   const buildColumns = (
     grid: wjGrid.FlexGrid,
