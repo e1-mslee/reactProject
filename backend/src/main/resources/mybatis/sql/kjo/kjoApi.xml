@@ -8,6 +8,9 @@
                VBG_CRE_USER as vbgCreUser,
                VBG_CRE_DTM  as vbgCreDtm,
                0            as dataCount,
+               case when TABLE_ID is not null and TABLE_ID != '' then '다운'
+               else ''
+               end          as downBtn,
                false        as selected
           from std_main
          <where>
@@ -217,7 +220,21 @@
          where TABLE_NAME = #{tableId}
     </select>
 
+    <select id="selectColName" resultType="map">
+        select s.HEADER_NAME    as headerName,
+               s.CONN_FIELD     as  connField,
+               s2.COL_NAME      as colName
+          from std_header s
+          join std_field s2
+            on s.TABLE_SEQ = s2.TABLE_SEQ and s.CONN_FIELD = s2.COL_ID
+         where s.TABLE_SEQ =#{tableSeq}
+    </select>
+
     <select id="definitionMainTable" parameterType="string">
+        ${query}
+    </select>
+
+    <select id="selectDynamicTable" parameterType="string">
         ${query}
     </select>
 </mapper>

@@ -31,8 +31,8 @@ const HeaderLine = () => {
                 <BaseButton txt={"조회"} onClick={() => fetchGridData()}/>
                 <BaseButton txt={"추가"} onClick={() => addGridData()}/>
                 <BaseButton txt={"수정"} onClick={() => openPopup(null)}/>
-                <BaseButton txt={"저장"} onClick={() => saveGridData()}/>
                 <BaseButton txt={"삭제"} onClick={() => deleteGridData()}/>
+                <BaseButton txt={"저장"} onClick={() => saveGridData()}/>
                 <BaseButton txt={"엑셀"} onClick={() => exportExcel()}/>
             </div>
         </div>
@@ -110,7 +110,7 @@ const SearchArea = () => {
 }
 
 const GridArea = () => {
-    const {setGridRef, gridData, fetchGridData, openPopup} = useGridData();
+    const {setGridRef, gridData, fetchGridData, openPopup, openTablePopup, docDown} = useGridData();
     const gridRef = useRef<{control:wjGrid.FlexGrid}>(null);
     const [ totalCnt, setTotalCnt ] = useState(0);
 
@@ -151,6 +151,23 @@ const GridArea = () => {
                 const tableSeq = grid.getCellData(ht.row, "tableSeq", false) as string;
                 openPopup(tableSeq);
             }
+
+            if(col?.binding === "tableId") {
+                const tableSeq = grid.getCellData(ht.row, "tableSeq", false) as string;
+                const tableId = grid.getCellData(ht.row, "tableId", false) as string;
+
+                if(!tableId) return;
+
+                openTablePopup(tableSeq, tableId);
+            }
+
+            if(col?.binding === "downBtn") {
+                const tableSeq = grid.getCellData(ht.row, "tableSeq", false) as string;
+                const downBtn = grid.getCellData(ht.row, "downBtn", false) as string;
+
+                if(downBtn == 'undefined' || downBtn == null ) return;
+                docDown(tableSeq);
+            }
         });
     });
 
@@ -169,7 +186,8 @@ const GridArea = () => {
             >
                 <FlexGridColumn header="선택" binding="selected" width={50} dataType="Boolean" />
                 <FlexGridColumn header="논리 테이블명" binding="tableName" width="*" cssClass="click_col" />
-                <FlexGridColumn header="물리 테이블명" binding="tableId" width="*" isReadOnly={true} />
+                <FlexGridColumn header="물리 테이블명" binding="tableId" width="*" cssClass="click_col" isReadOnly={true} />
+                <FlexGridColumn header="문서 양식" binding="downBtn" width="0.3*" cssClass="click_col center-align" isReadOnly={true} />
                 <FlexGridColumn header="데이터 수" binding="dataCount" width="0.3*" isReadOnly={true} />
                 <FlexGridColumn header="생성자" binding="vbgCreUser" width="0.4*" isReadOnly={true} />
                 <FlexGridColumn header="수정일" binding="vbgCreDtm" width="0.6*" isReadOnly={true} />

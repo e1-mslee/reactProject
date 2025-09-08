@@ -66,7 +66,7 @@ public class RefreshTokenService {
 
         // redis에 없으면 DB 확인
         Map<String, Object> tokenMap = authMapper.selectRefreshToken(userId);
-        if(tokenMap != null) return false;
+        if(tokenMap == null) return false;
 
         String storeRefreshToken = tokenMap.get("refreshToken").toString();
         // DB에 있으면 redis에 다시 캐싱

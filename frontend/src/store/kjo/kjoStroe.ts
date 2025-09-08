@@ -28,6 +28,8 @@ interface UdaGridData {
     saveGridData: () => Promise<void>;
     deleteGridData: () => Promise<void>;
     openPopup: (seq: string | null) => void;
+    docDown: (seq: string) => void;
+    openTablePopup: (seq: string, tableId: string) => void;
 }
 
 const useGridData = create<UdaGridData>((set) => ({
@@ -167,6 +169,46 @@ const useGridData = create<UdaGridData>((set) => ({
         }
 
         const url = `/popup/kjo_pop?tableSeq=${encodeURIComponent(tableSeq)}`;
+
+        openPop(url, ()=> {});
+    },
+    docDown: async (seq) => {
+        const view = useGridData.getState().gridData;
+        const row = view.items.filter((data) => data.tableSeq === seq)[0];
+        const cond = {
+            tableSeq: seq,
+            tableId: row.tableId
+        }
+
+        try {
+            const response = await api.get('/kjoApi/docDown', {
+                params: cond,
+                responseType: "blob", // 바이너리 데이터 응답
+            });
+
+            // Blob 객체 생성
+            // Blob으로 변환
+            const blob = new Blob([response.data], {
+                type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            });
+
+            // 다운로드 링크 생성
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.setAttribute("download", row.tableId + ".xlsx"); // 저장될 파일명
+            document.body.appendChild(link);
+            link.click();
+
+            // 정리
+            link.remove();
+            window.URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error("엑셀 다운로드 실패:", error);
+        }
+    },
+    openTablePopup: (seq, tableId) => {
+        const url = `/popup/kjo_table_pop?tableSeq=${encodeURIComponent(seq)}&tableId=${encodeURIComponent(tableId)}`;
 
         openPop(url, ()=> {});
     }

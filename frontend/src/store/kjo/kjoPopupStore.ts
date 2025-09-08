@@ -149,7 +149,7 @@ const useColData = create<UseColData>((set) => ({
         const edited = view?.itemsEdited || [];
         const removed = view?.itemsRemoved || [];
 
-        if(tableId === "") {
+        if(tableId !== "") {
             alert("테이블이 생성된 후에는 수정할 수 없습니다.");
             return;
         }
@@ -245,7 +245,11 @@ const useColData = create<UseColData>((set) => ({
         }
 
         api.post('/kjoApi/createTable', cond)
-        .then(() => {
+        .then((res) => {
+            if(res.data == 1) {
+                alert("헤더 관리에서 필드의 헤더를 모두 생성해야 합니다.");
+                return;
+            }
             alert("테이블이 생성되었습니다.");
             useColData.getState().fetchInitData(seq);
         }).catch((err) => {
@@ -255,6 +259,7 @@ const useColData = create<UseColData>((set) => ({
     initTable: (seq) => {
         const data = useColData.getState().initData;
         const tableId = data?.tableId || '';
+        const tableNm = data?.tableName || '';
 
         if(tableId === '') {
             alert("테이블이 존재하지 않습니다.");
@@ -264,12 +269,15 @@ const useColData = create<UseColData>((set) => ({
         if(!confirm("테이블을 초기화 하시겠습니까?")) return;
 
         const cond = {
-            tableId: tableId
+            tableSeq: seq,
+            tableId: tableId,
+            tableNm: tableNm
         }
 
         api.post('/kjoApi/initTable', cond)
         .then(() => {
             alert("테이블이 초기화 되었습니다.");
+            useColData.getState().fetchInitData(seq);
         }).catch((err) => {
             console.error(err);
         });

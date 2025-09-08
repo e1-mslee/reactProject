@@ -4,9 +4,14 @@ import com.e1.backend.service.KjoApiService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.apache.coyote.Response;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -92,6 +97,40 @@ public class KjoApiController {
     @Operation(summary = "테이블 초기화", description = "테이블 데이터 초기화")
     public ResponseEntity<?> initTable(@RequestBody Map<String, Object> data) {
         return kjoApiService.initTable(data);
+    }
+
+    @GetMapping("/docDown")
+    @Operation(summary = "문서 양식 다운로드", description = "문서 양식 엑셀 다운로드")
+    public ResponseEntity<?> docDown(@RequestParam Map<String, Object> data) throws Exception{
+        return kjoApiService.docDown(data);
+    }
+
+    @GetMapping("/getDynamicTable")
+    @Operation(summary = "동적 생성 테이블의 데이터 조회", description = "동적으로 생성한 테이블의 데이터를 조회")
+    public List<Map<String, Object>> selectDynamicTable(@RequestParam Map<String, Object> data) {
+        return kjoApiService.selectDynamicTable(data);
+    }
+
+    @PostMapping("/setDynamicTable")
+    @Operation(summary = "동적 생성 테이블의 추가, 수정, 삭제", description = "동적으로 생성한 테이블의 데이터 추가, 수정, 삭제")
+    public ResponseEntity<?> modifyDynamicTable(@RequestBody Map<String, Object> data) {
+        return kjoApiService.modifyDynamicTable(data);
+    }
+
+    @PostMapping("/excelUpload")
+    public ResponseEntity<?> excelUpload(@RequestParam("file") MultipartFile file,
+                                         @RequestParam("tableId") String tableId,
+                                         @RequestParam("tableSeq") String tableSeq) throws IOException {
+        Map<String, Object> map = new HashMap<>();
+        map.put("tableId", tableId);
+        map.put("tableSeq", tableSeq);
+
+        return kjoApiService.excelUpload(file, map);
+    }
+
+    @GetMapping("/excelDown")
+    public ResponseEntity<?> excelDown(@RequestParam Map<String, Object> data) throws IOException {
+        return kjoApiService.excelDown(data);
     }
 
 }

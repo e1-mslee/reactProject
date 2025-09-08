@@ -140,7 +140,6 @@ const useHeaderData = create<UseHeaderData>((set) => ({
     },
     deleteRow: () => {
         const headerData = useHeaderData.getState().headerData;
-        //let gridRef = useHeaderData.getState().gridRef.current.control;
         const view = useHeaderData.getState().gridData;
 
         if(!view || !headerData) return;
@@ -191,7 +190,7 @@ const useHeaderData = create<UseHeaderData>((set) => ({
         const initData = useHeaderData.getState().initData;
         const tableId = initData?.tableId || "";
 
-        if(tableId === "") {
+        if(tableId !== "") {
             alert("테이블이 생성된 후에는 수정할 수 없습니다.");
             return;
         }

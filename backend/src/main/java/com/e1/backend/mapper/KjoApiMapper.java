@@ -12,8 +12,6 @@ public interface KjoApiMapper {
 
     void insertMainTable(List<Map<String, Object>> data);
 
-    void definitionMainTable(String query);
-
     void updateMainTable(Map<String, Object> data);
 
     void deleteMainTable(List<Map<String, Object>> data);
@@ -47,4 +45,10 @@ public interface KjoApiMapper {
     int selectDataCount(Map<String, Object> data);
 
     int findTable(Map<String, Object> data);
+
+    List<Map<String, Object>> selectColName(Map<String, Object> data);
+
+    void definitionMainTable(String query);
+
+    List<Map<String, Object>> selectDynamicTable(String query);
 }

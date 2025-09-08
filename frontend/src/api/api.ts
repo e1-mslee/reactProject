@@ -40,75 +40,97 @@ api.interceptors.request.use(
   }
 );
 
+let isRefreshing = false;
+let refreshSubscribers: ((token: string) => void)[] = [];
+
+function onRefreshed(token: string) {
+  refreshSubscribers.forEach((callback) => callback(token));
+  refreshSubscribers = [];
+}
+
 // 응답 인터셉터
 api.interceptors.response.use(
-  (response: AxiosResponse) => {
-    if (process.env.NODE_ENV === 'development') {
-      //console.log('API Response:', response.status, response.config.url, response.data);
-    }
+    (response: AxiosResponse) => {
+        if (process.env.NODE_ENV === 'development') {
+            //console.log('API Response:', response.status, response.config.url, response.data);
+        }
 
-    return response;
-  },
-  async (error: AxiosError) => {
-    // 에러 처리
-    if (error.response) {
-      // 서버 응답이 있는 경우
-      const { status, data } = error.response;
+        return response;
+    },
+    async (error: AxiosError) => {
+        // 에러 처리
+        if (error.response) {
+            // 서버 응답이 있는 경우
+            const { status, data } = error.response;
 
-      switch (status) {
-        case 401:
-          // 인증 실패 - 로그인 페이지로 리다이렉트
-            const originalRequest = error.config;
+            switch (status) {
+                case 401:
+                    // 인증 실패 - 로그인 페이지로 리다이렉트
+                    const originalRequest = error.config;
 
-            if (originalRequest.url?.includes("/login") || originalRequest.url?.includes("/refresh")) {
-                localStorage.removeItem("accessToken");
-                return Promise.reject(error);
+                    if (originalRequest.url?.includes("/login") || originalRequest.url?.includes("/refresh")) {
+                        localStorage.removeItem("accessToken");
+                        return Promise.reject(error);
+                    }
+
+                    if (!originalRequest._retry) {
+                        originalRequest._retry = true;
+
+                        if(!isRefreshing) {
+                            isRefreshing = true;
+
+                            try {
+                                const res = await api.post("/refresh", {}, { withCredentials: true });
+                                const newToken = res.data.accessToken;
+
+                                localStorage.setItem("accessToken", newToken);
+                                api.defaults.headers.common["Authorization"] = `Bearer ${newToken}`;
+                                originalRequest.headers.Authorization = `Bearer ${newToken}`;
+
+                                onRefreshed(newToken);
+
+                                return api(originalRequest);
+                            } catch (refreshError) {
+                                localStorage.removeItem("accessToken");
+                                window.location.href = "/login";
+                            } finally {
+                                isRefreshing = false;
+                            }
+                        }
+                        // Refresh 중이면 Promise로 대기했다가 새 토큰 받고 다시 요청
+                        return new Promise((resolve) => {
+                            refreshSubscribers.push((token: string) => {
+                                originalRequest.headers["Authorization"] = "Bearer " + token;
+                                resolve(api(originalRequest));
+                            });
+                        });
+                    }
+                    return Promise.reject(error);
+                case 403:
+                    // 권한 없음
+                    console.error('권한이 없습니다.');
+                    break;
+                case 404:
+                    // 리소스 없음
+                    console.error('요청한 리소스를 찾을 수 없습니다.');
+                    break;
+                case 500:
+                    // 서버 오류
+                    console.error('서버 오류가 발생했습니다.');
+                    break;
+                default:
+                    console.error(`API Error ${status}:`, data);
             }
-
-            if (!originalRequest._retry) {
-              originalRequest._retry = true;
-
-              try {
-                const res = await api.post("/refresh", {}, { withCredentials: true });
-
-                const newToken = res.data.accessToken;
-
-                localStorage.setItem("accessToken", newToken);
-                originalRequest.headers.Authorization = `Bearer ${newToken}`;
-
-                return api(originalRequest);
-              } catch (refreshError) {
-                localStorage.removeItem("accessToken");
-                window.location.href = "/login";
-              }
-            }
-            break;
-        case 403:
-          // 권한 없음
-          console.error('권한이 없습니다.');
-          break;
-        case 404:
-          // 리소스 없음
-          console.error('요청한 리소스를 찾을 수 없습니다.');
-          break;
-        case 500:
-          // 서버 오류
-          console.error('서버 오류가 발생했습니다.');
-          break;
-        default:
-          console.error(`API Error ${status}:`, data);
-      }
-    } else if (error.request) {
-      // 요청은 보냈지만 응답이 없는 경우 (네트워크 오류)
-      console.error('네트워크 오류가 발생했습니다.');
+        } else if (error.request) {
+            // 요청은 보냈지만 응답이 없는 경우 (네트워크 오류)
+            console.error('네트워크 오류가 발생했습니다.');
     } else {
-      // 요청 설정 중 오류
-      console.error('요청 설정 오류:', error.message);
+        // 요청 설정 중 오류
+        console.error('요청 설정 오류:', error.message);
     }
 
     return Promise.reject(error);
-  }
-);
+});
 
 // API 클라이언트 헬퍼 함수들
 export const apiClient: ApiClient = {

@@ -141,6 +141,11 @@ input:disabled {
     white-space: pre-wrap;
 }
 
+.center-align {
+    text-align: center;
+    vertical-align: middle;
+}
+
 /*.wj-flexgrid .wj-header label {
     display: none;
 }

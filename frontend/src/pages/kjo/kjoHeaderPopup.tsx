@@ -335,8 +335,7 @@ const TmpGridArea = () => {
         const grid = tmpGridRef?.current?.control;
         const deptList = gridHeaderData.map((col) => col.dept);
         const maxDept = Math.max(...deptList);
-        //const colIdx = new Array(maxDept+1).fill(0);
-        const headerList: string[][] = new Array<string[]>(maxDept + 1).fill(new Array<string>());
+        const headerList: string[][] = [];
         
         if(!grid) return;
 
@@ -382,7 +381,6 @@ const TmpGridArea = () => {
             }
         }
 
-        //
         // center-align merged header cells
         function tmpGridFormat(s: wjGrid.FlexGrid, e: wjGrid.FormatItemEventArgs) {
             if (e.panel === s.columnHeaders && e.range.rowSpan > 1) {
@@ -409,7 +407,7 @@ const TmpGridArea = () => {
                 isReadOnly={true}
                 style={{ height: '100px' }}
                 allowMerging="ColumnHeaders"
-                alternatingRowStep={0}
+                headersVisibility="Column"
             >
             </FlexGrid>
         </div>

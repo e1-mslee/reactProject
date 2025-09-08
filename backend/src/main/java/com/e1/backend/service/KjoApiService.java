@@ -1,7 +1,10 @@
 package com.e1.backend.service;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -32,4 +35,14 @@ public interface KjoApiService {
     ResponseEntity<?> createTable(Map<String, Object> data);
 
     ResponseEntity<?> initTable(Map<String, Object> data);
+
+    ResponseEntity<?> docDown(Map<String, Object> data) throws Exception;
+
+    List<Map<String, Object>> selectDynamicTable(Map<String, Object> data);
+
+    ResponseEntity<?> modifyDynamicTable(Map<String, Object> data);
+
+    ResponseEntity<?> excelUpload(MultipartFile file, Map<String, Object> tableInfo);
+
+    ResponseEntity<?> excelDown(Map<String, Object> data) throws IOException;
 }
