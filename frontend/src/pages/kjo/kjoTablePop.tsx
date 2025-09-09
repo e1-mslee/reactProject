@@ -51,6 +51,7 @@ const HeaderLine = () => {
 const GridArea = () => {
     const { commCode } = useCommonData();
     const { setGridRef, gridHeaderData, gridFieldData, gridData, fetchGridData } = useTableData();
+    const [ totalCnt, setTotalCnt ] = useState(0);
     const gridRef = useRef<{control:wjGrid.FlexGrid}>(null);
 
     useEffect(()=> {
@@ -207,6 +208,22 @@ const GridArea = () => {
         }
     }, [gridFieldData]);
 
+    useEffect(() => {
+        if (!gridData) return;
+
+        setTotalCnt(gridData.items?.length || 0);
+
+        function onCollectionChanged() {
+            if(gridData) setTotalCnt(gridData.items?.length ?? 0);
+        }
+
+        gridData.collectionChanged.addHandler(onCollectionChanged);
+
+        return () => {
+            gridData.collectionChanged.removeHandler(onCollectionChanged);
+        };
+    }, [gridData]);
+
     return (
         <div className={"grid_area"} style={{height: "90%"}}>
             <FlexGrid
@@ -219,6 +236,7 @@ const GridArea = () => {
                 allowResizing={true}
             >
             </FlexGrid>
+            <span> Total: {totalCnt}</span>
         </div>
     )
 }

@@ -8,6 +8,18 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export default defineConfig({
   plugins: [react()],
   base: "/",
+  server: {
+      host: '0.0.0.0',  // 외부 IP 접근 허용
+      port: 5173,       // 포트 변경 가능
+      strictPort: true, // 포트 고정 (충돌시 실패, auto-increment 안 함)
+      proxy: {
+        '/api': {
+            target: 'http://localhost:8080', // 백엔드 주소
+            changeOrigin: true,
+            rewrite: (path) => path.replace(/^\/api/, '')
+        }
+      }
+  },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "src"),

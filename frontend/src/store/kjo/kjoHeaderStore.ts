@@ -242,6 +242,7 @@ const useHeaderData = create<UseHeaderData>((set) => ({
 
         api.get<HeaderData[]>('/kjoApi/headerId', {params: cond})
             .then((res) => {
+                res.data.unshift({headerId: "", headerName: "-선택-"});
                 set({ headerData: res.data });
             }).catch((err) => {
             console.error(err);

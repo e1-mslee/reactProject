@@ -165,7 +165,7 @@ const GridArea = () => {
                 const tableSeq = grid.getCellData(ht.row, "tableSeq", false) as string;
                 const downBtn = grid.getCellData(ht.row, "downBtn", false) as string;
 
-                if(downBtn == 'undefined' || downBtn == null ) return;
+                if(downBtn == 'undefined' || downBtn == null || downBtn == "") return;
                 docDown(tableSeq);
             }
         });

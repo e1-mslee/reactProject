@@ -120,7 +120,9 @@ const GridArea = () => {
 
     let field = null;
     if(fieldData != null) {
-        field = new DataMap(fieldData, 'colId', 'colName');
+        field = new DataMap([...fieldData], 'colId', 'colName');
+        (field.collectionView.sourceCollection as any[]).unshift({colId: "", colName: "-선택-"});
+        field.collectionView.refresh();
     }
 
     useEffect(() => {
