@@ -40,7 +40,9 @@ Springboot 와 react & typescript를 통해 개발을 진행하였고 ubuntu ser
 | 구분       | 패키지/기술명                | 버전        |
 | ---------- | --------------------------- | ----------- |
 | 인증        | jsonwebtoken                |  0.11.5     |
-| 엑셀 업로드 & 다운로드  |  apache poi      |  5.2.5       | 
+| 엑셀 업로드 & 다운로드  |  apache poi      |  5.2.5       |
+| 쿼리  |  mybatis      |  3.0.4      |
+
 
 ## 🔧 주요 설정
 ### 경로 별칭 (Path Aliases)
