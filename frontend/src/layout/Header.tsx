@@ -140,7 +140,7 @@ const Header: React.FC = () => {
       } finally {
         localStorage.removeItem('accessToken');
         setUsername(null);
-        window.location.reload();
+        void navigate('/login');
       }
     } else {
       void navigate('/login');
