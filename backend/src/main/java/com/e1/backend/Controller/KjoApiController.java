@@ -118,6 +118,7 @@ public class KjoApiController {
     }
 
     @PostMapping("/excelUpload")
+    @Operation(summary = "엑셀 업로드", description = "동적 생성 테이블의 데이터 엑셀 업로드")
     public ResponseEntity<?> excelUpload(@RequestParam("file") MultipartFile file,
                                          @RequestParam("tableId") String tableId,
                                          @RequestParam("tableSeq") String tableSeq) throws IOException {
@@ -129,6 +130,7 @@ public class KjoApiController {
     }
 
     @GetMapping("/excelDown")
+    @Operation(summary = "엑셀 다운로드", description = "동적 생성 테이블의 데이터 엑셀 다운로드")
     public ResponseEntity<?> excelDown(@RequestParam Map<String, Object> data) throws IOException {
         return kjoApiService.excelDown(data);
     }
