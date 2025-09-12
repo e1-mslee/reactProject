@@ -112,7 +112,6 @@ const ColGridArea = ({commCode}: CommCode) => {
     useEffect(() => {
         if (gridRef)
             setGridRef(gridRef); // FlexGrid 컨트롤 등록
-
     }, []);
 
     useEffect(() => {
@@ -211,10 +210,12 @@ const ColGridArea = ({commCode}: CommCode) => {
                 <FlexGridColumn header="검색" binding="colSch" width={50} dataType="Boolean"/>
                 <FlexGridColumn header="SEQ" binding="tableSeq" visible={false} />
             </FlexGrid>
+
             <span> Total: {totalCnt}</span>
         </div>
     )
 }
+
 
 const KjoPop = () =>{
     const { commCode, fetchAllData, filterCode } = useCommonData();
@@ -226,7 +227,6 @@ const KjoPop = () =>{
         fetchAllData();
         fetchInitData(tableSeq);
         fetchGridData(tableSeq);
-
     }, []);
 
     return (

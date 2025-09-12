@@ -8,23 +8,6 @@ import AccountCustomSlotProps from '@component/Account';
 const { Header: AntHeader } = Layout;
 
 const Header: React.FC = () => {
-/*     const { userInfo } = useAccountData();
-    const navigate = useNavigate();
-    const isLoggedIn = Boolean(localStorage.getItem('accessToken')); // 로그인 체크 예시
-
-    const loginHandle = () => {
-        console.log("login");
-        void navigate('/login'); // 이동할 경로
-    };
-
-    const logoutHandle = () => {
-        signOut(userInfo.userId)
-            .then(res => {
-                void navigate('/login');
-            }).catch(e => {
-            alert("로그아웃 실패");
-        });
-    } */
 
   return (
     <>

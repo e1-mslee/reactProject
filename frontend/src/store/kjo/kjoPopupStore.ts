@@ -83,8 +83,8 @@ const useColData = create<UseColData>((set) => ({
             return;
         }
 
-        if(initData.dataCount > 0) {
-            alert("사용중인 테이블은 수정할 수 없습니다.");
+        if(initData?.tableId !== "") {
+            alert("테이블이 생성된 후에는 수정할 수 없습니다.");
             return;
         }
 
@@ -121,8 +121,8 @@ const useColData = create<UseColData>((set) => ({
             return;
         }
 
-        if(initData.dataCount > 0) {
-            alert("사용중인 테이블은 수정할 수 없습니다.");
+        if(initData?.tableId !== 0) {
+            alert("테이블이 생성된 후에는 수정할 수 없습니다.");
             return;
         }
 
@@ -149,7 +149,7 @@ const useColData = create<UseColData>((set) => ({
         const edited = view?.itemsEdited || [];
         const removed = view?.itemsRemoved || [];
 
-        if(tableId !== "") {
+        if(initData?.tableId !== "") {
             alert("테이블이 생성된 후에는 수정할 수 없습니다.");
             return;
         }

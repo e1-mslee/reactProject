@@ -199,14 +199,13 @@ const GridArea = () => {
 }
 
 const Kjo = () =>{
-    //Init();
-    const { fetchAllData } = useCommonData();
+    const { commCode } = useCommonData();
 
     useRemoveWijmoLink();
 
-    useEffect(() => {
+    /* useEffect(() => {
         fetchAllData();
-    }, []);
+    }, []); */
 
     return (
         <div style={{ height: "100%" }}>

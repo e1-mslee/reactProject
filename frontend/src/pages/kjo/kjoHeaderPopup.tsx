@@ -418,6 +418,7 @@ const TmpGridArea = () => {
 
 const KjoHeaderPopup = () =>{
     const { fetchInitData, fetchGridData, fetchFieldData, fetchHeaderData, fetchGridHeaderData } = useHeaderData();
+
     useEffect(() => {
         const link = document.querySelector('a[href="https://www.mescius.co.kr/wijmo#price"]');
 

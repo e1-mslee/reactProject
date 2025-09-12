@@ -2,6 +2,7 @@ import { Card, Col, Row } from 'antd';
 import { Progress } from 'antd';
 
 const Home: React.FC = () => {
+
   return (
     <div style={{ maxWidth: '100%', overflowX: 'hidden', overflowY: 'hidden' }}>
       <div style={{ marginBottom: '10px' }}>

@@ -112,8 +112,14 @@ const useHeaderData = create<UseHeaderData>((set) => ({
     addRow: (seq) => {
         const headerData = useHeaderData.getState().headerData;
         const view = useHeaderData.getState().gridData;
+        const initData = useHeaderData.getState().initData;
 
         if(!view || !headerData) return;
+
+        if(initData?.tableId !== "") {
+            alert("테이블이 생성된 후에는 수정할 수 없습니다.");
+            return;
+        }
 
         const newItem = view.addNew();
         const row = headerData.length-1;
@@ -141,8 +147,14 @@ const useHeaderData = create<UseHeaderData>((set) => ({
     deleteRow: () => {
         const headerData = useHeaderData.getState().headerData;
         const view = useHeaderData.getState().gridData;
+        const initData = useHeaderData.getState().initData;
 
         if(!view || !headerData) return;
+
+        if(initData?.tableId !== "") {
+            alert("테이블이 생성된 후에는 수정할 수 없습니다.");
+            return;
+        }
 
         const data = view.items as GridData[];
         const selectedRows: GridData[] = [];

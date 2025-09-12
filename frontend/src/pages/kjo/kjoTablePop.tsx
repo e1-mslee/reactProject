@@ -30,7 +30,7 @@ const HeaderLine = () => {
 
     const handleButtonClick = () => {
         fileInputRef.current?.click(); // 숨겨둔 input 클릭
-      };
+    };
 
     return (
         <div className={"header_line"}>
@@ -57,7 +57,6 @@ const GridArea = () => {
     useEffect(()=> {
         if (gridRef)
             setGridRef(gridRef); // FlexGrid 컨트롤 등록
-        fetchGridData(tableSeq, tableId);
     }, []);
 
     useEffect(() => {
@@ -245,12 +244,13 @@ const KjoTablePopup = () =>{
     const { fetchAllData } = useCommonData();
     const { fetchGridHeaderData, fetchGridFieldData, fetchGridData } = useTableData();
 
-    useRemoveWijmoLink();
+    //useRemoveWijmoLink();
 
     useEffect(() => {
         fetchAllData();
         fetchGridHeaderData(tableSeq);
         fetchGridFieldData(tableSeq);
+        fetchGridData(tableSeq, tableId);
     }, []);
 
     return (
