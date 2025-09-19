@@ -16,6 +16,15 @@ const menuItems = [
     ],
   },
   {
+    key: 'gridSample',
+    icon: <LaptopOutlined />,
+    label: 'Wijmo Sample',
+    children: [
+      { key: 'mergedCell', label: 'Merged Cell' },
+      { key: 'multiHeader', label: 'Multi Header' },
+    ],
+  },
+  {
     key: 'templet',
     icon: <LaptopOutlined />,
     label: '디자인 템플릿',

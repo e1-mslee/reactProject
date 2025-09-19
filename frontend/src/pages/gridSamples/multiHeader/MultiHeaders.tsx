@@ -1,0 +1,228 @@
+import '@mescius/wijmo.styles/wijmo.css';
+import '@mescius/wijmo.cultures/wijmo.culture.ko';
+import { FlexGrid, FlexGridColumn } from '@mescius/wijmo.react.grid';
+import { FlexGrid as FlexGridType } from '@mescius/wijmo.grid';
+import { MultiRow } from '@mescius/wijmo.react.grid.multirow';
+import * as wjcGridXlsx from '@mescius/wijmo.grid.xlsx';
+import * as wjGrid from '@mescius/wijmo.grid';
+
+import 'bootstrap/dist/css/bootstrap.min.css';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { Button, Flex, Modal, message } from 'antd';
+import openPop from '@utils/openPop';
+import { useLmsStore } from '@/store/lms/lmsStore';
+import { useRemoveWijmoLink } from '@hooks/useRemoveWijmoLink';
+import { isEmpty } from '@mescius/wijmo';
+
+// 상수 정의
+const CONSTANTS = {
+  MESSAGES: {
+    SELECT_ONE_ITEM: '1개의 항목을 선택하세요.',
+    SELECT_ITEM: '수정할 항목을 선택하세요.',
+    CONFIRM_SAVE: '저장하시겠습니까?',
+    CONFIRM_DELETE: '삭제 하시겠습니까?',
+  },
+  GRID_STYLES: {
+    height: '540px',
+  },
+  COLUMN_WIDTHS: {
+    SELECT: 50,
+    TABLE_NAME: '*',
+    TABLE_ID: '*',
+    FIELD_COUNT: '0.3*',
+    CREATOR: '0.4*',
+    CREATED_DATE: '0.4*',
+  },
+  MODAL_STYLE: { top: 200 },
+};
+
+interface TableInfo {
+  TABLE_SEQ: string;
+  TABLE_NAME: string;
+  TABLE_ID: string;
+  field_count: string;
+  VBG_CRE_USER: string;
+  VBG_CRE_DTM: string;
+  selected?: boolean;
+  doc_form: string;
+}
+
+const MultiRows = () => {
+  // Wijmo 링크 제거
+  useRemoveWijmoLink();
+
+  // 날짜 상태 관리
+  const [startDate, setStartDate] = useState(() => {
+    const date = new Date();
+    date.setMonth(date.getMonth() - 1);
+    return date;
+  });
+  const [endDate, setEndDate] = useState(new Date());
+
+  const { data, cv, fetchGridData, handleAddRow, saveTable, deleteData, fetchDodDown } = useLmsStore();
+
+  const gridRef = useRef<{ control: FlexGridType } | null>(null);
+
+  // 초기 로드
+  useEffect(() => {
+    void fetchGridData(startDate, endDate);
+  }, [fetchGridData, startDate, endDate]);
+
+  // 팝업 열기 함수 메모이제이션
+  const openPopupWithRefresh = useCallback(
+    (tableSeq: string, pageName: string) => {
+      if (!tableSeq) return;
+      const url = `/popup/${pageName}?tableSeq=${encodeURIComponent(tableSeq)}`;
+      openPop(url, () => void fetchGridData(startDate, endDate));
+    },
+    [fetchGridData, startDate, endDate]
+  );
+
+  const createConfirmModal = useCallback((content: string, onOk: () => Promise<void>) => {
+    return Modal.confirm({
+      title: '알림',
+      content,
+      style: CONSTANTS.MODAL_STYLE,
+      onOk: async () => {
+        await onOk();
+      },
+    });
+  }, []);
+
+  // 저장 핸들러
+  const handleSave = useCallback(() => {
+    createConfirmModal(CONSTANTS.MESSAGES.CONFIRM_SAVE, async () => {
+      await saveTable(startDate, endDate);
+    });
+  }, [createConfirmModal, saveTable, startDate, endDate]);
+
+  // 삭제 핸들러
+  const handleDelete = useCallback(() => {
+    createConfirmModal(CONSTANTS.MESSAGES.CONFIRM_DELETE, async () => {
+      await deleteData(startDate, endDate);
+    });
+  }, [createConfirmModal, deleteData, startDate, endDate]);
+
+  // 조회 핸들러
+  const handleSearch = useCallback(() => {
+    void fetchGridData(startDate, endDate);
+  }, [fetchGridData, startDate, endDate]);
+
+  const handleDocDown = useCallback(
+    (tableSeq: string) => {
+      void fetchDodDown(tableSeq);
+    },
+    [fetchDodDown]
+  );
+
+  // 엑셀 내보내기
+  const exportToExcel = useCallback(() => {
+    if (!gridRef.current) return;
+
+    wjcGridXlsx.FlexGridXlsxConverter.saveAsync(
+      gridRef.current.control,
+      {
+        includeStyles: true,
+      },
+      'UDA 목록.xlsx'
+    );
+  }, []);
+
+  const flexInitialized = (grid: wjGrid.FlexGrid) => {
+    grid.addEventListener(grid.hostElement, 'click', (ev: MouseEvent) => {
+      const ht = grid.hitTest(ev);
+      if (ht.cellType !== wjGrid.CellType.Cell) return;
+
+      const tableSeq = grid.getCellData(ht.row, 'TABLE_SEQ', false) as string;
+
+      if (!tableSeq) return;
+
+      const col = grid.columns[ht.col];
+      if (col?.binding === 'doc_form') {
+        const value = grid.getCellData(ht.row, 'doc_form', false) as string;
+        if (value !== '다운') {
+          message.warning('헤더관리에서 헤더를 추가해주세요.');
+          return true;
+        }
+        console.log('문서양식 클릭', tableSeq);
+        handleDocDown(tableSeq);
+      } else if (col?.binding === 'TABLE_ID') {
+        console.log('물리 테이블명 클릭', tableSeq);
+        openPopupWithRefresh(tableSeq, 'lms_Doc');
+      } else if (col?.binding === 'TABLE_NAME') {
+        console.log('논리 테이블명 클릭', tableSeq);
+        openPopupWithRefresh(tableSeq, 'lms_pop');
+      }
+    });
+  };
+
+  return (
+    <div>
+      <span style={{ fontSize: '22px', fontWeight: 'bold' }}>Multi Rows/Columns Sample</span>
+
+      {/* 그리드 */}
+      <div style={{ margin: '15px 2px' }}>
+        <FlexGrid
+          ref={gridRef}
+          itemsSource={cv || []}
+          initialized={flexInitialized}
+          isReadOnly={false}
+          autoGenerateColumns={false}
+          style={CONSTANTS.GRID_STYLES}
+          selectionMode='Row'
+          headersVisibility='Column'
+          allowSorting={true}
+        >
+          <FlexGridColumn binding='selected' header='선택' width={CONSTANTS.COLUMN_WIDTHS.SELECT} dataType='Boolean' />
+          <FlexGridColumn
+            binding='TABLE_NAME'
+            header='논리 테이블명'
+            width={CONSTANTS.COLUMN_WIDTHS.TABLE_NAME}
+            cssClass='blue-column'
+          />
+          <FlexGridColumn
+            binding='TABLE_ID'
+            header='물리 테이블명'
+            width={CONSTANTS.COLUMN_WIDTHS.TABLE_ID}
+            cssClass='blue-column'
+          />
+          <FlexGridColumn
+            binding='doc_form'
+            header='문서양식'
+            width='0.3*'
+            align='center'
+            cssClass='blue-column'
+            isReadOnly={true}
+          />
+          <FlexGridColumn
+            binding='field_count'
+            header='데이터 수'
+            width={CONSTANTS.COLUMN_WIDTHS.FIELD_COUNT}
+            isReadOnly={true}
+          />
+          <FlexGridColumn
+            binding='VBG_CRE_USER'
+            header='생성자'
+            width={CONSTANTS.COLUMN_WIDTHS.CREATOR}
+            isReadOnly={true}
+          />
+          <FlexGridColumn
+            binding='VBG_CRE_DTM'
+            header='수정일'
+            width={CONSTANTS.COLUMN_WIDTHS.CREATED_DATE}
+            align='center'
+            isReadOnly={true}
+          />
+          <FlexGridColumn binding='TABLE_SEQ' header='SEQ' visible={false} />
+        </FlexGrid>
+      </div>
+
+      {/* 총 개수 표시 */}
+      <span className='totalCount'>TOTAL : {data.length || 0}</span>
+    </div>
+  );
+};
+
+export default MultiRows;
